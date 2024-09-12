@@ -1,0 +1,116 @@
+defmodule <%= @web_module %>.Components.Form do
+  @moduledoc """
+  Implementation of form component.
+  """
+  use <%= @web_module %>, :component
+
+  import <%= @web_module %>.Components.Label
+
+  
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def form_item(assigns) do
+    ~H"""
+    <div class={classes(["space-y-2", @class])} {@rest}>
+      <%%= render_slot(@inner_block) %>
+    </div>
+    """
+  end
+
+  
+  attr :field, Phoenix.HTML.FormField, doc: "a form field struct retrieved from the form, for example: @form[:email]"
+  attr :errors, :list, default: []
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def form_label(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
+
+    assigns
+    |> assign(:errors, Enum.map(errors, &translate_error(&1)))
+    |> assign(field: nil)
+    |> form_label()
+  end
+
+  def form_label(assigns) do
+    ~H"""
+    <.label class={classes([(@errors != []) && "text-destructive", @class])} {@rest}>
+      <%%= render_slot(@inner_block) %>
+    </.label>
+    """
+  end
+
+  slot :inner_block, required: true
+
+  def form_control(assigns) do
+    ~H"""
+    <%%= render_slot(@inner_block) %>
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def form_description(assigns) do
+    ~H"""
+    <p class={classes(["text-sm text-muted-foreground", @class])} {@rest}>
+      <%%= render_slot(@inner_block) %>
+    </p>
+    """
+  end
+
+  attr :field, Phoenix.HTML.FormField, doc: "a form field struct retrieved from the form, for example: @form[:email]"
+
+  def form_message(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
+
+    assigns
+    |> assign(:errors, Enum.map(errors, &translate_error(&1)))
+    |> assign(field: nil)
+    |> form_message()
+  end
+
+  def form_message(assigns) do
+      ~H"""
+      <p :if={@errors != []} class="text-sm font-medium text-destructive">
+        <span :for={msg <- @errors} class="block"><%%= msg %></span>
+      </p>
+      """
+  end
+
+  @doc """
+  Translates an error message using gettext.
+  """
+  def translate_error({msg, opts}) do
+    # When using gettext, we typically pass the strings we want
+    # to translate as a static argument:
+    #
+    #     # Translate the number of files with plural rules
+    #     dngettext("errors", "1 file", "%{count} files", count)
+    #
+    # However the error messages in our forms and APIs are generated
+    # dynamically, so we need to translate them by calling Gettext
+    # with our gettext backend as first argument. Translations are
+    # available in the errors.po file (as we use the "errors" domain).
+    if count = opts[:count] do
+      Gettext.dngettext(DemoWeb.Gettext, "errors", msg, msg, count, opts)
+    else
+      Gettext.dgettext(DemoWeb.Gettext, "errors", msg, opts)
+    end
+  end
+
+  @doc """
+  Translates the errors for a field from a keyword list of errors.
+  """
+  def translate_errors(errors, field) when is_list(errors) do
+    for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
+  end
+end

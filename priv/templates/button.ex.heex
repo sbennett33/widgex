@@ -1,0 +1,66 @@
+defmodule <%= @web_module %>.Components.Button do
+  @moduledoc """
+  Provides a customizable button component with various styles and sizes.
+  """
+
+  use <%= @web_module %>, :component
+
+  @default_classes ~w(inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50)
+
+  variant :variant,
+          [
+            default: "bg-primary text-primary-foreground hover:bg-primary/90",
+            destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+            outline:
+              "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+            secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+            ghost: "hover:bg-accent hover:text-accent-foreground",
+            link: "text-primary underline-offset-4 hover:underline"
+          ],
+          default: :default
+
+  variant :size,
+          [
+            default: "h-10 px-4 py-2",
+            sm: "h-9 rounded-md px-3",
+            lg: "h-11 rounded-md px-8",
+            icon: "h-10 w-10"
+          ],
+          default: :default
+
+  attr :type, :string, default: "button"
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  @doc """
+  Renders a button component.
+
+  ## Examples
+
+      <.button>Send</.button>
+      <.button variant={:destructive} size={:sm}>Delete</.button>
+
+  ## Attributes
+
+    * `type` - The type of the button (default: "button")
+    * `class` - Additional CSS classes to apply
+    * `variant` - The visual style of the button (default: :default)
+    * `size` - The size of the button (default: :default)
+
+  ## Slots
+
+    * `inner_block` - The content of the button (required)
+
+  """
+  def button(assigns) do
+    assigns = assign(assigns, :default_classes, @default_classes)
+
+    ~H"""
+    <button type={@type} class={classes([@default_classes, @cva_class, @class])} {@rest}>
+      <%%= render_slot(@inner_block) %>
+    </button>
+    """
+  end
+end

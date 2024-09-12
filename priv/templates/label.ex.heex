@@ -1,0 +1,20 @@
+defmodule <%= @web_module %>.Components.Label do
+  use <%= @web_module %>, :component
+
+  @default_classes ~w(text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70)
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def label(assigns) do
+    assigns = assign(assigns, :default_classes, @default_classes)
+
+    ~H"""
+    <label class={classes([@default_classes, @class])} {@rest}>
+      <%%= render_slot(@inner_block) %>
+    </label>
+    """
+  end
+end

@@ -1,0 +1,38 @@
+defmodule <%= @web_module %>.Components.Input do
+  @moduledoc """
+  Displays a form input field or a component that looks like an input field.
+  """
+
+  use <%= @web_module %>, :component
+
+  @default_classes ~w(flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50)
+
+  attr :type, :string, default: "text"
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  attr :field, Phoenix.HTML.FormField,
+    doc: "a form field struct retrieved from the form, for example: @form[:email]"
+
+  @doc """
+  Renders an input component.
+
+  ## Examples
+
+      <.input />
+      <.input type="color" />
+
+  ## Attributes
+
+    * `type` - The type of the input (default: "text")
+    * `class` - Additional CSS classes to apply
+
+  """
+  def input(assigns) do
+    assigns = assign(assigns, :default_classes, @default_classes)
+
+    ~H"""
+    <input type={@type} class={classes([@default_classes, @class])} {@rest} />
+    """
+  end
+end
