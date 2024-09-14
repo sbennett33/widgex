@@ -1,0 +1,57 @@
+defmodule <%= @web_module %>.Components.Badge do
+  @moduledoc false
+  use <%= @web_module %>, :component
+
+  @default_classes ~w(inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2)
+
+  variant :variant,
+    [
+      default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+      secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+      destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+      outline: "text-foreground"
+    ],
+    default: :default
+
+  @doc """
+  Renders a badge component.
+
+  ## Installation
+
+      mix widgex.add badge
+
+  ## Usage
+
+      <.badge variant="outline">Badge</.badge>
+
+  ## Link
+
+  You can embed links in a badge to create a link that looks like a badge.
+
+      <.badge variant="outline"><.link href="#">Badge</.link></.badge>
+
+  """
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def badge(assigns) do
+    assigns = assign(assigns, :default_classes, @default_classes)
+
+    ~H"""
+    <div
+      class={
+        classes([
+          @default_classes,
+          @cva_class,
+          @class
+        ])
+      }
+      {@rest}
+    >
+      <%%= render_slot(@inner_block) %>
+    </div>
+    """
+  end
+end
