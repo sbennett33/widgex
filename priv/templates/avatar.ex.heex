@@ -1,0 +1,66 @@
+defmodule <%= @web_module %>.Components.Avatar do
+  use <%= @web_module %>, :component
+
+  @default_classes ~w(relative h-10 w-10 shrink-0 overflow-hidden rounded-full)
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  @doc """
+  An image element with a fallback for representing the user.
+
+  ## Installation
+
+      mix widgex.add avatar
+
+  ## Usage
+
+      <.avatar>
+        <.avatar_image src="https://github.com/shadcn.png" />
+        <.avatar_fallback>CN</.avatar_fallback>
+      </.avatar>
+
+  """
+
+  def avatar(assigns) do
+    assigns = assign(assigns, :default_classes, @default_classes)
+
+    ~H"""
+    <span class={classes([@default_classes, @class])} {@rest}>
+      <%%= render_slot(@inner_block) %>
+    </span>
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  def avatar_image(assigns) do
+    ~H"""
+    <img
+      class={classes(["aspect-square h-full w-full", @class])}
+      {@rest}
+      phx-update="ignore"
+      style="display:none"
+      onload="this.style.display=''"
+    />
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+  slot :inner_block, required: false
+
+  def avatar_fallback(assigns) do
+    ~H"""
+    <span
+      class={
+        classes(["flex h-full w-full items-center justify-center rounded-full bg-muted", @class])
+      }
+      {@rest}
+    >
+      <%%= render_slot(@inner_block) %>
+    </span>
+    """
+  end
+end

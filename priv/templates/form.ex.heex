@@ -1,11 +1,20 @@
 defmodule <%= @web_module %>.Components.Form do
   @moduledoc """
-  Implementation of form component.
+  Provides building blocks for composing forms. Utilizes the `.form` component from LiveView
+  instead of implementing our own.
   """
   use <%= @web_module %>, :component
 
   import <%= @web_module %>.Components.Label
 
+  @doc"""
+  Composable components for building forms using LiveView's `.form` component.
+
+  ## Installation
+
+      mix widgex.add form
+
+  """
   
   attr :class, :string, default: nil
   attr :rest, :global

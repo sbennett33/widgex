@@ -37,22 +37,14 @@ defmodule <%= @web_module %>.Components.Button do
   @doc """
   Renders a button component.
 
-  ## Examples
+  ## Installation
 
-      <.button>Send</.button>
-      <.button variant={:destructive} size={:sm}>Delete</.button>
+      mix widgex.add button
 
-  ## Attributes
+  ## Usage
 
-    * `type` - The type of the button (default: "button")
-    * `class` - Additional CSS classes to apply
-    * `variant` - The visual style of the button (default: :default)
-    * `size` - The size of the button (default: :default)
-
-  ## Slots
-
-    * `inner_block` - The content of the button (required)
-
+      <.button variant="outline">Button</.button>
+  
   """
   def button(assigns) do
     assigns = assign(assigns, :default_classes, @default_classes)
