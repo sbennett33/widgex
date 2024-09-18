@@ -1,0 +1,91 @@
+defmodule <%= @web_module %>.Components.Checkbox do
+  @moduledoc false
+  use <%= @web_module %>, :component
+
+  import <%= @web_module %>.Components.Icon
+
+  @doc """
+  A control that allows the user to toggle between checked and not checked.
+
+  ## Installation
+
+      mix widgex.add checkbox
+
+  ## Usage
+
+      <.checkbox />
+
+  """
+
+  attr :id, :any, default: nil
+  attr :name, :any
+  attr :value, :any
+
+  attr :field, Phoenix.HTML.FormField,
+    doc: "a form field struct retrieved from the form, for example: @form[:email]"
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  def checkbox(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    assigns
+    |> assign(field: nil, id: assigns.id || field.id)
+    |> assign_new(:name, fn -> field.name end)
+    |> assign_new(:value, fn -> field.value end)
+    |> checkbox()
+  end
+
+  def checkbox(assigns) do
+    assigns =
+      assigns
+      |> assign(:id, assigns.id || gen_id())
+      |> assign_new(:name, fn -> "" end)
+      |> assign_new(:checked, fn ->
+        Phoenix.HTML.Form.normalize_value("checkbox", assigns[:value])
+      end)
+
+    ~H"""
+    <button
+      id={@id}
+      type="button"
+      role="checkbox"
+      aria-checked={inspect(@checked)}
+      data-state={(@checked && "checked") || "unchecked"}
+      value="on"
+      class="peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+      aria-invalid="false"
+      phx-click={toggle(@id)}
+      {@rest}
+    >
+      <span
+        data-state="checked"
+        class={["flex items-center justify-center text-current"] ++ [!@checked && "hidden"]}
+        style="pointer-events: none;"
+      >
+        <.icon name="hero-check" class="h-4 w-4" />
+      </span>
+    </button>
+    <input
+      name={@name}
+      aria-hidden="true"
+      style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 16px; height: 16px;"
+      tabindex="-1"
+      type="checkbox"
+      value="on"
+      checked={@checked}
+    />
+    """
+  end
+
+  defp toggle(id) do
+    %JS{}
+    |> JS.toggle_attribute({"data-state", "checked", "unchecked"})
+    |> JS.toggle_attribute({"aria-checked", "true", "false"})
+    |> JS.toggle_attribute({"checked", true}, to: "##{id}+input[type=checkbox]")
+    |> JS.toggle_class("hidden", to: "##{id}>span")
+  end
+
+  defp gen_id do
+    for _ <- 1..10, into: "", do: <<Enum.random(~c"0123456789ABCDEF")>>
+  end
+end
