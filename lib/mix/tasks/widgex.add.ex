@@ -20,20 +20,23 @@ defmodule Mix.Tasks.Widgex.Add do
         |> Path.join("#{component}.ex.heex")
 
       component_module =
-        Igniter.Libs.Phoenix.web_module_name("Components.#{String.capitalize(component)}")
+        Igniter.Libs.Phoenix.web_module_name(
+          igniter,
+          "Components.#{String.capitalize(component)}"
+        )
 
       path =
-        component_module
-        |> Igniter.Code.Module.proper_location()
+        igniter
+        |> Igniter.Project.Module.proper_location(component_module)
 
       igniter
       |> Igniter.copy_template(
         template,
         path,
-        web_module: inspect(Igniter.Libs.Phoenix.web_module_name())
+        web_module: inspect(Igniter.Libs.Phoenix.web_module(igniter))
       )
-      |> Igniter.update_elixir_file(
-        Igniter.Code.Module.proper_location(Igniter.Libs.Phoenix.web_module_name()),
+      |> Igniter.Project.Module.find_and_update_module!(
+        Igniter.Libs.Phoenix.web_module(igniter),
         fn zipper ->
           {:ok, zipper} = Igniter.Code.Function.move_to_defp(zipper, :components, 0)
 

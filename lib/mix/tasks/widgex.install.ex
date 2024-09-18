@@ -95,11 +95,11 @@ defmodule Mix.Tasks.Widgex.Install do
   end
 
   defp update_web_module(igniter) do
-    web_module = Igniter.Libs.Phoenix.web_module_name()
+    web_module = Igniter.Libs.Phoenix.web_module(igniter)
 
-    Igniter.update_elixir_file(
+    Igniter.Project.Module.find_and_update_module!(
       igniter,
-      Igniter.Code.Module.proper_location(web_module),
+      web_module,
       fn zipper ->
         case Igniter.Code.Function.move_to_def(zipper, :component, 0) do
           {:ok, _zipper} ->
