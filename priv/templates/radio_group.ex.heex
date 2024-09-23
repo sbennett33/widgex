@@ -1,0 +1,89 @@
+defmodule <%= @web_module %>.Components.RadioGroup do
+  @moduledoc false
+  use <%= @web_module %>, :component
+
+  @doc """
+  A set of checkable buttons — known as radio buttons — where no more than one of the buttons can be checked at a time.
+
+  ## Installation
+
+      mix widgex.add radio_group
+
+  """
+
+  def radio_group(assigns) do
+    ~H"""
+    <div
+      role="radiogroup"
+      aria-required="false"
+      dir="ltr"
+      class="gap-2 flex flex-col space-y-1"
+      aria-invalid="false"
+      tabindex="0"
+      style="outline: currentcolor;"
+    >
+      <div
+        :for={{%{value: value} = rad, idx} <- Enum.with_index(@radio_group_item)}
+        class="flex items-center space-x-3 space-y-0"
+      >
+        <button
+          id={"#{@field.id}-#{idx}"}
+          name={@field.name}
+          type="button"
+          role="radio"
+          aria-checked={@field.value == value}
+          data-state={(@field.value == value && "checked") || "unchecked"}
+          value={@field.value}
+          class="group aspect-square h-4 w-4 rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          aria-invalid="false"
+          tabindex="-1"
+          phx-click={select("#{@field.id}-#{idx}")}
+        >
+          <span class="flex items-center justify-center group-data-[state=unchecked]:hidden">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="h-2.5 w-2.5 fill-current text-current"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+          </span>
+        </button>
+        <input
+          name={@field.name}
+          aria-hidden="true"
+          style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 16px; height: 16px;"
+          tabindex="-1"
+          type="radio"
+          value={@field.value}
+        />
+        <label
+          class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-normal"
+          for={"#{@field.id}-#{idx}"}
+        >
+          <%%= render_slot(rad) %>
+        </label>
+      </div>
+    </div>
+    """
+  end
+
+  def select(id) do
+    %JS{}
+    |> JS.set_attribute({"data-state", "unchecked"}, to: "button[name=type]")
+    |> JS.set_attribute({"aria-checked", "false"}, to: "button[name=type]")
+    |> JS.set_attribute({"data-state", "unchecked"}, to: "button[name=type]>span")
+    |> JS.set_attribute({"checked", false}, to: "button+input[name=type]")
+    |> JS.set_attribute({"data-state", "checked"})
+    |> JS.set_attribute({"aria-checked", "true"})
+    |> JS.set_attribute({"data-state", "checked"}, to: "##{id}>span")
+    |> JS.set_attribute({"checked", true}, to: "##{id}+input[name=type]")
+  end
+end
