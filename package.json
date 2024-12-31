@@ -1,0 +1,29 @@
+{
+  "name": "widgex",
+  "version": "1.0.0",
+  "description": "LiveView component library inspired by shadcn",
+  "license": "MIT",
+  "module": "./priv/static/widgex.esm.js",
+  "main": "./priv/static/widgex.cjs.js",
+  "unpkg": "./priv/static/widgex.min.js",
+  "jsdelivr": "./priv/static/widgex.min.js",
+  "exports": {
+    "import": "./priv/static/widgex.esm.js",
+    "require": "./priv/static/widgex.cjs.js"
+  },
+  "author": "Chris McCord <chris@chrismccord.com> (http://www.phoenixframework.org)",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/phoenixframework/phoenix_live_view.git"
+  },
+  "files": [
+    "README.md",
+    "LICENSE.md",
+    "package.json",
+    "priv/static/*",
+    "assets/js/widgex/*"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
