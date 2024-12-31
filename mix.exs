@@ -27,7 +27,8 @@ defmodule Widgex.MixProject do
       {:igniter, "~> 0.3.27"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:esbuild, "~> 0.8.2", only: :dev}
+      {:esbuild, "~> 0.8.2", only: :dev},
+      {:phoenix_live_view, "~> 1.0"}
     ]
   end
 
