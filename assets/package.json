@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@zag-js/accordion": "^0.79.2"
+    "@zag-js/accordion": "^0.79.2",
+    "@types/phoenix_live_view": "^0.20.0"
   }
 }
