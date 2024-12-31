@@ -1,10 +1,6 @@
 defmodule <%= @web_module %>.Components.Avatar do
+  @moduledoc false
   use <%= @web_module %>, :component
-
-  @default_classes ~w(relative h-10 w-10 shrink-0 overflow-hidden rounded-full)
-
-  attr :class, :string, default: nil
-  attr :rest, :global
 
   @doc """
   An image element with a fallback for representing the user.
@@ -21,6 +17,11 @@ defmodule <%= @web_module %>.Components.Avatar do
       </.avatar>
 
   """
+
+  @default_classes ~w(relative h-10 w-10 shrink-0 overflow-hidden rounded-full)
+
+  attr :class, :string, default: nil
+  attr :rest, :global
 
   def avatar(assigns) do
     assigns = assign(assigns, :default_classes, @default_classes)

@@ -1,0 +1,126 @@
+defmodule <%= @web_module %>.Components.Accordion do
+  @moduledoc false
+  use <%= @web_module %>, :component
+
+  @doc """
+  A vertically stacked set of interactive headings that each reveal a section of content.
+
+  ## Installation
+
+      mix widgex.add accordion
+
+  Install the hook in your app.js:
+
+      import { Accordion } from "widgex";
+
+      let liveSocket = new LiveSocket("/live", Socket, {
+        hooks: {
+          ...,
+          Accordion,
+          ...
+        },
+      });
+
+  ## Usage
+
+      <.accordion>
+        <.accordion_item value="item-1">
+          <.accordion_trigger>Is it accessible?</.accordion_trigger>
+          <.accordion_content>
+            Yes. It adheres to the WAI-ARIA design pattern.
+          </.accordion_content>
+        </.accordion_item>
+      </.accordion>
+
+  ## Options
+
+  Options are set on the outer wrapper element through data attributes.  
+  For boolean attributes, adding the attribute with either an empty value or `"true"` is considered truthy, every other value falsy.
+
+  - `data-disabled` - *boolean*: Whether the accordion is disabled and can be interacted with.
+  - `data-multiple` - *boolean*: Whether multiple items can be opened at the same time.
+  - `data-collapsible` - *boolean*: Whether an item can be closed by the user by clicking on it again. Implicitly set when `data-multiple`
+  is set.
+  """
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def accordion(assigns) do
+    ~H"""
+    <div id="accordion" phx-hook="Accordion" class={classes(["", @class])} {@rest}>
+      <div data-part="root">
+        <%= render_slot(@inner_block) %>
+      </div>
+    </div>
+    """
+  end
+
+  attr :value, :string, default: nil
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+
+  def accordion_item(assigns) do
+    ~H"""
+    <div data-part="item" data-value={@value} class={classes(["border-b", @class])}>
+      <%= render_slot(@inner_block) %>
+    </div>
+    """
+  end
+
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+
+  def accordion_trigger(assigns) do
+    ~H"""
+    <h3 class="flex">
+      <button
+        data-part="item-trigger"
+        class={
+          classes([
+            "group flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline outline-none cursor-pointer",
+            @class
+          ])
+        }
+      >
+        <%= render_slot(@inner_block) %>
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+        >
+          <path d="m6 9 6 6 6-6"></path>
+        </svg>
+      </button>
+    </h3>
+    """
+  end
+
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+
+  def accordion_content(assigns) do
+    ~H"""
+    <div
+      data-part="item-content"
+      class="text-sm overflow-hidden grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 data-[state=open]:grid-rows-[1fr]"
+    >
+      <div class="overflow-hidden">
+        <div class={classes(["pb-4 pt-0", @class])}>
+          <%= render_slot(@inner_block) %>
+        </div>
+      </div>
+    </div>
+    """
+  end
+end
