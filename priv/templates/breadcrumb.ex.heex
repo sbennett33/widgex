@@ -86,11 +86,11 @@ defmodule <%= @web_module %>.Components.Breadcrumb do
   def breadcrumb_separator(assigns) do
     ~H"""
     <li role="presentation" aria-hidden="true">
-      <%= if @inner_block != [] do %>
+      <%%= if @inner_block != [] do %>
         {render_slot(@inner_block)}
-      <% else %>
+      <%% else %>
         <.icon name="hero-chevron-right" class={classes(["size-3.5", @class])} {@rest} />
-      <% end %>
+      <%% end %>
     </li>
     """
   end
