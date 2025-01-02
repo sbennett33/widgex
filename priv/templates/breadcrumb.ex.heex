@@ -1,0 +1,140 @@
+defmodule <%= @web_module %>.Components.Breadcrumb do
+  @moduledoc false
+  use <%= @web_module %>, :component
+
+  import <%= @web_module %>.Components.Icon
+
+  @doc """
+  Displays the path to the current resource using a hierarchy of links.
+
+  ## Installation
+
+      mix widgex.add breadcrumb
+
+  ## Usage
+
+      <.breadcrumb>
+        <.breadcrumb_list>
+          <.breadcrumb_item>
+            <.breadcrumb_link href="/">Home</.breadcrumb_link>
+          </.breadcrumb_item>
+          <.breadcrumb_separator />
+          <.breadcrumb_item>
+            <.breadcrumb_link href="/components">Components</.breadcrumb_link>
+          </.breadcrumb_item>
+          <.breadcrumb_separator />
+          <.breadcrumb_item>
+            <.breadcrumb_page>Breadcrumb</.breadcrumb_page>
+          </.breadcrumb_item>
+        </.breadcrumb_list>
+      </.breadcrumb>
+
+  """
+  attr :id, :string, default: "breadcrumb"
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def breadcrumb(assigns) do
+    ~H"""
+    <nav id={@id} aria-label="breadcrumb" class={@class} {@rest}>
+      {render_slot(@inner_block)}
+    </nav>
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def breadcrumb_list(assigns) do
+    ~H"""
+    <ol
+      class={
+        classes([
+          "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
+          @class
+        ])
+      }
+      {@rest}
+    >
+      {render_slot(@inner_block)}
+    </ol>
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def breadcrumb_item(assigns) do
+    ~H"""
+    <li class={classes(["inline-flex items-center gap-1.5", @class])} {@rest}>
+      {render_slot(@inner_block)}
+    </li>
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: false
+
+  def breadcrumb_separator(assigns) do
+    ~H"""
+    <li role="presentation" aria-hidden="true">
+      <%= if @inner_block != [] do %>
+        {render_slot(@inner_block)}
+      <% else %>
+        <.icon name="hero-chevron-right" class={classes(["size-3.5", @class])} {@rest} />
+      <% end %>
+    </li>
+    """
+  end
+
+  attr :href, :string, default: "#"
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: false
+
+  def breadcrumb_link(assigns) do
+    ~H"""
+    <a href={@href} class={classes(["transition-colors hover:text-foreground", @class])} {@rest}>
+      {render_slot(@inner_block)}
+    </a>
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  def breadcrumb_ellipsis(assigns) do
+    ~H"""
+    <.icon name="hero-ellipsis-horizontal" class={classes(["cursor-pointer", @class])} {@rest} />
+    <span class="sr-only">More</span>
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: false
+
+  def breadcrumb_page(assigns) do
+    ~H"""
+    <span
+      role="link"
+      aria-disabled="true"
+      aria-current="page"
+      class={classes(["font-normal text-foreground", @class])}
+      {@rest}
+    >
+      {render_slot(@inner_block)}
+    </span>
+    """
+  end
+end
