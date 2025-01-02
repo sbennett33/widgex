@@ -13,7 +13,7 @@ defmodule <%= @web_module %>.Components.Label do
 
     ~H"""
     <label class={classes([@default_classes, @class])} {@rest}>
-      <%%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </label>
     """
   end

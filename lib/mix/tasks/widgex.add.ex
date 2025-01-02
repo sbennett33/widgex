@@ -47,9 +47,12 @@ defmodule Mix.Tasks.Widgex.Add do
             end
             """)
 
-          Igniter.Code.Common.add_code(zipper, """
-          import #{inspect(component_module)}
-          """)
+          zipper =
+            Igniter.Code.Common.add_code(zipper, """
+            import #{inspect(component_module)}
+            """)
+
+          {:ok, zipper}
         end
       )
     end)

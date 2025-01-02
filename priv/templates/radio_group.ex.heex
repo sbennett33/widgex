@@ -68,7 +68,7 @@ defmodule <%= @web_module %>.Components.RadioGroup do
           class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-normal"
           for={"#{@field.id}-#{idx}"}
         >
-          <%%= render_slot(rad) %>
+          {render_slot(rad)}
         </label>
       </div>
     </div>

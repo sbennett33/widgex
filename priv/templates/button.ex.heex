@@ -5,6 +5,19 @@ defmodule <%= @web_module %>.Components.Button do
 
   use <%= @web_module %>, :component
 
+  @doc """
+  Renders a button component.
+
+  ## Installation
+
+      mix widgex.add button
+
+  ## Usage
+
+      <.button variant="outline">Button</.button>
+
+  """
+
   @default_classes ~w(inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50)
 
   variant :variant,
@@ -34,24 +47,12 @@ defmodule <%= @web_module %>.Components.Button do
 
   slot :inner_block, required: true
 
-  @doc """
-  Renders a button component.
-
-  ## Installation
-
-      mix widgex.add button
-
-  ## Usage
-
-      <.button variant="outline">Button</.button>
-  
-  """
   def button(assigns) do
     assigns = assign(assigns, :default_classes, @default_classes)
 
     ~H"""
     <button type={@type} class={classes([@default_classes, @cva_class, @class])} {@rest}>
-      <%%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </button>
     """
   end
