@@ -2,16 +2,6 @@ defmodule <%= @web_module %>.Components.Alert do
   @moduledoc false
   use <%= @web_module %>, :component
 
-  @default_classes ~w(relative w-full rounded-lg border p-4 [&>span~*]:pl-7 [&>span+div]:translate-y-[-3px] [&>span]:absolute [&>span]:left-4 [&>span]:top-4 [&>span]:text-foreground)
-
-  variant :variant,
-          [
-            default: "bg-background text-foreground",
-            destructive:
-              "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive"
-          ],
-          default: :default
-
   @doc """
   Displays a callout for user attention.
 
@@ -30,6 +20,16 @@ defmodule <%= @web_module %>.Components.Alert do
       </.alert>
 
   """
+  @default_classes ~w(relative w-full rounded-lg border p-4 [&>span~*]:pl-7 [&>span+div]:translate-y-[-3px] [&>span]:absolute [&>span]:left-4 [&>span]:top-4 [&>span]:text-foreground)
+
+  variant :variant,
+          [
+            default: "bg-background text-foreground",
+            destructive:
+              "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive"
+          ],
+          default: :default
+
   attr :class, :string, default: nil
   attr :rest, :global
 
@@ -49,7 +49,7 @@ defmodule <%= @web_module %>.Components.Alert do
       }
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -61,7 +61,7 @@ defmodule <%= @web_module %>.Components.Alert do
   def alert_title(assigns) do
     ~H"""
     <h5 class={classes(["mb-1 font-medium leading-none tracking-tight", @class])}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </h5>
     """
   end
@@ -73,7 +73,7 @@ defmodule <%= @web_module %>.Components.Alert do
   def alert_description(assigns) do
     ~H"""
     <div class={classes(["text-sm [&_p]:leading-relaxed", @class])}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
