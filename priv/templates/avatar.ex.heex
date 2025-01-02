@@ -28,7 +28,7 @@ defmodule <%= @web_module %>.Components.Avatar do
 
     ~H"""
     <span class={classes([@default_classes, @class])} {@rest}>
-      <%%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </span>
     """
   end
@@ -60,7 +60,7 @@ defmodule <%= @web_module %>.Components.Avatar do
       }
       {@rest}
     >
-      <%%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </span>
     """
   end
