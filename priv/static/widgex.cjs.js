@@ -20,23 +20,24 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var widgex_exports = {};
 __export(widgex_exports, {
   Accordion: () => accordion_default,
+  Dialog: () => dialog_default,
   Hooks: () => Hooks,
   Menu: () => menu_default
 });
 module.exports = __toCommonJS(widgex_exports);
 
 // node_modules/@zag-js/anatomy/dist/index.mjs
-var createAnatomy = (name, parts3 = []) => ({
+var createAnatomy = (name, parts4 = []) => ({
   parts: (...values) => {
-    if (isEmpty(parts3)) {
+    if (isEmpty(parts4)) {
       return createAnatomy(name, values);
     }
     throw new Error("createAnatomy().parts(...) should only be called once. Did you mean to use .extendWith(...) ?");
   },
-  extendWith: (...values) => createAnatomy(name, [...parts3, ...values]),
-  rename: (newName) => createAnatomy(newName, parts3),
-  keys: () => parts3,
-  build: () => [...new Set(parts3)].reduce(
+  extendWith: (...values) => createAnatomy(name, [...parts4, ...values]),
+  rename: (newName) => createAnatomy(newName, parts4),
+  keys: () => parts4,
+  build: () => [...new Set(parts4)].reduce(
     (prev, part) => Object.assign(prev, {
       [part]: {
         selector: [
@@ -109,13 +110,13 @@ function queryAll(root, selector) {
   return Array.from(root?.querySelectorAll(selector) ?? []);
 }
 function createScope(methods) {
-  const dom3 = {
+  const dom4 = {
     getRootNode: (ctx) => ctx.getRootNode?.() ?? document,
-    getDoc: (ctx) => getDocument(dom3.getRootNode(ctx)),
-    getWin: (ctx) => dom3.getDoc(ctx).defaultView ?? window,
-    getActiveElement: (ctx) => getActiveElement(dom3.getRootNode(ctx)),
-    isActiveElement: (ctx, elem) => elem === dom3.getActiveElement(ctx),
-    getById: (ctx, id) => dom3.getRootNode(ctx).getElementById(id),
+    getDoc: (ctx) => getDocument(dom4.getRootNode(ctx)),
+    getWin: (ctx) => dom4.getDoc(ctx).defaultView ?? window,
+    getActiveElement: (ctx) => getActiveElement(dom4.getRootNode(ctx)),
+    isActiveElement: (ctx, elem) => elem === dom4.getActiveElement(ctx),
+    getById: (ctx, id) => dom4.getRootNode(ctx).getElementById(id),
     setValue: (elem, value) => {
       if (elem == null || value == null)
         return;
@@ -125,7 +126,7 @@ function createScope(methods) {
       elem.value = value.toString();
     }
   };
-  return { ...dom3, ...methods };
+  return { ...dom4, ...methods };
 }
 var fps = 1e3 / 60;
 
@@ -238,22 +239,22 @@ var isPlainObject = (v) => {
   const Ctor = hasProp(proto, "constructor") && proto.constructor;
   return typeof Ctor == "function" && Ctor instanceof Ctor && fnToString.call(Ctor) == objectCtorString;
 };
-function splitProps(props3, keys) {
+function splitProps(props4, keys) {
   const rest = {};
   const result = {};
   const keySet = new Set(keys);
-  for (const key in props3) {
+  for (const key in props4) {
     if (keySet.has(key)) {
-      result[key] = props3[key];
+      result[key] = props4[key];
     } else {
-      rest[key] = props3[key];
+      rest[key] = props4[key];
     }
   }
   return [result, rest];
 }
 var createSplitProps = (keys) => {
-  return function split(props3) {
-    return splitProps(props3, keys);
+  return function split(props4) {
+    return splitProps(props4, keys);
   };
 };
 function compact(obj) {
@@ -731,23 +732,23 @@ function createProxy(config) {
   });
   return cast(state);
 }
-function determineDelayFn(delay, delaysMap) {
+function determineDelayFn(delay2, delaysMap) {
   return (context, event) => {
-    if (isNumber(delay))
-      return delay;
-    if (isFunction(delay)) {
-      return delay(context, event);
+    if (isNumber(delay2))
+      return delay2;
+    if (isFunction(delay2)) {
+      return delay2(context, event);
     }
-    if (isString(delay)) {
-      const value = Number.parseFloat(delay);
+    if (isString(delay2)) {
+      const value = Number.parseFloat(delay2);
       if (!Number.isNaN(value)) {
         return value;
       }
       if (delaysMap) {
-        const valueOrFn = delaysMap?.[delay];
+        const valueOrFn = delaysMap?.[delay2];
         invariant(
           valueOrFn == null,
-          `[@zag-js/core > determine-delay] Cannot determine delay for \`${delay}\`. It doesn't exist in \`options.delays\``
+          `[@zag-js/core > determine-delay] Cannot determine delay for \`${delay2}\`. It doesn't exist in \`options.delays\``
         );
         return isFunction(valueOrFn) ? valueOrFn(context, event) : valueOrFn;
       }
@@ -965,9 +966,9 @@ var Machine = class {
     __publicField(this, "stopActivity", (key) => {
       if (!this.state.value)
         return;
-      const cleanups2 = this.activityEvents.get(this.state.value);
-      cleanups2?.get(key)?.();
-      cleanups2?.delete(key);
+      const cleanups3 = this.activityEvents.get(this.state.value);
+      cleanups3?.get(key)?.();
+      cleanups3?.delete(key);
     });
     __publicField(this, "addActivityCleanup", (state, key, cleanup) => {
       if (!state)
@@ -1022,7 +1023,7 @@ var Machine = class {
       this.log("NextState:", `[${event.type}]`, this.state.value, "---->", info.target);
       return info;
     });
-    __publicField(this, "getAfterActions", (transition, delay) => {
+    __publicField(this, "getAfterActions", (transition, delay2) => {
       let id;
       const current = this.state.value;
       return {
@@ -1030,7 +1031,7 @@ var Machine = class {
           id = globalThis.setTimeout(() => {
             const next = this.getNextStateInfo(transition, this.state.event);
             this.performStateChangeEffects(current, next, this.state.event);
-          }, delay);
+          }, delay2);
         },
         exit: () => {
           globalThis.clearTimeout(id);
@@ -1059,9 +1060,9 @@ var Machine = class {
         return { entries, exits };
       }
       if (isObject2(stateNode.after)) {
-        for (const delay in stateNode.after) {
-          const transition = stateNode.after[delay];
-          const determineDelay = determineDelayFn(delay, this.delayMap);
+        for (const delay2 in stateNode.after) {
+          const transition = stateNode.after[delay2];
+          const determineDelay = determineDelayFn(delay2, this.delayMap);
           const __delay = determineDelay(this.contextSnapshot, event);
           const actions = this.getAfterActions(transition, __delay);
           entries.push(actions.entry);
@@ -1102,19 +1103,19 @@ var Machine = class {
         const picked = toArray(every).find((transition) => {
           const delayOrFn = transition.delay;
           const determineDelay2 = determineDelayFn(delayOrFn, this.delayMap);
-          const delay2 = determineDelay2(this.contextSnapshot, this.state.event);
+          const delay22 = determineDelay2(this.contextSnapshot, this.state.event);
           const determineGuard = determineGuardFn(transition.guard, this.guardMap);
           const guard = determineGuard(this.contextSnapshot, this.state.event, this.guardMeta);
-          return guard ?? delay2 != null;
+          return guard ?? delay22 != null;
         });
         if (!picked)
           return;
         const determineDelay = determineDelayFn(picked.delay, this.delayMap);
-        const delay = determineDelay(this.contextSnapshot, this.state.event);
+        const delay2 = determineDelay(this.contextSnapshot, this.state.event);
         const activity = () => {
           const id = globalThis.setInterval(() => {
             this.executeActions(picked.actions, this.state.event);
-          }, delay);
+          }, delay2);
           return () => {
             globalThis.clearInterval(id);
           };
@@ -1124,11 +1125,11 @@ var Machine = class {
         for (const interval in every) {
           const actions = every?.[interval];
           const determineDelay = determineDelayFn(interval, this.delayMap);
-          const delay = determineDelay(this.contextSnapshot, this.state.event);
+          const delay2 = determineDelay(this.contextSnapshot, this.state.event);
           const activity = () => {
             const id = globalThis.setInterval(() => {
               this.executeActions(actions, this.state.event);
-            }, delay);
+            }, delay2);
             return () => {
               globalThis.clearInterval(id);
             };
@@ -1344,7 +1345,7 @@ function createNormalizer(fn) {
     }
   });
 }
-var createProps = () => (props3) => Array.from(new Set(props3));
+var createProps = () => (props4) => Array.from(new Set(props4));
 
 // node_modules/@zag-js/accordion/dist/index.mjs
 var anatomy = createAnatomy("accordion").parts("root", "item", "itemTrigger", "itemContent", "itemIndicator");
@@ -1694,8 +1695,8 @@ var toStyleString = (style) => {
     return `${styleString}${formattedKey}:${value};`;
   }, "");
 };
-var normalizeProps = createNormalizer((props3) => {
-  return Object.entries(props3).reduce((acc, [key, value]) => {
+var normalizeProps = createNormalizer((props4) => {
+  return Object.entries(props4).reduce((acc, [key, value]) => {
     if (value === void 0)
       return acc;
     key = propMap[key] || key;
@@ -1797,8 +1798,8 @@ var Accordion = class extends Component {
     return connect(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts3 = ["root"];
-    for (const part of parts3)
+    const parts4 = ["root"];
+    for (const part of parts4)
       renderPart(this.el, part, this.api);
     this.renderItems();
   }
@@ -1861,18 +1862,18 @@ var accordion_default = {
   }
 };
 
-// node_modules/@zag-js/menu/node_modules/@zag-js/anatomy/dist/index.mjs
-var createAnatomy2 = (name, parts3 = []) => ({
+// node_modules/@zag-js/dialog/node_modules/@zag-js/anatomy/dist/index.mjs
+var createAnatomy2 = (name, parts4 = []) => ({
   parts: (...values) => {
-    if (isEmpty2(parts3)) {
+    if (isEmpty2(parts4)) {
       return createAnatomy2(name, values);
     }
     throw new Error("createAnatomy().parts(...) should only be called once. Did you mean to use .extendWith(...) ?");
   },
-  extendWith: (...values) => createAnatomy2(name, [...parts3, ...values]),
-  rename: (newName) => createAnatomy2(newName, parts3),
-  keys: () => parts3,
-  build: () => [...new Set(parts3)].reduce(
+  extendWith: (...values) => createAnatomy2(name, [...parts4, ...values]),
+  rename: (newName) => createAnatomy2(newName, parts4),
+  keys: () => parts4,
+  build: () => [...new Set(parts4)].reduce(
     (prev, part) => Object.assign(prev, {
       [part]: {
         selector: [
@@ -1888,7 +1889,348 @@ var createAnatomy2 = (name, parts3 = []) => ({
 var toKebabCase2 = (value) => value.replace(/([A-Z])([A-Z])/g, "$1-$2").replace(/([a-z])([A-Z])/g, "$1-$2").replace(/[\s_]+/g, "-").toLowerCase();
 var isEmpty2 = (v) => v.length === 0;
 
-// node_modules/@zag-js/menu/node_modules/@zag-js/store/dist/index.mjs
+// node_modules/@zag-js/dialog/node_modules/@zag-js/dom-query/dist/index.mjs
+var ELEMENT_NODE = 1;
+var DOCUMENT_NODE2 = 9;
+var DOCUMENT_FRAGMENT_NODE = 11;
+var isObject4 = (v) => typeof v === "object" && v !== null;
+var isHTMLElement = (el) => isObject4(el) && el.nodeType === ELEMENT_NODE && typeof el.nodeName === "string";
+var isDocument2 = (el) => isObject4(el) && el.nodeType === DOCUMENT_NODE2;
+var isWindow2 = (el) => isObject4(el) && el === el.window;
+var getNodeName = (node) => {
+  if (isHTMLElement(node))
+    return node.localName || "";
+  return "#document";
+};
+function isRootElement(node) {
+  return ["html", "body", "#document"].includes(getNodeName(node));
+}
+var isNode = (el) => isObject4(el) && el.nodeType !== void 0;
+var isShadowRoot = (el) => isNode(el) && el.nodeType === DOCUMENT_FRAGMENT_NODE && "host" in el;
+function contains(parent, child) {
+  if (!parent || !child)
+    return false;
+  if (!isHTMLElement(parent) || !isHTMLElement(child))
+    return false;
+  return parent === child || parent.contains(child);
+}
+function getDocument2(el) {
+  if (isDocument2(el))
+    return el;
+  if (isWindow2(el))
+    return el.document;
+  return el?.ownerDocument ?? document;
+}
+function getDocumentElement(el) {
+  return getDocument2(el).documentElement;
+}
+function getWindow(el) {
+  if (isShadowRoot(el))
+    return getWindow(el.host);
+  if (isDocument2(el))
+    return el.defaultView ?? window;
+  if (isHTMLElement(el))
+    return el.ownerDocument?.defaultView ?? window;
+  return window;
+}
+function getActiveElement2(rootNode) {
+  let activeElement = rootNode.activeElement;
+  while (activeElement?.shadowRoot) {
+    const el = activeElement.shadowRoot.activeElement;
+    if (el === activeElement)
+      break;
+    else
+      activeElement = el;
+  }
+  return activeElement;
+}
+var isDom2 = () => typeof document !== "undefined";
+function getPlatform2() {
+  const agent = navigator.userAgentData;
+  return agent?.platform ?? navigator.platform;
+}
+var pt2 = (v) => isDom2() && v.test(getPlatform2());
+var isMac = () => pt2(/^Mac/);
+function getComposedPath(event) {
+  return event.composedPath?.() ?? event.nativeEvent?.composedPath?.();
+}
+function getEventTarget(event) {
+  const composedPath = getComposedPath(event);
+  return composedPath?.[0] ?? event.target;
+}
+function getParentNode(node) {
+  if (getNodeName(node) === "html") {
+    return node;
+  }
+  const result = (
+    // Step into the shadow DOM of the parent of a slotted node.
+    node.assignedSlot || // DOM Element detected.
+    node.parentNode || // ShadowRoot detected.
+    isShadowRoot(node) && node.host || // Fallback.
+    getDocumentElement(node)
+  );
+  return isShadowRoot(result) ? result.host : result;
+}
+var isHTMLElement2 = (element) => typeof element === "object" && element !== null && element.nodeType === 1;
+function isVisible(el) {
+  if (!isHTMLElement2(el))
+    return false;
+  return el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
+}
+var focusableSelector = "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], button:not([disabled]), [tabindex], iframe, object, embed, area[href], audio[controls], video[controls], [contenteditable]:not([contenteditable='false']), details > summary:first-of-type";
+function isFocusable(element) {
+  if (!element || element.closest("[inert]"))
+    return false;
+  return element.matches(focusableSelector) && isVisible(element);
+}
+var OVERFLOW_RE = /auto|scroll|overlay|hidden|clip/;
+function isOverflowElement(el) {
+  const win = getWindow(el);
+  const { overflow, overflowX, overflowY, display } = win.getComputedStyle(el);
+  return OVERFLOW_RE.test(overflow + overflowY + overflowX) && !["inline", "contents"].includes(display);
+}
+function raf(fn) {
+  const id = globalThis.requestAnimationFrame(fn);
+  return () => {
+    globalThis.cancelAnimationFrame(id);
+  };
+}
+function getNearestOverflowAncestor(el) {
+  const parentNode = getParentNode(el);
+  if (isRootElement(parentNode)) {
+    return getDocument2(parentNode).body;
+  }
+  if (isHTMLElement(parentNode) && isOverflowElement(parentNode)) {
+    return parentNode;
+  }
+  return getNearestOverflowAncestor(parentNode);
+}
+function createScope2(methods) {
+  const dom4 = {
+    getRootNode: (ctx) => ctx.getRootNode?.() ?? document,
+    getDoc: (ctx) => getDocument2(dom4.getRootNode(ctx)),
+    getWin: (ctx) => dom4.getDoc(ctx).defaultView ?? window,
+    getActiveElement: (ctx) => getActiveElement2(dom4.getRootNode(ctx)),
+    isActiveElement: (ctx, elem) => elem === dom4.getActiveElement(ctx),
+    getById: (ctx, id) => dom4.getRootNode(ctx).getElementById(id),
+    setValue: (elem, value) => {
+      if (elem == null || value == null)
+        return;
+      const valueAsString = value.toString();
+      if (elem.value === valueAsString)
+        return;
+      elem.value = value.toString();
+    }
+  };
+  return { ...dom4, ...methods };
+}
+var cleanups = /* @__PURE__ */ new WeakMap();
+function set3(element, key, setup) {
+  if (!cleanups.has(element)) {
+    cleanups.set(element, /* @__PURE__ */ new Map());
+  }
+  const elementCleanups = cleanups.get(element);
+  const prevCleanup = elementCleanups.get(key);
+  if (!prevCleanup) {
+    elementCleanups.set(key, setup());
+    return () => {
+      elementCleanups.get(key)?.();
+      elementCleanups.delete(key);
+    };
+  }
+  const cleanup = setup();
+  const nextCleanup = () => {
+    cleanup();
+    prevCleanup();
+    elementCleanups.delete(key);
+  };
+  elementCleanups.set(key, nextCleanup);
+  return () => {
+    const isCurrent = elementCleanups.get(key) === nextCleanup;
+    if (!isCurrent)
+      return;
+    cleanup();
+    elementCleanups.set(key, prevCleanup);
+  };
+}
+function setStyle(element, style) {
+  if (!element)
+    return () => {
+    };
+  const setup = () => {
+    const prevStyle = element.style.cssText;
+    Object.assign(element.style, style);
+    return () => {
+      element.style.cssText = prevStyle;
+    };
+  };
+  return set3(element, "style", setup);
+}
+var fps2 = 1e3 / 60;
+function waitForElement(query2, cb) {
+  const el = query2();
+  if (isHTMLElement(el) && el.isConnected) {
+    cb(el);
+    return () => void 0;
+  } else {
+    const timerId = setInterval(() => {
+      const el2 = query2();
+      if (isHTMLElement(el2) && el2.isConnected) {
+        cb(el2);
+        clearInterval(timerId);
+      }
+    }, fps2);
+    return () => clearInterval(timerId);
+  }
+}
+function waitForElements(queries, cb) {
+  const cleanups22 = [];
+  queries?.forEach((query2) => {
+    const clean = waitForElement(query2, cb);
+    cleanups22.push(clean);
+  });
+  return () => {
+    cleanups22.forEach((fn) => fn());
+  };
+}
+
+// node_modules/@zag-js/aria-hidden/dist/index.mjs
+var counterMap = /* @__PURE__ */ new WeakMap();
+var uncontrolledNodes = /* @__PURE__ */ new WeakMap();
+var markerMap = {};
+var lockCount = 0;
+var unwrapHost = (node) => node && (node.host || unwrapHost(node.parentNode));
+var correctTargets = (parent, targets) => targets.map((target) => {
+  if (parent.contains(target))
+    return target;
+  const correctedTarget = unwrapHost(target);
+  if (correctedTarget && parent.contains(correctedTarget)) {
+    return correctedTarget;
+  }
+  console.error("[zag-js > ariaHidden] target", target, "in not contained inside", parent, ". Doing nothing");
+  return null;
+}).filter((x) => Boolean(x));
+var isIgnoredNode = (node) => {
+  if (node.localName === "next-route-announcer")
+    return true;
+  if (node.localName === "script")
+    return true;
+  if (node.hasAttribute("aria-live"))
+    return true;
+  return node.matches("[data-live-announcer]");
+};
+var walkTreeOutside = (originalTarget, props4) => {
+  const { parentNode, markerName, controlAttribute } = props4;
+  const targets = correctTargets(parentNode, Array.isArray(originalTarget) ? originalTarget : [originalTarget]);
+  markerMap[markerName] || (markerMap[markerName] = /* @__PURE__ */ new WeakMap());
+  const markerCounter = markerMap[markerName];
+  const hiddenNodes = [];
+  const elementsToKeep = /* @__PURE__ */ new Set();
+  const elementsToStop = new Set(targets);
+  const keep = (el) => {
+    if (!el || elementsToKeep.has(el))
+      return;
+    elementsToKeep.add(el);
+    keep(el.parentNode);
+  };
+  targets.forEach(keep);
+  const deep = (parent) => {
+    if (!parent || elementsToStop.has(parent)) {
+      return;
+    }
+    Array.prototype.forEach.call(parent.children, (node) => {
+      if (elementsToKeep.has(node)) {
+        deep(node);
+      } else {
+        try {
+          if (isIgnoredNode(node))
+            return;
+          const attr = node.getAttribute(controlAttribute);
+          const alreadyHidden = attr !== null && attr !== "false";
+          const counterValue = (counterMap.get(node) || 0) + 1;
+          const markerValue = (markerCounter.get(node) || 0) + 1;
+          counterMap.set(node, counterValue);
+          markerCounter.set(node, markerValue);
+          hiddenNodes.push(node);
+          if (counterValue === 1 && alreadyHidden) {
+            uncontrolledNodes.set(node, true);
+          }
+          if (markerValue === 1) {
+            node.setAttribute(markerName, "");
+          }
+          if (!alreadyHidden) {
+            node.setAttribute(controlAttribute, "");
+          }
+        } catch (e) {
+          console.error("[zag-js > ariaHidden] cannot operate on ", node, e);
+        }
+      }
+    });
+  };
+  deep(parentNode);
+  elementsToKeep.clear();
+  lockCount++;
+  return () => {
+    hiddenNodes.forEach((node) => {
+      const counterValue = counterMap.get(node) - 1;
+      const markerValue = markerCounter.get(node) - 1;
+      counterMap.set(node, counterValue);
+      markerCounter.set(node, markerValue);
+      if (!counterValue) {
+        if (!uncontrolledNodes.has(node)) {
+          node.removeAttribute(controlAttribute);
+        }
+        uncontrolledNodes.delete(node);
+      }
+      if (!markerValue) {
+        node.removeAttribute(markerName);
+      }
+    });
+    lockCount--;
+    if (!lockCount) {
+      counterMap = /* @__PURE__ */ new WeakMap();
+      counterMap = /* @__PURE__ */ new WeakMap();
+      uncontrolledNodes = /* @__PURE__ */ new WeakMap();
+      markerMap = {};
+    }
+  };
+};
+var getParentNode2 = (originalTarget) => {
+  const target = Array.isArray(originalTarget) ? originalTarget[0] : originalTarget;
+  return target.ownerDocument.body;
+};
+var hideOthers = (originalTarget, parentNode = getParentNode2(originalTarget), markerName = "data-aria-hidden") => {
+  if (!parentNode)
+    return;
+  return walkTreeOutside(originalTarget, {
+    parentNode,
+    markerName,
+    controlAttribute: "aria-hidden"
+  });
+};
+var raf2 = (fn) => {
+  const frameId = requestAnimationFrame(() => fn());
+  return () => cancelAnimationFrame(frameId);
+};
+function ariaHidden(targetsOrFn, options = {}) {
+  const { defer = true } = options;
+  const func = defer ? raf2 : (v) => v();
+  const cleanups3 = [];
+  cleanups3.push(
+    func(() => {
+      const targets = typeof targetsOrFn === "function" ? targetsOrFn() : targetsOrFn;
+      const elements = targets.filter(Boolean);
+      if (elements.length === 0)
+        return;
+      cleanups3.push(hideOthers(elements));
+    })
+  );
+  return () => {
+    cleanups3.forEach((fn) => fn?.());
+  };
+}
+
+// node_modules/@zag-js/dialog/node_modules/@zag-js/store/dist/index.mjs
 function glob2() {
   if (typeof globalThis !== "undefined")
     return globalThis;
@@ -1911,10 +2253,10 @@ var isReactElement2 = (x) => typeof x === "object" && x !== null && "$$typeof" i
 var isVueElement2 = (x) => typeof x === "object" && x !== null && "__v_isVNode" in x;
 var isDOMElement2 = (x) => typeof x === "object" && x !== null && "nodeType" in x && typeof x.nodeName === "string";
 var isElement2 = (x) => isReactElement2(x) || isVueElement2(x) || isDOMElement2(x);
-var isObject4 = (x) => x !== null && typeof x === "object";
-var canProxy2 = (x) => isObject4(x) && !refSet2.has(x) && (Array.isArray(x) || !(Symbol.iterator in x)) && !isElement2(x) && !(x instanceof WeakMap) && !(x instanceof WeakSet) && !(x instanceof Error) && !(x instanceof Number) && !(x instanceof Date) && !(x instanceof String) && !(x instanceof RegExp) && !(x instanceof ArrayBuffer) && !(x instanceof Promise);
+var isObject5 = (x) => x !== null && typeof x === "object";
+var canProxy2 = (x) => isObject5(x) && !refSet2.has(x) && (Array.isArray(x) || !(Symbol.iterator in x)) && !isElement2(x) && !(x instanceof WeakMap) && !(x instanceof WeakSet) && !(x instanceof Error) && !(x instanceof Number) && !(x instanceof Date) && !(x instanceof String) && !(x instanceof RegExp) && !(x instanceof ArrayBuffer) && !(x instanceof Promise);
 var isDev3 = () => true;
-function set3(obj, key, val) {
+function set4(obj, key, val) {
   if (typeof val.value === "object" && !canProxy2(val.value))
     val.value = clone2(val.value);
   if (!val.enumerable || val.get || val.set || !val.configurable || !val.writable || key === "__proto__") {
@@ -1955,12 +2297,12 @@ function clone2(x) {
   }
   if (tmp) {
     for (list = Object.getOwnPropertySymbols(x); i < list.length; i++) {
-      set3(tmp, list[i], Object.getOwnPropertyDescriptor(x, list[i]));
+      set4(tmp, list[i], Object.getOwnPropertyDescriptor(x, list[i]));
     }
     for (i = 0, list = Object.getOwnPropertyNames(x); i < list.length; i++) {
       if (Object.hasOwnProperty.call(tmp, k = list[i]) && tmp[k] === x[k])
         continue;
-      set3(tmp, k, Object.getOwnPropertyDescriptor(x, k));
+      set4(tmp, k, Object.getOwnPropertyDescriptor(x, k));
     }
   }
   return tmp || x;
@@ -1987,7 +2329,7 @@ var buildProxyFunction2 = (objectIs = Object.is, newProxy = (target, handler) =>
   });
   return Object.freeze(snap);
 }, proxyCache = /* @__PURE__ */ new WeakMap(), versionHolder = [1, 1], proxyFunction22 = (initialObject) => {
-  if (!isObject4(initialObject)) {
+  if (!isObject5(initialObject)) {
     throw new Error("object required");
   }
   const found = proxyCache.get(initialObject);
@@ -2081,7 +2423,7 @@ var buildProxyFunction2 = (objectIs = Object.is, newProxy = (target, handler) =>
         return true;
       }
       removePropListener(prop);
-      if (isObject4(value)) {
+      if (isObject5(value)) {
         value = getUntracked(value) || value;
       }
       let nextValue = value;
@@ -2195,54 +2537,12 @@ function proxyWithComputed2(initialObject, computedFns) {
   return proxyObject;
 }
 
-// node_modules/@zag-js/menu/node_modules/@zag-js/utils/dist/index.mjs
-var first2 = (v) => v[0];
-var last2 = (v) => v[v.length - 1];
+// node_modules/@zag-js/dialog/node_modules/@zag-js/utils/dist/index.mjs
 function clear2(v) {
   while (v.length > 0)
     v.pop();
   return v;
 }
-var isArrayLike2 = (value) => value?.constructor.name === "Array";
-var isArrayEqual2 = (a, b) => {
-  if (a.length !== b.length)
-    return false;
-  for (let i = 0; i < a.length; i++) {
-    if (!isEqual2(a[i], b[i]))
-      return false;
-  }
-  return true;
-};
-var isEqual2 = (a, b) => {
-  if (Object.is(a, b))
-    return true;
-  if (a == null && b != null || a != null && b == null)
-    return false;
-  if (typeof a?.isEqual === "function" && typeof b?.isEqual === "function") {
-    return a.isEqual(b);
-  }
-  if (typeof a === "function" && typeof b === "function") {
-    return a.toString() === b.toString();
-  }
-  if (isArrayLike2(a) && isArrayLike2(b)) {
-    return isArrayEqual2(Array.from(a), Array.from(b));
-  }
-  if (!(typeof a === "object") || !(typeof b === "object"))
-    return false;
-  const keys = Object.keys(b ?? /* @__PURE__ */ Object.create(null));
-  const length = keys.length;
-  for (let i = 0; i < length; i++) {
-    const hasKey = Reflect.has(a, keys[i]);
-    if (!hasKey)
-      return false;
-  }
-  for (let i = 0; i < length; i++) {
-    const key = keys[i];
-    if (!isEqual2(a[key], b[key]))
-      return false;
-  }
-  return true;
-};
 var runIfFn2 = (v, ...a) => {
   const res = typeof v === "function" ? v(...a) : v;
   return res ?? void 0;
@@ -2265,7 +2565,7 @@ var uuid2 = /* @__PURE__ */ (() => {
 var isDev4 = () => true;
 var isArray2 = (v) => Array.isArray(v);
 var isObjectLike2 = (v) => v != null && typeof v === "object";
-var isObject5 = (v) => isObjectLike2(v) && !isArray2(v);
+var isObject6 = (v) => isObjectLike2(v) && !isArray2(v);
 var isNumber2 = (v) => typeof v === "number" && !Number.isNaN(v);
 var isString2 = (v) => typeof v === "string";
 var isFunction2 = (v) => typeof v === "function";
@@ -2282,22 +2582,22 @@ var isPlainObject3 = (v) => {
   const Ctor = hasProp2(proto, "constructor") && proto.constructor;
   return typeof Ctor == "function" && Ctor instanceof Ctor && fnToString2.call(Ctor) == objectCtorString2;
 };
-function splitProps3(props3, keys) {
+function splitProps3(props4, keys) {
   const rest = {};
   const result = {};
   const keySet = new Set(keys);
-  for (const key in props3) {
+  for (const key in props4) {
     if (keySet.has(key)) {
-      result[key] = props3[key];
+      result[key] = props4[key];
     } else {
-      rest[key] = props3[key];
+      rest[key] = props4[key];
     }
   }
   return [result, rest];
 }
 var createSplitProps2 = (keys) => {
-  return function split(props3) {
-    return splitProps3(props3, keys);
+  return function split(props4) {
+    return splitProps3(props4, keys);
   };
 };
 function compact2(obj) {
@@ -2332,7 +2632,7 @@ function invariant2(...a) {
   }
 }
 
-// node_modules/@zag-js/menu/node_modules/@zag-js/core/dist/index.mjs
+// node_modules/@zag-js/dialog/node_modules/@zag-js/core/dist/index.mjs
 var __defProp3 = Object.defineProperty;
 var __defNormalProp2 = (obj, key, value) => key in obj ? __defProp3(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField2 = (obj, key, value) => __defNormalProp2(obj, typeof key !== "symbol" ? key + "" : key, value);
@@ -2362,41 +2662,9 @@ function toArray2(value) {
   return isArray2(value) ? value.slice() : [value];
 }
 function isGuardHelper2(value) {
-  return isObject5(value) && value.predicate != null;
+  return isObject6(value) && value.predicate != null;
 }
 var Truthy2 = () => true;
-function exec2(guardMap, ctx, event, meta) {
-  return (guard) => {
-    if (isString2(guard)) {
-      return !!guardMap[guard]?.(ctx, event, meta);
-    }
-    if (isFunction2(guard)) {
-      return guard(ctx, event, meta);
-    }
-    return guard.predicate(guardMap)(ctx, event, meta);
-  };
-}
-function or2(...conditions) {
-  return {
-    predicate: (guardMap) => (ctx, event, meta) => conditions.map(exec2(guardMap, ctx, event, meta)).some(Boolean)
-  };
-}
-function and3(...conditions) {
-  return {
-    predicate: (guardMap) => (ctx, event, meta) => conditions.map(exec2(guardMap, ctx, event, meta)).every(Boolean)
-  };
-}
-function not3(condition) {
-  return {
-    predicate: (guardMap) => (ctx, event, meta) => {
-      return !exec2(guardMap, ctx, event, meta)(condition);
-    }
-  };
-}
-function stateIn2(...values) {
-  return (_ctx, _evt, meta) => meta.state.matches(...values);
-}
-var guards2 = { or: or2, and: and3, not: not3, stateIn: stateIn2 };
 function determineGuardFn2(guard, guardMap) {
   guard = guard ?? Truthy2;
   return (context, event, meta) => {
@@ -2452,23 +2720,23 @@ function createProxy2(config) {
   });
   return cast2(state);
 }
-function determineDelayFn2(delay, delaysMap) {
+function determineDelayFn2(delay2, delaysMap) {
   return (context, event) => {
-    if (isNumber2(delay))
-      return delay;
-    if (isFunction2(delay)) {
-      return delay(context, event);
+    if (isNumber2(delay2))
+      return delay2;
+    if (isFunction2(delay2)) {
+      return delay2(context, event);
     }
-    if (isString2(delay)) {
-      const value = Number.parseFloat(delay);
+    if (isString2(delay2)) {
+      const value = Number.parseFloat(delay2);
       if (!Number.isNaN(value)) {
         return value;
       }
       if (delaysMap) {
-        const valueOrFn = delaysMap?.[delay];
+        const valueOrFn = delaysMap?.[delay2];
         invariant2(
           valueOrFn == null,
-          `[@zag-js/core > determine-delay] Cannot determine delay for \`${delay}\`. It doesn't exist in \`options.delays\``
+          `[@zag-js/core > determine-delay] Cannot determine delay for \`${delay2}\`. It doesn't exist in \`options.delays\``
         );
         return isFunction2(valueOrFn) ? valueOrFn(context, event) : valueOrFn;
       }
@@ -2564,8 +2832,8 @@ var Machine2 = class {
         "machine.init"
         /* Init */
       );
-      const target = isObject5(init) ? init.value : init;
-      const context = isObject5(init) ? init.context : void 0;
+      const target = isObject6(init) ? init.value : init;
+      const context = isObject6(init) ? init.context : void 0;
       if (context) {
         this.setContext(context);
       }
@@ -2686,9 +2954,9 @@ var Machine2 = class {
     __publicField2(this, "stopActivity", (key) => {
       if (!this.state.value)
         return;
-      const cleanups2 = this.activityEvents.get(this.state.value);
-      cleanups2?.get(key)?.();
-      cleanups2?.delete(key);
+      const cleanups3 = this.activityEvents.get(this.state.value);
+      cleanups3?.get(key)?.();
+      cleanups3?.delete(key);
     });
     __publicField2(this, "addActivityCleanup", (state, key, cleanup) => {
       if (!state)
@@ -2743,7 +3011,7 @@ var Machine2 = class {
       this.log("NextState:", `[${event.type}]`, this.state.value, "---->", info.target);
       return info;
     });
-    __publicField2(this, "getAfterActions", (transition, delay) => {
+    __publicField2(this, "getAfterActions", (transition, delay2) => {
       let id;
       const current = this.state.value;
       return {
@@ -2751,7 +3019,7 @@ var Machine2 = class {
           id = globalThis.setTimeout(() => {
             const next = this.getNextStateInfo(transition, this.state.event);
             this.performStateChangeEffects(current, next, this.state.event);
-          }, delay);
+          }, delay2);
         },
         exit: () => {
           globalThis.clearTimeout(id);
@@ -2779,10 +3047,10 @@ var Machine2 = class {
         exits.push(actions.exit);
         return { entries, exits };
       }
-      if (isObject5(stateNode.after)) {
-        for (const delay in stateNode.after) {
-          const transition = stateNode.after[delay];
-          const determineDelay = determineDelayFn2(delay, this.delayMap);
+      if (isObject6(stateNode.after)) {
+        for (const delay2 in stateNode.after) {
+          const transition = stateNode.after[delay2];
+          const determineDelay = determineDelayFn2(delay2, this.delayMap);
           const __delay = determineDelay(this.contextSnapshot, event);
           const actions = this.getAfterActions(transition, __delay);
           entries.push(actions.entry);
@@ -2823,19 +3091,19 @@ var Machine2 = class {
         const picked = toArray2(every).find((transition) => {
           const delayOrFn = transition.delay;
           const determineDelay2 = determineDelayFn2(delayOrFn, this.delayMap);
-          const delay2 = determineDelay2(this.contextSnapshot, this.state.event);
+          const delay22 = determineDelay2(this.contextSnapshot, this.state.event);
           const determineGuard = determineGuardFn2(transition.guard, this.guardMap);
           const guard = determineGuard(this.contextSnapshot, this.state.event, this.guardMeta);
-          return guard ?? delay2 != null;
+          return guard ?? delay22 != null;
         });
         if (!picked)
           return;
         const determineDelay = determineDelayFn2(picked.delay, this.delayMap);
-        const delay = determineDelay(this.contextSnapshot, this.state.event);
+        const delay2 = determineDelay(this.contextSnapshot, this.state.event);
         const activity = () => {
           const id = globalThis.setInterval(() => {
             this.executeActions(picked.actions, this.state.event);
-          }, delay);
+          }, delay2);
           return () => {
             globalThis.clearInterval(id);
           };
@@ -2845,11 +3113,11 @@ var Machine2 = class {
         for (const interval in every) {
           const actions = every?.[interval];
           const determineDelay = determineDelayFn2(interval, this.delayMap);
-          const delay = determineDelay(this.contextSnapshot, this.state.event);
+          const delay2 = determineDelay(this.contextSnapshot, this.state.event);
           const activity = () => {
             const id = globalThis.setInterval(() => {
               this.executeActions(actions, this.state.event);
-            }, delay);
+            }, delay2);
             return () => {
               globalThis.clearInterval(id);
             };
@@ -3056,6 +3324,2732 @@ var Machine2 = class {
   }
 };
 var createMachine2 = (config, options) => new Machine2(config, options);
+
+// node_modules/@zag-js/dialog/node_modules/@zag-js/dom-event/dist/index.mjs
+var addDomEvent = (target, eventName, handler, options) => {
+  const node = typeof target === "function" ? target() : target;
+  node?.addEventListener(eventName, handler, options);
+  return () => {
+    node?.removeEventListener(eventName, handler, options);
+  };
+};
+var isContextMenuEvent = (e) => {
+  return e.button === 2 || isMac() && e.ctrlKey && e.button === 0;
+};
+function fireCustomEvent(el, type, init) {
+  if (!el)
+    return;
+  const win = el.ownerDocument.defaultView || window;
+  const event = new win.CustomEvent(type, init);
+  return el.dispatchEvent(event);
+}
+
+// node_modules/@zag-js/dialog/node_modules/@zag-js/interact-outside/dist/index.mjs
+function getWindowFrames(win) {
+  const frames = {
+    each(cb) {
+      for (let i = 0; i < win.frames?.length; i += 1) {
+        const frame = win.frames[i];
+        if (frame)
+          cb(frame);
+      }
+    },
+    addEventListener(event, listener, options) {
+      frames.each((frame) => {
+        try {
+          frame.document.addEventListener(event, listener, options);
+        } catch {
+        }
+      });
+      return () => {
+        try {
+          frames.removeEventListener(event, listener, options);
+        } catch {
+        }
+      };
+    },
+    removeEventListener(event, listener, options) {
+      frames.each((frame) => {
+        try {
+          frame.document.removeEventListener(event, listener, options);
+        } catch {
+        }
+      });
+    }
+  };
+  return frames;
+}
+function getParentWindow(win) {
+  const parent = win.frameElement != null ? win.parent : null;
+  return {
+    addEventListener: (event, listener, options) => {
+      try {
+        parent?.addEventListener(event, listener, options);
+      } catch {
+      }
+      return () => {
+        try {
+          parent?.removeEventListener(event, listener, options);
+        } catch {
+        }
+      };
+    },
+    removeEventListener: (event, listener, options) => {
+      try {
+        parent?.removeEventListener(event, listener, options);
+      } catch {
+      }
+    }
+  };
+}
+var POINTER_OUTSIDE_EVENT = "pointerdown.outside";
+var FOCUS_OUTSIDE_EVENT = "focus.outside";
+function isComposedPathFocusable(composedPath) {
+  for (const node of composedPath) {
+    if (isHTMLElement(node) && isFocusable(node))
+      return true;
+  }
+  return false;
+}
+var isPointerEvent = (event) => "clientY" in event;
+function isEventPointWithin(node, event) {
+  if (!isPointerEvent(event) || !node)
+    return false;
+  const rect = node.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0)
+    return false;
+  return rect.top <= event.clientY && event.clientY <= rect.top + rect.height && rect.left <= event.clientX && event.clientX <= rect.left + rect.width;
+}
+function isPointInRect(rect, point) {
+  return rect.y <= point.y && point.y <= rect.y + rect.height && rect.x <= point.x && point.x <= rect.x + rect.width;
+}
+function isEventWithinScrollbar(event, ancestor) {
+  if (!ancestor || !isPointerEvent(event))
+    return false;
+  const isScrollableY = ancestor.scrollHeight > ancestor.clientHeight;
+  const onScrollbarY = isScrollableY && event.clientX > ancestor.offsetLeft + ancestor.clientWidth;
+  const isScrollableX = ancestor.scrollWidth > ancestor.clientWidth;
+  const onScrollbarX = isScrollableX && event.clientY > ancestor.offsetTop + ancestor.clientHeight;
+  const rect = {
+    x: ancestor.offsetLeft,
+    y: ancestor.offsetTop,
+    width: ancestor.clientWidth + (isScrollableY ? 16 : 0),
+    height: ancestor.clientHeight + (isScrollableX ? 16 : 0)
+  };
+  const point = {
+    x: event.clientX,
+    y: event.clientY
+  };
+  if (!isPointInRect(rect, point))
+    return false;
+  return onScrollbarY || onScrollbarX;
+}
+function trackInteractOutsideImpl(node, options) {
+  const { exclude, onFocusOutside, onPointerDownOutside, onInteractOutside, defer } = options;
+  if (!node)
+    return;
+  const doc = getDocument2(node);
+  const win = getWindow(node);
+  const frames = getWindowFrames(win);
+  const parentWin = getParentWindow(win);
+  function isEventOutside(event) {
+    const target = getEventTarget(event);
+    if (!isHTMLElement(target))
+      return false;
+    if (!target.isConnected)
+      return false;
+    if (contains(node, target))
+      return false;
+    if (isEventPointWithin(node, event))
+      return false;
+    const triggerEl = doc.querySelector(`[aria-controls="${node.id}"]`);
+    if (triggerEl) {
+      const triggerAncestor = getNearestOverflowAncestor(triggerEl);
+      if (isEventWithinScrollbar(event, triggerAncestor))
+        return false;
+    }
+    const nodeAncestor = getNearestOverflowAncestor(node);
+    if (isEventWithinScrollbar(event, nodeAncestor))
+      return false;
+    return !exclude?.(target);
+  }
+  const pointerdownCleanups = /* @__PURE__ */ new Set();
+  function onPointerDown(event) {
+    function handler() {
+      const func = defer ? raf : (v) => v();
+      const composedPath = event.composedPath?.() ?? [event.target];
+      func(() => {
+        if (!node || !isEventOutside(event))
+          return;
+        if (onPointerDownOutside || onInteractOutside) {
+          const handler2 = callAll2(onPointerDownOutside, onInteractOutside);
+          node.addEventListener(POINTER_OUTSIDE_EVENT, handler2, { once: true });
+        }
+        fireCustomEvent(node, POINTER_OUTSIDE_EVENT, {
+          bubbles: false,
+          cancelable: true,
+          detail: {
+            originalEvent: event,
+            contextmenu: isContextMenuEvent(event),
+            focusable: isComposedPathFocusable(composedPath)
+          }
+        });
+      });
+    }
+    if (event.pointerType === "touch") {
+      pointerdownCleanups.forEach((fn) => fn());
+      pointerdownCleanups.add(addDomEvent(doc, "click", handler, { once: true }));
+      pointerdownCleanups.add(parentWin.addEventListener("click", handler, { once: true }));
+      pointerdownCleanups.add(frames.addEventListener("click", handler, { once: true }));
+    } else {
+      handler();
+    }
+  }
+  const cleanups3 = /* @__PURE__ */ new Set();
+  const timer = setTimeout(() => {
+    cleanups3.add(addDomEvent(doc, "pointerdown", onPointerDown, true));
+    cleanups3.add(parentWin.addEventListener("pointerdown", onPointerDown, true));
+    cleanups3.add(frames.addEventListener("pointerdown", onPointerDown, true));
+  }, 0);
+  function onFocusin(event) {
+    const func = defer ? raf : (v) => v();
+    func(() => {
+      if (!node || !isEventOutside(event))
+        return;
+      if (onFocusOutside || onInteractOutside) {
+        const handler = callAll2(onFocusOutside, onInteractOutside);
+        node.addEventListener(FOCUS_OUTSIDE_EVENT, handler, { once: true });
+      }
+      fireCustomEvent(node, FOCUS_OUTSIDE_EVENT, {
+        bubbles: false,
+        cancelable: true,
+        detail: {
+          originalEvent: event,
+          contextmenu: false,
+          focusable: isFocusable(getEventTarget(event))
+        }
+      });
+    });
+  }
+  cleanups3.add(addDomEvent(doc, "focusin", onFocusin, true));
+  cleanups3.add(parentWin.addEventListener("focusin", onFocusin, true));
+  cleanups3.add(frames.addEventListener("focusin", onFocusin, true));
+  return () => {
+    clearTimeout(timer);
+    pointerdownCleanups.forEach((fn) => fn());
+    cleanups3.forEach((fn) => fn());
+  };
+}
+function trackInteractOutside(nodeOrFn, options) {
+  const { defer } = options;
+  const func = defer ? raf : (v) => v();
+  const cleanups3 = [];
+  cleanups3.push(
+    func(() => {
+      const node = typeof nodeOrFn === "function" ? nodeOrFn() : nodeOrFn;
+      cleanups3.push(trackInteractOutsideImpl(node, options));
+    })
+  );
+  return () => {
+    cleanups3.forEach((fn) => fn?.());
+  };
+}
+
+// node_modules/@zag-js/dialog/node_modules/@zag-js/dismissable/dist/index.mjs
+function trackEscapeKeydown(node, fn) {
+  const handleKeyDown = (event) => {
+    if (event.key !== "Escape")
+      return;
+    if (event.isComposing)
+      return;
+    fn?.(event);
+  };
+  return addDomEvent(getDocument2(node), "keydown", handleKeyDown, { capture: true });
+}
+var layerStack = {
+  layers: [],
+  branches: [],
+  count() {
+    return this.layers.length;
+  },
+  pointerBlockingLayers() {
+    return this.layers.filter((layer) => layer.pointerBlocking);
+  },
+  topMostPointerBlockingLayer() {
+    return [...this.pointerBlockingLayers()].slice(-1)[0];
+  },
+  hasPointerBlockingLayer() {
+    return this.pointerBlockingLayers().length > 0;
+  },
+  isBelowPointerBlockingLayer(node) {
+    const index = this.indexOf(node);
+    const highestBlockingIndex = this.topMostPointerBlockingLayer() ? this.indexOf(this.topMostPointerBlockingLayer()?.node) : -1;
+    return index < highestBlockingIndex;
+  },
+  isTopMost(node) {
+    const layer = this.layers[this.count() - 1];
+    return layer?.node === node;
+  },
+  getNestedLayers(node) {
+    return Array.from(this.layers).slice(this.indexOf(node) + 1);
+  },
+  isInNestedLayer(node, target) {
+    return this.getNestedLayers(node).some((layer) => contains(layer.node, target));
+  },
+  isInBranch(target) {
+    return Array.from(this.branches).some((branch) => contains(branch, target));
+  },
+  add(layer) {
+    const num = this.layers.push(layer);
+    layer.node.style.setProperty("--layer-index", `${num}`);
+  },
+  addBranch(node) {
+    this.branches.push(node);
+  },
+  remove(node) {
+    const index = this.indexOf(node);
+    if (index < 0)
+      return;
+    if (index < this.count() - 1) {
+      const _layers = this.getNestedLayers(node);
+      _layers.forEach((layer) => layer.dismiss());
+    }
+    this.layers.splice(index, 1);
+    node.style.removeProperty("--layer-index");
+  },
+  removeBranch(node) {
+    const index = this.branches.indexOf(node);
+    if (index >= 0)
+      this.branches.splice(index, 1);
+  },
+  indexOf(node) {
+    return this.layers.findIndex((layer) => layer.node === node);
+  },
+  dismiss(node) {
+    this.layers[this.indexOf(node)]?.dismiss();
+  },
+  clear() {
+    this.remove(this.layers[0].node);
+  }
+};
+var originalBodyPointerEvents;
+function assignPointerEventToLayers() {
+  layerStack.layers.forEach(({ node }) => {
+    node.style.pointerEvents = layerStack.isBelowPointerBlockingLayer(node) ? "none" : "auto";
+  });
+}
+function clearPointerEvent(node) {
+  node.style.pointerEvents = "";
+}
+function disablePointerEventsOutside(node, persistentElements) {
+  const doc = getDocument2(node);
+  const cleanups3 = [];
+  if (layerStack.hasPointerBlockingLayer() && !doc.body.hasAttribute("data-inert")) {
+    originalBodyPointerEvents = document.body.style.pointerEvents;
+    queueMicrotask(() => {
+      doc.body.style.pointerEvents = "none";
+      doc.body.setAttribute("data-inert", "");
+    });
+  }
+  if (persistentElements) {
+    const persistedCleanup = waitForElements(persistentElements, (el) => {
+      cleanups3.push(setStyle(el, { pointerEvents: "auto" }));
+    });
+    cleanups3.push(persistedCleanup);
+  }
+  return () => {
+    if (layerStack.hasPointerBlockingLayer())
+      return;
+    queueMicrotask(() => {
+      doc.body.style.pointerEvents = originalBodyPointerEvents;
+      doc.body.removeAttribute("data-inert");
+      if (doc.body.style.length === 0)
+        doc.body.removeAttribute("style");
+    });
+    cleanups3.forEach((fn) => fn());
+  };
+}
+function trackDismissableElementImpl(node, options) {
+  if (!node) {
+    warn2("[@zag-js/dismissable] node is `null` or `undefined`");
+    return;
+  }
+  const { onDismiss, pointerBlocking, exclude: excludeContainers, debug } = options;
+  const layer = { dismiss: onDismiss, node, pointerBlocking };
+  layerStack.add(layer);
+  assignPointerEventToLayers();
+  function onPointerDownOutside(event) {
+    const target = getEventTarget(event.detail.originalEvent);
+    if (layerStack.isBelowPointerBlockingLayer(node) || layerStack.isInBranch(target))
+      return;
+    options.onPointerDownOutside?.(event);
+    options.onInteractOutside?.(event);
+    if (event.defaultPrevented)
+      return;
+    if (debug) {
+      console.log("onPointerDownOutside:", event.detail.originalEvent);
+    }
+    onDismiss?.();
+  }
+  function onFocusOutside(event) {
+    const target = getEventTarget(event.detail.originalEvent);
+    if (layerStack.isInBranch(target))
+      return;
+    options.onFocusOutside?.(event);
+    options.onInteractOutside?.(event);
+    if (event.defaultPrevented)
+      return;
+    if (debug) {
+      console.log("onFocusOutside:", event.detail.originalEvent);
+    }
+    onDismiss?.();
+  }
+  function onEscapeKeyDown(event) {
+    if (!layerStack.isTopMost(node))
+      return;
+    options.onEscapeKeyDown?.(event);
+    if (!event.defaultPrevented && onDismiss) {
+      event.preventDefault();
+      onDismiss();
+    }
+  }
+  function exclude(target) {
+    if (!node)
+      return false;
+    const containers = typeof excludeContainers === "function" ? excludeContainers() : excludeContainers;
+    const _containers = Array.isArray(containers) ? containers : [containers];
+    const persistentElements = options.persistentElements?.map((fn) => fn()).filter(isHTMLElement);
+    if (persistentElements)
+      _containers.push(...persistentElements);
+    return _containers.some((node2) => contains(node2, target)) || layerStack.isInNestedLayer(node, target);
+  }
+  const cleanups3 = [
+    pointerBlocking ? disablePointerEventsOutside(node, options.persistentElements) : void 0,
+    trackEscapeKeydown(node, onEscapeKeyDown),
+    trackInteractOutside(node, { exclude, onFocusOutside, onPointerDownOutside, defer: options.defer })
+  ];
+  return () => {
+    layerStack.remove(node);
+    assignPointerEventToLayers();
+    clearPointerEvent(node);
+    cleanups3.forEach((fn) => fn?.());
+  };
+}
+function trackDismissableElement(nodeOrFn, options) {
+  const { defer } = options;
+  const func = defer ? raf : (v) => v();
+  const cleanups3 = [];
+  cleanups3.push(
+    func(() => {
+      const node = isFunction2(nodeOrFn) ? nodeOrFn() : nodeOrFn;
+      cleanups3.push(trackDismissableElementImpl(node, options));
+    })
+  );
+  return () => {
+    func(() => {
+      cleanups3.forEach((fn) => fn?.());
+    });
+  };
+}
+
+// node_modules/@zag-js/focus-trap/node_modules/@zag-js/dom-query/dist/index.mjs
+var addDomEvent2 = (target, eventName, handler, options) => {
+  const node = typeof target === "function" ? target() : target;
+  node?.addEventListener(eventName, handler, options);
+  return () => {
+    node?.removeEventListener(eventName, handler, options);
+  };
+};
+var DOCUMENT_NODE3 = 9;
+var isObject7 = (v) => typeof v === "object" && v !== null;
+var isDocument3 = (el) => isObject7(el) && el.nodeType === DOCUMENT_NODE3;
+var isWindow3 = (el) => isObject7(el) && el === el.window;
+function getDocument3(el) {
+  if (isDocument3(el))
+    return el;
+  if (isWindow3(el))
+    return el.document;
+  return el?.ownerDocument ?? document;
+}
+function getActiveElement3(rootNode) {
+  let activeElement = rootNode.activeElement;
+  while (activeElement?.shadowRoot) {
+    const el = activeElement.shadowRoot.activeElement;
+    if (el === activeElement)
+      break;
+    else
+      activeElement = el;
+  }
+  return activeElement;
+}
+function getComposedPath2(event) {
+  return event.composedPath?.() ?? event.nativeEvent?.composedPath?.();
+}
+function getEventTarget2(event) {
+  const composedPath = getComposedPath2(event);
+  return composedPath?.[0] ?? event.target;
+}
+var isHTMLElement22 = (element) => typeof element === "object" && element !== null && element.nodeType === 1;
+var isFrame = (element) => isHTMLElement22(element) && element.tagName === "IFRAME";
+function isVisible2(el) {
+  if (!isHTMLElement22(el))
+    return false;
+  return el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
+}
+function hasNegativeTabIndex(element) {
+  const tabIndex = parseInt(element.getAttribute("tabindex") || "0", 10);
+  return tabIndex < 0;
+}
+var focusableSelector2 = "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], button:not([disabled]), [tabindex], iframe, object, embed, area[href], audio[controls], video[controls], [contenteditable]:not([contenteditable='false']), details > summary:first-of-type";
+var getFocusables = (container, includeContainer = false) => {
+  if (!container)
+    return [];
+  const elements = Array.from(container.querySelectorAll(focusableSelector2));
+  const include = includeContainer == true || includeContainer == "if-empty" && elements.length === 0;
+  if (include && isHTMLElement22(container) && isFocusable2(container)) {
+    elements.unshift(container);
+  }
+  const focusableElements = elements.filter(isFocusable2);
+  focusableElements.forEach((element, i) => {
+    if (isFrame(element) && element.contentDocument) {
+      const frameBody = element.contentDocument.body;
+      focusableElements.splice(i, 1, ...getFocusables(frameBody));
+    }
+  });
+  return focusableElements;
+};
+function isFocusable2(element) {
+  if (!element || element.closest("[inert]"))
+    return false;
+  return element.matches(focusableSelector2) && isVisible2(element);
+}
+function getTabbables(container, includeContainer) {
+  if (!container)
+    return [];
+  const elements = Array.from(container.querySelectorAll(focusableSelector2));
+  const tabbableElements = elements.filter(isTabbable);
+  if (includeContainer && isTabbable(container)) {
+    tabbableElements.unshift(container);
+  }
+  tabbableElements.forEach((element, i) => {
+    if (isFrame(element) && element.contentDocument) {
+      const frameBody = element.contentDocument.body;
+      const allFrameTabbable = getTabbables(frameBody);
+      tabbableElements.splice(i, 1, ...allFrameTabbable);
+    }
+  });
+  if (!tabbableElements.length && includeContainer) {
+    return elements;
+  }
+  return tabbableElements;
+}
+function isTabbable(el) {
+  if (el != null && el.tabIndex > 0)
+    return true;
+  return isFocusable2(el) && !hasNegativeTabIndex(el);
+}
+var hasTabIndex = (node) => !Number.isNaN(parseInt(node.getAttribute("tabindex") || "0", 10));
+var isContentEditable = (node) => (
+  // @ts-ignore
+  node.isContentEditable || node.getAttribute("contenteditable") === "true" || node.getAttribute("contenteditable") === ""
+);
+function getTabIndex(node) {
+  if (node.tabIndex < 0) {
+    if ((/^(audio|video|details)$/.test(node.localName) || isContentEditable(node)) && !hasTabIndex(node)) {
+      return 0;
+    }
+  }
+  return node.tabIndex;
+}
+function raf3(fn) {
+  const id = globalThis.requestAnimationFrame(fn);
+  return () => {
+    globalThis.cancelAnimationFrame(id);
+  };
+}
+var fps3 = 1e3 / 60;
+
+// node_modules/@zag-js/focus-trap/dist/index.mjs
+var __defProp4 = Object.defineProperty;
+var __defNormalProp3 = (obj, key, value) => key in obj ? __defProp4(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField3 = (obj, key, value) => __defNormalProp3(obj, typeof key !== "symbol" ? key + "" : key, value);
+var activeFocusTraps = {
+  activateTrap(trapStack, trap) {
+    if (trapStack.length > 0) {
+      const activeTrap = trapStack[trapStack.length - 1];
+      if (activeTrap !== trap) {
+        activeTrap.pause();
+      }
+    }
+    const trapIndex = trapStack.indexOf(trap);
+    if (trapIndex === -1) {
+      trapStack.push(trap);
+    } else {
+      trapStack.splice(trapIndex, 1);
+      trapStack.push(trap);
+    }
+  },
+  deactivateTrap(trapStack, trap) {
+    const trapIndex = trapStack.indexOf(trap);
+    if (trapIndex !== -1) {
+      trapStack.splice(trapIndex, 1);
+    }
+    if (trapStack.length > 0) {
+      trapStack[trapStack.length - 1].unpause();
+    }
+  }
+};
+var sharedTrapStack = [];
+var FocusTrap = class {
+  constructor(elements, options) {
+    __publicField3(this, "trapStack");
+    __publicField3(this, "config");
+    __publicField3(this, "doc");
+    __publicField3(this, "state", {
+      containers: [],
+      containerGroups: [],
+      tabbableGroups: [],
+      nodeFocusedBeforeActivation: null,
+      mostRecentlyFocusedNode: null,
+      active: false,
+      paused: false,
+      delayInitialFocusTimer: void 0,
+      recentNavEvent: void 0
+    });
+    __publicField3(this, "listenerCleanups", []);
+    __publicField3(this, "handleFocus", (event) => {
+      const target = getEventTarget2(event);
+      const targetContained = this.findContainerIndex(target, event) >= 0;
+      if (targetContained || isDocument3(target)) {
+        if (targetContained) {
+          this.state.mostRecentlyFocusedNode = target;
+        }
+      } else {
+        event.stopImmediatePropagation();
+        let nextNode;
+        let navAcrossContainers = true;
+        if (this.state.mostRecentlyFocusedNode) {
+          if (getTabIndex(this.state.mostRecentlyFocusedNode) > 0) {
+            const mruContainerIdx = this.findContainerIndex(this.state.mostRecentlyFocusedNode);
+            const { tabbableNodes } = this.state.containerGroups[mruContainerIdx];
+            if (tabbableNodes.length > 0) {
+              const mruTabIdx = tabbableNodes.findIndex((node) => node === this.state.mostRecentlyFocusedNode);
+              if (mruTabIdx >= 0) {
+                if (this.config.isKeyForward(this.state.recentNavEvent)) {
+                  if (mruTabIdx + 1 < tabbableNodes.length) {
+                    nextNode = tabbableNodes[mruTabIdx + 1];
+                    navAcrossContainers = false;
+                  }
+                } else {
+                  if (mruTabIdx - 1 >= 0) {
+                    nextNode = tabbableNodes[mruTabIdx - 1];
+                    navAcrossContainers = false;
+                  }
+                }
+              }
+            }
+          } else {
+            if (!this.state.containerGroups.some((g) => g.tabbableNodes.some((n) => getTabIndex(n) > 0))) {
+              navAcrossContainers = false;
+            }
+          }
+        } else {
+          navAcrossContainers = false;
+        }
+        if (navAcrossContainers) {
+          nextNode = this.findNextNavNode({
+            // move FROM the MRU node, not event-related node (which will be the node that is
+            //  outside the trap causing the focus escape we're trying to fix)
+            target: this.state.mostRecentlyFocusedNode,
+            isBackward: this.config.isKeyBackward(this.state.recentNavEvent)
+          });
+        }
+        if (nextNode) {
+          this.tryFocus(nextNode);
+        } else {
+          this.tryFocus(this.state.mostRecentlyFocusedNode || this.getInitialFocusNode());
+        }
+      }
+      this.state.recentNavEvent = void 0;
+    });
+    __publicField3(this, "handlePointerDown", (event) => {
+      const target = getEventTarget2(event);
+      if (this.findContainerIndex(target, event) >= 0) {
+        return;
+      }
+      if (valueOrHandler(this.config.clickOutsideDeactivates, event)) {
+        this.deactivate({ returnFocus: this.config.returnFocusOnDeactivate });
+        return;
+      }
+      if (valueOrHandler(this.config.allowOutsideClick, event)) {
+        return;
+      }
+      event.preventDefault();
+    });
+    __publicField3(this, "handleClick", (event) => {
+      const target = getEventTarget2(event);
+      if (this.findContainerIndex(target, event) >= 0) {
+        return;
+      }
+      if (valueOrHandler(this.config.clickOutsideDeactivates, event)) {
+        return;
+      }
+      if (valueOrHandler(this.config.allowOutsideClick, event)) {
+        return;
+      }
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    });
+    __publicField3(this, "handleTabKey", (event) => {
+      if (this.config.isKeyForward(event) || this.config.isKeyBackward(event)) {
+        this.state.recentNavEvent = event;
+        const isBackward = this.config.isKeyBackward(event);
+        const destinationNode = this.findNextNavNode({ event, isBackward });
+        if (!destinationNode)
+          return;
+        if (isTabEvent(event)) {
+          event.preventDefault();
+        }
+        this.tryFocus(destinationNode);
+      }
+    });
+    __publicField3(this, "handleEscapeKey", (event) => {
+      if (isEscapeEvent(event) && valueOrHandler(this.config.escapeDeactivates, event) !== false) {
+        event.preventDefault();
+        this.deactivate();
+      }
+    });
+    __publicField3(this, "_mutationObserver");
+    __publicField3(this, "setupMutationObserver", () => {
+      const win = this.doc.defaultView || window;
+      this._mutationObserver = new win.MutationObserver((mutations) => {
+        const isFocusedNodeRemoved = mutations.some((mutation) => {
+          const removedNodes = Array.from(mutation.removedNodes);
+          return removedNodes.some((node) => node === this.state.mostRecentlyFocusedNode);
+        });
+        if (isFocusedNodeRemoved) {
+          this.tryFocus(this.getInitialFocusNode());
+        }
+      });
+    });
+    __publicField3(this, "updateObservedNodes", () => {
+      this._mutationObserver?.disconnect();
+      if (this.state.active && !this.state.paused) {
+        this.state.containers.map((container) => {
+          this._mutationObserver?.observe(container, { subtree: true, childList: true });
+        });
+      }
+    });
+    __publicField3(this, "getInitialFocusNode", () => {
+      let node = this.getNodeForOption("initialFocus", { hasFallback: true });
+      if (node === false) {
+        return false;
+      }
+      if (node === void 0 || node && !isFocusable2(node)) {
+        if (this.findContainerIndex(this.doc.activeElement) >= 0) {
+          node = this.doc.activeElement;
+        } else {
+          const firstTabbableGroup = this.state.tabbableGroups[0];
+          const firstTabbableNode = firstTabbableGroup && firstTabbableGroup.firstTabbableNode;
+          node = firstTabbableNode || this.getNodeForOption("fallbackFocus");
+        }
+      } else if (node === null) {
+        node = this.getNodeForOption("fallbackFocus");
+      }
+      if (!node) {
+        throw new Error("Your focus-trap needs to have at least one focusable element");
+      }
+      if (!node.isConnected) {
+        node = this.getNodeForOption("fallbackFocus");
+      }
+      return node;
+    });
+    __publicField3(this, "tryFocus", (node) => {
+      if (node === false)
+        return;
+      if (node === getActiveElement3(this.doc))
+        return;
+      if (!node || !node.focus) {
+        this.tryFocus(this.getInitialFocusNode());
+        return;
+      }
+      node.focus({ preventScroll: !!this.config.preventScroll });
+      this.state.mostRecentlyFocusedNode = node;
+      if (isSelectableInput(node)) {
+        node.select();
+      }
+    });
+    __publicField3(this, "deactivate", (deactivateOptions) => {
+      if (!this.state.active)
+        return this;
+      const options2 = {
+        onDeactivate: this.config.onDeactivate,
+        onPostDeactivate: this.config.onPostDeactivate,
+        checkCanReturnFocus: this.config.checkCanReturnFocus,
+        ...deactivateOptions
+      };
+      clearTimeout(this.state.delayInitialFocusTimer);
+      this.state.delayInitialFocusTimer = void 0;
+      this.removeListeners();
+      this.state.active = false;
+      this.state.paused = false;
+      this.updateObservedNodes();
+      activeFocusTraps.deactivateTrap(this.trapStack, this);
+      const onDeactivate = this.getOption(options2, "onDeactivate");
+      const onPostDeactivate = this.getOption(options2, "onPostDeactivate");
+      const checkCanReturnFocus = this.getOption(options2, "checkCanReturnFocus");
+      const returnFocus = this.getOption(options2, "returnFocus", "returnFocusOnDeactivate");
+      onDeactivate?.();
+      const finishDeactivation = () => {
+        delay(() => {
+          if (returnFocus) {
+            const returnFocusNode = this.getReturnFocusNode(this.state.nodeFocusedBeforeActivation);
+            this.tryFocus(returnFocusNode);
+          }
+          onPostDeactivate?.();
+        });
+      };
+      if (returnFocus && checkCanReturnFocus) {
+        const returnFocusNode = this.getReturnFocusNode(this.state.nodeFocusedBeforeActivation);
+        checkCanReturnFocus(returnFocusNode).then(finishDeactivation, finishDeactivation);
+        return this;
+      }
+      finishDeactivation();
+      return this;
+    });
+    __publicField3(this, "pause", (pauseOptions) => {
+      if (this.state.paused || !this.state.active) {
+        return this;
+      }
+      const onPause = this.getOption(pauseOptions, "onPause");
+      const onPostPause = this.getOption(pauseOptions, "onPostPause");
+      this.state.paused = true;
+      onPause?.();
+      this.removeListeners();
+      this.updateObservedNodes();
+      onPostPause?.();
+      return this;
+    });
+    __publicField3(this, "unpause", (unpauseOptions) => {
+      if (!this.state.paused || !this.state.active) {
+        return this;
+      }
+      const onUnpause = this.getOption(unpauseOptions, "onUnpause");
+      const onPostUnpause = this.getOption(unpauseOptions, "onPostUnpause");
+      this.state.paused = false;
+      onUnpause?.();
+      this.updateTabbableNodes();
+      this.addListeners();
+      this.updateObservedNodes();
+      onPostUnpause?.();
+      return this;
+    });
+    __publicField3(this, "updateContainerElements", (containerElements) => {
+      this.state.containers = Array.isArray(containerElements) ? containerElements.filter(Boolean) : [containerElements].filter(Boolean);
+      if (this.state.active) {
+        this.updateTabbableNodes();
+      }
+      this.updateObservedNodes();
+      return this;
+    });
+    __publicField3(this, "getReturnFocusNode", (previousActiveElement) => {
+      const node = this.getNodeForOption("setReturnFocus", {
+        params: [previousActiveElement]
+      });
+      return node ? node : node === false ? false : previousActiveElement;
+    });
+    __publicField3(this, "getOption", (configOverrideOptions, optionName, configOptionName) => {
+      return configOverrideOptions && configOverrideOptions[optionName] !== void 0 ? configOverrideOptions[optionName] : (
+        // @ts-expect-error
+        this.config[configOptionName || optionName]
+      );
+    });
+    __publicField3(this, "getNodeForOption", (optionName, { hasFallback = false, params = [] } = {}) => {
+      let optionValue = this.config[optionName];
+      if (typeof optionValue === "function")
+        optionValue = optionValue(...params);
+      if (optionValue === true)
+        optionValue = void 0;
+      if (!optionValue) {
+        if (optionValue === void 0 || optionValue === false) {
+          return optionValue;
+        }
+        throw new Error(`\`${optionName}\` was specified but was not a node, or did not return a node`);
+      }
+      let node = optionValue;
+      if (typeof optionValue === "string") {
+        try {
+          node = this.doc.querySelector(optionValue);
+        } catch (err) {
+          throw new Error(`\`${optionName}\` appears to be an invalid selector; error="${err.message}"`);
+        }
+        if (!node) {
+          if (!hasFallback) {
+            throw new Error(`\`${optionName}\` as selector refers to no known node`);
+          }
+        }
+      }
+      return node;
+    });
+    __publicField3(this, "findNextNavNode", (opts) => {
+      const { event, isBackward = false } = opts;
+      const target = opts.target || getEventTarget2(event);
+      this.updateTabbableNodes();
+      let destinationNode = null;
+      if (this.state.tabbableGroups.length > 0) {
+        const containerIndex = this.findContainerIndex(target, event);
+        const containerGroup = containerIndex >= 0 ? this.state.containerGroups[containerIndex] : void 0;
+        if (containerIndex < 0) {
+          if (isBackward) {
+            destinationNode = this.state.tabbableGroups[this.state.tabbableGroups.length - 1].lastTabbableNode;
+          } else {
+            destinationNode = this.state.tabbableGroups[0].firstTabbableNode;
+          }
+        } else if (isBackward) {
+          let startOfGroupIndex = this.state.tabbableGroups.findIndex(
+            ({ firstTabbableNode }) => target === firstTabbableNode
+          );
+          if (startOfGroupIndex < 0 && (containerGroup?.container === target || isFocusable2(target) && !isTabbable(target) && !containerGroup?.nextTabbableNode(target, false))) {
+            startOfGroupIndex = containerIndex;
+          }
+          if (startOfGroupIndex >= 0) {
+            const destinationGroupIndex = startOfGroupIndex === 0 ? this.state.tabbableGroups.length - 1 : startOfGroupIndex - 1;
+            const destinationGroup = this.state.tabbableGroups[destinationGroupIndex];
+            destinationNode = getTabIndex(target) >= 0 ? destinationGroup.lastTabbableNode : destinationGroup.lastDomTabbableNode;
+          } else if (!isTabEvent(event)) {
+            destinationNode = containerGroup?.nextTabbableNode(target, false);
+          }
+        } else {
+          let lastOfGroupIndex = this.state.tabbableGroups.findIndex(
+            ({ lastTabbableNode }) => target === lastTabbableNode
+          );
+          if (lastOfGroupIndex < 0 && (containerGroup?.container === target || isFocusable2(target) && !isTabbable(target) && !containerGroup?.nextTabbableNode(target))) {
+            lastOfGroupIndex = containerIndex;
+          }
+          if (lastOfGroupIndex >= 0) {
+            const destinationGroupIndex = lastOfGroupIndex === this.state.tabbableGroups.length - 1 ? 0 : lastOfGroupIndex + 1;
+            const destinationGroup = this.state.tabbableGroups[destinationGroupIndex];
+            destinationNode = getTabIndex(target) >= 0 ? destinationGroup.firstTabbableNode : destinationGroup.firstDomTabbableNode;
+          } else if (!isTabEvent(event)) {
+            destinationNode = containerGroup?.nextTabbableNode(target);
+          }
+        }
+      } else {
+        destinationNode = this.getNodeForOption("fallbackFocus");
+      }
+      return destinationNode;
+    });
+    this.trapStack = options.trapStack || sharedTrapStack;
+    const config = {
+      returnFocusOnDeactivate: true,
+      escapeDeactivates: true,
+      delayInitialFocus: true,
+      isKeyForward(e) {
+        return isTabEvent(e) && !e.shiftKey;
+      },
+      isKeyBackward(e) {
+        return isTabEvent(e) && e.shiftKey;
+      },
+      ...options
+    };
+    this.doc = config.document || getDocument3(Array.isArray(elements) ? elements[0] : elements);
+    this.config = config;
+    this.updateContainerElements(elements);
+    this.setupMutationObserver();
+  }
+  get active() {
+    return this.state.active;
+  }
+  get paused() {
+    return this.state.paused;
+  }
+  findContainerIndex(element, event) {
+    const composedPath = typeof event?.composedPath === "function" ? event.composedPath() : void 0;
+    return this.state.containerGroups.findIndex(
+      ({ container, tabbableNodes }) => container.contains(element) || composedPath?.includes(container) || tabbableNodes.find((node) => node === element)
+    );
+  }
+  updateTabbableNodes() {
+    this.state.containerGroups = this.state.containers.map((container) => {
+      const tabbableNodes = getTabbables(container);
+      const focusableNodes = getFocusables(container);
+      const firstTabbableNode = tabbableNodes.length > 0 ? tabbableNodes[0] : void 0;
+      const lastTabbableNode = tabbableNodes.length > 0 ? tabbableNodes[tabbableNodes.length - 1] : void 0;
+      const firstDomTabbableNode = focusableNodes.find((node) => isTabbable(node));
+      const lastDomTabbableNode = focusableNodes.slice().reverse().find((node) => isTabbable(node));
+      const posTabIndexesFound = !!tabbableNodes.find((node) => getTabIndex(node) > 0);
+      function nextTabbableNode(node, forward = true) {
+        const nodeIdx = tabbableNodes.indexOf(node);
+        if (nodeIdx < 0) {
+          if (forward) {
+            return focusableNodes.slice(focusableNodes.indexOf(node) + 1).find((el) => isTabbable(el));
+          }
+          return focusableNodes.slice(0, focusableNodes.indexOf(node)).reverse().find((el) => isTabbable(el));
+        }
+        return tabbableNodes[nodeIdx + (forward ? 1 : -1)];
+      }
+      return {
+        container,
+        tabbableNodes,
+        focusableNodes,
+        posTabIndexesFound,
+        firstTabbableNode,
+        lastTabbableNode,
+        firstDomTabbableNode,
+        lastDomTabbableNode,
+        nextTabbableNode
+      };
+    });
+    this.state.tabbableGroups = this.state.containerGroups.filter((group) => group.tabbableNodes.length > 0);
+    if (this.state.tabbableGroups.length <= 0 && !this.getNodeForOption("fallbackFocus")) {
+      throw new Error(
+        "Your focus-trap must have at least one container with at least one tabbable node in it at all times"
+      );
+    }
+    if (this.state.containerGroups.find((g) => g.posTabIndexesFound) && this.state.containerGroups.length > 1) {
+      throw new Error(
+        "At least one node with a positive tabindex was found in one of your focus-trap's multiple containers. Positive tabindexes are only supported in single-container focus-traps."
+      );
+    }
+  }
+  addListeners() {
+    if (!this.state.active)
+      return;
+    activeFocusTraps.activateTrap(this.trapStack, this);
+    this.state.delayInitialFocusTimer = this.config.delayInitialFocus ? delay(() => {
+      this.tryFocus(this.getInitialFocusNode());
+    }) : this.tryFocus(this.getInitialFocusNode());
+    this.listenerCleanups.push(
+      addDomEvent2(this.doc, "focusin", this.handleFocus, true),
+      addDomEvent2(this.doc, "mousedown", this.handlePointerDown, { capture: true, passive: false }),
+      addDomEvent2(this.doc, "touchstart", this.handlePointerDown, { capture: true, passive: false }),
+      addDomEvent2(this.doc, "click", this.handleClick, { capture: true, passive: false }),
+      addDomEvent2(this.doc, "keydown", this.handleTabKey, { capture: true, passive: false }),
+      addDomEvent2(this.doc, "keydown", this.handleEscapeKey)
+    );
+    return this;
+  }
+  removeListeners() {
+    if (!this.state.active)
+      return;
+    this.listenerCleanups.forEach((cleanup) => cleanup());
+    this.listenerCleanups = [];
+    return this;
+  }
+  activate(activateOptions) {
+    if (this.state.active) {
+      return this;
+    }
+    const onActivate = this.getOption(activateOptions, "onActivate");
+    const onPostActivate = this.getOption(activateOptions, "onPostActivate");
+    const checkCanFocusTrap = this.getOption(activateOptions, "checkCanFocusTrap");
+    if (!checkCanFocusTrap) {
+      this.updateTabbableNodes();
+    }
+    this.state.active = true;
+    this.state.paused = false;
+    this.state.nodeFocusedBeforeActivation = this.doc.activeElement || null;
+    onActivate?.();
+    const finishActivation = () => {
+      if (checkCanFocusTrap) {
+        this.updateTabbableNodes();
+      }
+      this.addListeners();
+      this.updateObservedNodes();
+      onPostActivate?.();
+    };
+    if (checkCanFocusTrap) {
+      checkCanFocusTrap(this.state.containers.concat()).then(finishActivation, finishActivation);
+      return this;
+    }
+    finishActivation();
+    return this;
+  }
+};
+var isTabEvent = (event) => event.key === "Tab";
+var valueOrHandler = (value, ...params) => typeof value === "function" ? value(...params) : value;
+var isEscapeEvent = (event) => !event.isComposing && event.key === "Escape";
+var delay = (fn) => setTimeout(fn, 0);
+var isSelectableInput = (node) => node.localName === "input" && "select" in node && typeof node.select === "function";
+function trapFocus(el, options = {}) {
+  let trap;
+  const cleanup = raf3(() => {
+    const contentEl = typeof el === "function" ? el() : el;
+    if (!contentEl)
+      return;
+    trap = new FocusTrap(contentEl, {
+      escapeDeactivates: false,
+      allowOutsideClick: true,
+      preventScroll: true,
+      returnFocusOnDeactivate: true,
+      delayInitialFocus: false,
+      fallbackFocus: contentEl,
+      ...options,
+      document: getDocument3(contentEl)
+    });
+    try {
+      trap.activate();
+    } catch {
+    }
+  });
+  return function destroy() {
+    trap?.deactivate();
+    cleanup();
+  };
+}
+
+// node_modules/@zag-js/remove-scroll/node_modules/@zag-js/dom-query/dist/index.mjs
+var isDom3 = () => typeof document !== "undefined";
+function getPlatform3() {
+  const agent = navigator.userAgentData;
+  return agent?.platform ?? navigator.platform;
+}
+var pt3 = (v) => isDom3() && v.test(getPlatform3());
+var isIos = () => pt3(/iP(hone|ad|od)|iOS/);
+var fps4 = 1e3 / 60;
+
+// node_modules/@zag-js/remove-scroll/dist/index.mjs
+var LOCK_CLASSNAME = "data-scroll-lock";
+function assignStyle(el, style) {
+  if (!el)
+    return;
+  const previousStyle = Object.keys(style).reduce(
+    (acc, key) => {
+      acc[key] = el.style.getPropertyValue(key);
+      return acc;
+    },
+    {}
+  );
+  Object.assign(el.style, style);
+  return () => {
+    Object.assign(el.style, previousStyle);
+  };
+}
+function setCSSProperty(el, property, value) {
+  if (!el)
+    return;
+  const previousValue = el.style.getPropertyValue(property);
+  el.style.setProperty(property, value);
+  return () => {
+    if (previousValue) {
+      el.style.setProperty(property, previousValue);
+    } else {
+      el.style.removeProperty(property);
+    }
+  };
+}
+function getPaddingProperty(documentElement) {
+  const documentLeft = documentElement.getBoundingClientRect().left;
+  const scrollbarX = Math.round(documentLeft) + documentElement.scrollLeft;
+  return scrollbarX ? "paddingLeft" : "paddingRight";
+}
+function preventBodyScroll(_document) {
+  const doc = _document ?? document;
+  const win = doc.defaultView ?? window;
+  const { documentElement, body } = doc;
+  const locked = body.hasAttribute(LOCK_CLASSNAME);
+  if (locked)
+    return;
+  body.setAttribute(LOCK_CLASSNAME, "");
+  const scrollbarWidth = win.innerWidth - documentElement.clientWidth;
+  const setScrollbarWidthProperty = () => setCSSProperty(documentElement, "--scrollbar-width", `${scrollbarWidth}px`);
+  const paddingProperty = getPaddingProperty(documentElement);
+  const setStyle3 = () => assignStyle(body, {
+    overflow: "hidden",
+    [paddingProperty]: `${scrollbarWidth}px`
+  });
+  const setIOSStyle = () => {
+    const { scrollX, scrollY, visualViewport } = win;
+    const offsetLeft = visualViewport?.offsetLeft ?? 0;
+    const offsetTop = visualViewport?.offsetTop ?? 0;
+    const restoreStyle = assignStyle(body, {
+      position: "fixed",
+      overflow: "hidden",
+      top: `${-(scrollY - Math.floor(offsetTop))}px`,
+      left: `${-(scrollX - Math.floor(offsetLeft))}px`,
+      right: "0",
+      [paddingProperty]: `${scrollbarWidth}px`
+    });
+    return () => {
+      restoreStyle?.();
+      win.scrollTo({ left: scrollX, top: scrollY, behavior: "instant" });
+    };
+  };
+  const cleanups3 = [setScrollbarWidthProperty(), isIos() ? setIOSStyle() : setStyle3()];
+  return () => {
+    cleanups3.forEach((fn) => fn?.());
+    body.removeAttribute(LOCK_CLASSNAME);
+  };
+}
+
+// node_modules/@zag-js/dialog/node_modules/@zag-js/types/dist/index.mjs
+var createProps2 = () => (props4) => Array.from(new Set(props4));
+
+// node_modules/@zag-js/dialog/dist/index.mjs
+var anatomy2 = createAnatomy2("dialog").parts(
+  "trigger",
+  "backdrop",
+  "positioner",
+  "content",
+  "title",
+  "description",
+  "closeTrigger"
+);
+var parts2 = anatomy2.build();
+var dom2 = createScope2({
+  getPositionerId: (ctx) => ctx.ids?.positioner ?? `dialog:${ctx.id}:positioner`,
+  getBackdropId: (ctx) => ctx.ids?.backdrop ?? `dialog:${ctx.id}:backdrop`,
+  getContentId: (ctx) => ctx.ids?.content ?? `dialog:${ctx.id}:content`,
+  getTriggerId: (ctx) => ctx.ids?.trigger ?? `dialog:${ctx.id}:trigger`,
+  getTitleId: (ctx) => ctx.ids?.title ?? `dialog:${ctx.id}:title`,
+  getDescriptionId: (ctx) => ctx.ids?.description ?? `dialog:${ctx.id}:description`,
+  getCloseTriggerId: (ctx) => ctx.ids?.closeTrigger ?? `dialog:${ctx.id}:close`,
+  getContentEl: (ctx) => dom2.getById(ctx, dom2.getContentId(ctx)),
+  getPositionerEl: (ctx) => dom2.getById(ctx, dom2.getPositionerId(ctx)),
+  getBackdropEl: (ctx) => dom2.getById(ctx, dom2.getBackdropId(ctx)),
+  getTriggerEl: (ctx) => dom2.getById(ctx, dom2.getTriggerId(ctx)),
+  getTitleEl: (ctx) => dom2.getById(ctx, dom2.getTitleId(ctx)),
+  getDescriptionEl: (ctx) => dom2.getById(ctx, dom2.getDescriptionId(ctx)),
+  getCloseTriggerEl: (ctx) => dom2.getById(ctx, dom2.getCloseTriggerId(ctx))
+});
+function connect2(state, send, normalize) {
+  const ariaLabel = state.context["aria-label"];
+  const open = state.matches("open");
+  const rendered = state.context.renderedElements;
+  return {
+    open,
+    setOpen(nextOpen) {
+      if (nextOpen === open)
+        return;
+      send(nextOpen ? "OPEN" : "CLOSE");
+    },
+    getTriggerProps() {
+      return normalize.button({
+        ...parts2.trigger.attrs,
+        dir: state.context.dir,
+        id: dom2.getTriggerId(state.context),
+        "aria-haspopup": "dialog",
+        type: "button",
+        "aria-expanded": open,
+        "data-state": open ? "open" : "closed",
+        "aria-controls": dom2.getContentId(state.context),
+        onClick(event) {
+          if (event.defaultPrevented)
+            return;
+          send("TOGGLE");
+        }
+      });
+    },
+    getBackdropProps() {
+      return normalize.element({
+        ...parts2.backdrop.attrs,
+        dir: state.context.dir,
+        hidden: !open,
+        id: dom2.getBackdropId(state.context),
+        "data-state": open ? "open" : "closed"
+      });
+    },
+    getPositionerProps() {
+      return normalize.element({
+        ...parts2.positioner.attrs,
+        dir: state.context.dir,
+        id: dom2.getPositionerId(state.context),
+        style: {
+          pointerEvents: open ? void 0 : "none"
+        }
+      });
+    },
+    getContentProps() {
+      return normalize.element({
+        ...parts2.content.attrs,
+        dir: state.context.dir,
+        role: state.context.role,
+        hidden: !open,
+        id: dom2.getContentId(state.context),
+        tabIndex: -1,
+        "data-state": open ? "open" : "closed",
+        "aria-modal": true,
+        "aria-label": ariaLabel || void 0,
+        "aria-labelledby": ariaLabel || !rendered.title ? void 0 : dom2.getTitleId(state.context),
+        "aria-describedby": rendered.description ? dom2.getDescriptionId(state.context) : void 0
+      });
+    },
+    getTitleProps() {
+      return normalize.element({
+        ...parts2.title.attrs,
+        dir: state.context.dir,
+        id: dom2.getTitleId(state.context)
+      });
+    },
+    getDescriptionProps() {
+      return normalize.element({
+        ...parts2.description.attrs,
+        dir: state.context.dir,
+        id: dom2.getDescriptionId(state.context)
+      });
+    },
+    getCloseTriggerProps() {
+      return normalize.button({
+        ...parts2.closeTrigger.attrs,
+        dir: state.context.dir,
+        id: dom2.getCloseTriggerId(state.context),
+        type: "button",
+        onClick(event) {
+          if (event.defaultPrevented)
+            return;
+          event.stopPropagation();
+          send("CLOSE");
+        }
+      });
+    }
+  };
+}
+function machine2(userContext) {
+  const ctx = compact2(userContext);
+  return createMachine2(
+    {
+      id: "dialog",
+      initial: ctx.open ? "open" : "closed",
+      context: {
+        role: "dialog",
+        renderedElements: {
+          title: true,
+          description: true
+        },
+        modal: true,
+        trapFocus: true,
+        preventScroll: true,
+        closeOnInteractOutside: true,
+        closeOnEscape: true,
+        restoreFocus: true,
+        ...ctx
+      },
+      created: ["setAlertDialogProps"],
+      watch: {
+        open: ["toggleVisibility"]
+      },
+      states: {
+        open: {
+          entry: ["checkRenderedElements", "syncZIndex"],
+          activities: ["trackDismissableElement", "trapFocus", "preventScroll", "hideContentBelow"],
+          on: {
+            "CONTROLLED.CLOSE": {
+              target: "closed"
+            },
+            CLOSE: [
+              {
+                guard: "isOpenControlled",
+                actions: ["invokeOnClose"]
+              },
+              {
+                target: "closed",
+                actions: ["invokeOnClose"]
+              }
+            ],
+            TOGGLE: [
+              {
+                guard: "isOpenControlled",
+                actions: ["invokeOnClose"]
+              },
+              {
+                target: "closed",
+                actions: ["invokeOnClose"]
+              }
+            ]
+          }
+        },
+        closed: {
+          on: {
+            "CONTROLLED.OPEN": {
+              target: "open"
+            },
+            OPEN: [
+              {
+                guard: "isOpenControlled",
+                actions: ["invokeOnOpen"]
+              },
+              {
+                target: "open",
+                actions: ["invokeOnOpen"]
+              }
+            ],
+            TOGGLE: [
+              {
+                guard: "isOpenControlled",
+                actions: ["invokeOnOpen"]
+              },
+              {
+                target: "open",
+                actions: ["invokeOnOpen"]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      guards: {
+        isOpenControlled: (ctx2) => !!ctx2["open.controlled"]
+      },
+      activities: {
+        trackDismissableElement(ctx2, _evt, { send }) {
+          const getContentEl = () => dom2.getContentEl(ctx2);
+          return trackDismissableElement(getContentEl, {
+            defer: true,
+            pointerBlocking: ctx2.modal,
+            exclude: [dom2.getTriggerEl(ctx2)],
+            onInteractOutside(event) {
+              ctx2.onInteractOutside?.(event);
+              if (!ctx2.closeOnInteractOutside) {
+                event.preventDefault();
+              }
+            },
+            persistentElements: ctx2.persistentElements,
+            onFocusOutside: ctx2.onFocusOutside,
+            onPointerDownOutside: ctx2.onPointerDownOutside,
+            onEscapeKeyDown(event) {
+              ctx2.onEscapeKeyDown?.(event);
+              if (!ctx2.closeOnEscape) {
+                event.preventDefault();
+              }
+            },
+            onDismiss() {
+              send({ type: "CLOSE", src: "interact-outside" });
+            }
+          });
+        },
+        preventScroll(ctx2) {
+          if (!ctx2.preventScroll)
+            return;
+          return preventBodyScroll(dom2.getDoc(ctx2));
+        },
+        trapFocus(ctx2) {
+          if (!ctx2.trapFocus || !ctx2.modal)
+            return;
+          const contentEl = () => dom2.getContentEl(ctx2);
+          return trapFocus(contentEl, {
+            preventScroll: true,
+            returnFocusOnDeactivate: !!ctx2.restoreFocus,
+            initialFocus: ctx2.initialFocusEl,
+            setReturnFocus: (el) => ctx2.finalFocusEl?.() ?? el
+          });
+        },
+        hideContentBelow(ctx2) {
+          if (!ctx2.modal)
+            return;
+          const getElements = () => [dom2.getContentEl(ctx2)];
+          return ariaHidden(getElements, { defer: true });
+        }
+      },
+      actions: {
+        setAlertDialogProps(ctx2) {
+          if (ctx2.role !== "alertdialog")
+            return;
+          ctx2.initialFocusEl || (ctx2.initialFocusEl = () => dom2.getCloseTriggerEl(ctx2));
+          ctx2.closeOnInteractOutside = false;
+        },
+        checkRenderedElements(ctx2) {
+          raf(() => {
+            ctx2.renderedElements.title = !!dom2.getTitleEl(ctx2);
+            ctx2.renderedElements.description = !!dom2.getDescriptionEl(ctx2);
+          });
+        },
+        syncZIndex(ctx2) {
+          raf(() => {
+            const contentEl = dom2.getContentEl(ctx2);
+            if (!contentEl)
+              return;
+            const win = dom2.getWin(ctx2);
+            const styles = win.getComputedStyle(contentEl);
+            const elems = [dom2.getPositionerEl(ctx2), dom2.getBackdropEl(ctx2)];
+            elems.forEach((node) => {
+              node?.style.setProperty("--z-index", styles.zIndex);
+            });
+          });
+        },
+        invokeOnClose(ctx2) {
+          ctx2.onOpenChange?.({ open: false });
+        },
+        invokeOnOpen(ctx2) {
+          ctx2.onOpenChange?.({ open: true });
+        },
+        toggleVisibility(ctx2, evt, { send }) {
+          send({ type: ctx2.open ? "CONTROLLED.OPEN" : "CONTROLLED.CLOSE", previousEvent: evt });
+        }
+      }
+    }
+  );
+}
+var props2 = createProps2()([
+  "aria-label",
+  "closeOnEscape",
+  "closeOnInteractOutside",
+  "dir",
+  "finalFocusEl",
+  "getRootNode",
+  "getRootNode",
+  "id",
+  "id",
+  "ids",
+  "initialFocusEl",
+  "modal",
+  "onEscapeKeyDown",
+  "onFocusOutside",
+  "onInteractOutside",
+  "onOpenChange",
+  "onPointerDownOutside",
+  "open.controlled",
+  "open",
+  "persistentElements",
+  "preventScroll",
+  "restoreFocus",
+  "role",
+  "trapFocus"
+]);
+var splitProps4 = createSplitProps2(props2);
+
+// js/widgex/dialog.ts
+var Dialog = class extends Component {
+  initService(context) {
+    return machine2(context);
+  }
+  initApi() {
+    return connect2(this.service.state, this.service.send, normalizeProps);
+  }
+  render() {
+    const parts4 = ["trigger", "backdrop", "positioner", "content", "title", "description", "close-trigger"];
+    for (const part of parts4)
+      renderPart(this.el, part, this.api);
+  }
+};
+var dialog_default = {
+  mounted() {
+    this.dialog = new Dialog(this.el, this.context());
+    this.dialog.init();
+  },
+  updated() {
+    this.dialog.render();
+  },
+  beforeDestroy() {
+    this.dialog.destroy();
+  },
+  context() {
+    let role = this.el.dataset.role;
+    const validRoles = ["dialog", "alertdialog"];
+    if (role !== void 0 && !validRoles.includes(role)) {
+      console.error(`Invalid 'role' specified: '${role}'. Expected 'dialog' or 'alertdialog'.`);
+      role = void 0;
+    }
+    return {
+      id: this.el.id,
+      role,
+      preventScroll: this.el.dataset.preventScroll === "true" || this.el.dataset.preventScroll === "",
+      closeOnInteractOutside: this.el.dataset.closeOnInteractOutside === "true" || this.el.dataset.closeOnInteractOutside === "",
+      closeOnEscape: this.el.dataset.closeOnEscape === "true" || this.el.dataset.closeOnEscape === "",
+      onOpenChange: (details) => {
+        if (this.el.dataset.onOpenChange) {
+          this.pushEvent(this.el.dataset.onOpenChange, details);
+        }
+      }
+    };
+  }
+};
+
+// node_modules/@zag-js/menu/node_modules/@zag-js/anatomy/dist/index.mjs
+var createAnatomy3 = (name, parts4 = []) => ({
+  parts: (...values) => {
+    if (isEmpty3(parts4)) {
+      return createAnatomy3(name, values);
+    }
+    throw new Error("createAnatomy().parts(...) should only be called once. Did you mean to use .extendWith(...) ?");
+  },
+  extendWith: (...values) => createAnatomy3(name, [...parts4, ...values]),
+  rename: (newName) => createAnatomy3(newName, parts4),
+  keys: () => parts4,
+  build: () => [...new Set(parts4)].reduce(
+    (prev, part) => Object.assign(prev, {
+      [part]: {
+        selector: [
+          `&[data-scope="${toKebabCase3(name)}"][data-part="${toKebabCase3(part)}"]`,
+          `& [data-scope="${toKebabCase3(name)}"][data-part="${toKebabCase3(part)}"]`
+        ].join(", "),
+        attrs: { "data-scope": toKebabCase3(name), "data-part": toKebabCase3(part) }
+      }
+    }),
+    {}
+  )
+});
+var toKebabCase3 = (value) => value.replace(/([A-Z])([A-Z])/g, "$1-$2").replace(/([a-z])([A-Z])/g, "$1-$2").replace(/[\s_]+/g, "-").toLowerCase();
+var isEmpty3 = (v) => v.length === 0;
+
+// node_modules/@zag-js/menu/node_modules/@zag-js/store/dist/index.mjs
+function glob3() {
+  if (typeof globalThis !== "undefined")
+    return globalThis;
+  if (typeof self !== "undefined")
+    return self;
+  if (typeof window !== "undefined")
+    return window;
+  if (typeof global !== "undefined")
+    return global;
+}
+function globalRef3(key, value) {
+  const g = glob3();
+  if (!g)
+    return value();
+  g[key] || (g[key] = value());
+  return g[key];
+}
+var refSet3 = globalRef3("__zag__refSet", () => /* @__PURE__ */ new WeakSet());
+var isReactElement3 = (x) => typeof x === "object" && x !== null && "$$typeof" in x && "props" in x;
+var isVueElement3 = (x) => typeof x === "object" && x !== null && "__v_isVNode" in x;
+var isDOMElement3 = (x) => typeof x === "object" && x !== null && "nodeType" in x && typeof x.nodeName === "string";
+var isElement3 = (x) => isReactElement3(x) || isVueElement3(x) || isDOMElement3(x);
+var isObject8 = (x) => x !== null && typeof x === "object";
+var canProxy3 = (x) => isObject8(x) && !refSet3.has(x) && (Array.isArray(x) || !(Symbol.iterator in x)) && !isElement3(x) && !(x instanceof WeakMap) && !(x instanceof WeakSet) && !(x instanceof Error) && !(x instanceof Number) && !(x instanceof Date) && !(x instanceof String) && !(x instanceof RegExp) && !(x instanceof ArrayBuffer) && !(x instanceof Promise);
+var isDev5 = () => true;
+function set5(obj, key, val) {
+  if (typeof val.value === "object" && !canProxy3(val.value))
+    val.value = clone3(val.value);
+  if (!val.enumerable || val.get || val.set || !val.configurable || !val.writable || key === "__proto__") {
+    Object.defineProperty(obj, key, val);
+  } else
+    obj[key] = val.value;
+}
+function clone3(x) {
+  if (typeof x !== "object")
+    return x;
+  var i = 0, k, list, tmp, str = Object.prototype.toString.call(x);
+  if (str === "[object Object]") {
+    tmp = Object.create(Object.getPrototypeOf(x) || null);
+  } else if (str === "[object Array]") {
+    tmp = Array(x.length);
+  } else if (str === "[object Set]") {
+    tmp = /* @__PURE__ */ new Set();
+    x.forEach(function(val) {
+      tmp.add(clone3(val));
+    });
+  } else if (str === "[object Map]") {
+    tmp = /* @__PURE__ */ new Map();
+    x.forEach(function(val, key) {
+      tmp.set(clone3(key), clone3(val));
+    });
+  } else if (str === "[object Date]") {
+    tmp = /* @__PURE__ */ new Date(+x);
+  } else if (str === "[object RegExp]") {
+    tmp = new RegExp(x.source, x.flags);
+  } else if (str === "[object DataView]") {
+    tmp = new x.constructor(clone3(x.buffer));
+  } else if (str === "[object ArrayBuffer]") {
+    tmp = x.slice(0);
+  } else if (str === "[object Blob]") {
+    tmp = x.slice();
+  } else if (str.slice(-6) === "Array]") {
+    tmp = new x.constructor(x);
+  }
+  if (tmp) {
+    for (list = Object.getOwnPropertySymbols(x); i < list.length; i++) {
+      set5(tmp, list[i], Object.getOwnPropertyDescriptor(x, list[i]));
+    }
+    for (i = 0, list = Object.getOwnPropertyNames(x); i < list.length; i++) {
+      if (Object.hasOwnProperty.call(tmp, k = list[i]) && tmp[k] === x[k])
+        continue;
+      set5(tmp, k, Object.getOwnPropertyDescriptor(x, k));
+    }
+  }
+  return tmp || x;
+}
+var proxyStateMap3 = globalRef3("__zag__proxyStateMap", () => /* @__PURE__ */ new WeakMap());
+var buildProxyFunction3 = (objectIs = Object.is, newProxy = (target, handler) => new Proxy(target, handler), snapCache = /* @__PURE__ */ new WeakMap(), createSnapshot = (target, version) => {
+  const cache = snapCache.get(target);
+  if (cache?.[0] === version) {
+    return cache[1];
+  }
+  const snap = Array.isArray(target) ? [] : Object.create(Object.getPrototypeOf(target));
+  markToTrack(snap, true);
+  snapCache.set(target, [version, snap]);
+  Reflect.ownKeys(target).forEach((key) => {
+    const value = Reflect.get(target, key);
+    if (refSet3.has(value)) {
+      markToTrack(value, false);
+      snap[key] = value;
+    } else if (proxyStateMap3.has(value)) {
+      snap[key] = snapshot3(value);
+    } else {
+      snap[key] = value;
+    }
+  });
+  return Object.freeze(snap);
+}, proxyCache = /* @__PURE__ */ new WeakMap(), versionHolder = [1, 1], proxyFunction22 = (initialObject) => {
+  if (!isObject8(initialObject)) {
+    throw new Error("object required");
+  }
+  const found = proxyCache.get(initialObject);
+  if (found) {
+    return found;
+  }
+  let version = versionHolder[0];
+  const listeners = /* @__PURE__ */ new Set();
+  const notifyUpdate = (op, nextVersion = ++versionHolder[0]) => {
+    if (version !== nextVersion) {
+      version = nextVersion;
+      listeners.forEach((listener) => listener(op, nextVersion));
+    }
+  };
+  let checkVersion = versionHolder[1];
+  const ensureVersion = (nextCheckVersion = ++versionHolder[1]) => {
+    if (checkVersion !== nextCheckVersion && !listeners.size) {
+      checkVersion = nextCheckVersion;
+      propProxyStates.forEach(([propProxyState]) => {
+        const propVersion = propProxyState[1](nextCheckVersion);
+        if (propVersion > version) {
+          version = propVersion;
+        }
+      });
+    }
+    return version;
+  };
+  const createPropListener = (prop) => (op, nextVersion) => {
+    const newOp = [...op];
+    newOp[1] = [prop, ...newOp[1]];
+    notifyUpdate(newOp, nextVersion);
+  };
+  const propProxyStates = /* @__PURE__ */ new Map();
+  const addPropListener = (prop, propProxyState) => {
+    if (isDev5() && propProxyStates.has(prop)) {
+      throw new Error("prop listener already exists");
+    }
+    if (listeners.size) {
+      const remove2 = propProxyState[3](createPropListener(prop));
+      propProxyStates.set(prop, [propProxyState, remove2]);
+    } else {
+      propProxyStates.set(prop, [propProxyState]);
+    }
+  };
+  const removePropListener = (prop) => {
+    const entry = propProxyStates.get(prop);
+    if (entry) {
+      propProxyStates.delete(prop);
+      entry[1]?.();
+    }
+  };
+  const addListener = (listener) => {
+    listeners.add(listener);
+    if (listeners.size === 1) {
+      propProxyStates.forEach(([propProxyState, prevRemove], prop) => {
+        if (isDev5() && prevRemove) {
+          throw new Error("remove already exists");
+        }
+        const remove2 = propProxyState[3](createPropListener(prop));
+        propProxyStates.set(prop, [propProxyState, remove2]);
+      });
+    }
+    const removeListener = () => {
+      listeners.delete(listener);
+      if (listeners.size === 0) {
+        propProxyStates.forEach(([propProxyState, remove2], prop) => {
+          if (remove2) {
+            remove2();
+            propProxyStates.set(prop, [propProxyState]);
+          }
+        });
+      }
+    };
+    return removeListener;
+  };
+  const baseObject = Array.isArray(initialObject) ? [] : Object.create(Object.getPrototypeOf(initialObject));
+  const handler = {
+    deleteProperty(target, prop) {
+      const prevValue = Reflect.get(target, prop);
+      removePropListener(prop);
+      const deleted = Reflect.deleteProperty(target, prop);
+      if (deleted) {
+        notifyUpdate(["delete", [prop], prevValue]);
+      }
+      return deleted;
+    },
+    set(target, prop, value, receiver) {
+      const hasPrevValue = Reflect.has(target, prop);
+      const prevValue = Reflect.get(target, prop, receiver);
+      if (hasPrevValue && (objectIs(prevValue, value) || proxyCache.has(value) && objectIs(prevValue, proxyCache.get(value)))) {
+        return true;
+      }
+      removePropListener(prop);
+      if (isObject8(value)) {
+        value = getUntracked(value) || value;
+      }
+      let nextValue = value;
+      if (Object.getOwnPropertyDescriptor(target, prop)?.set)
+        ;
+      else {
+        if (!proxyStateMap3.has(value) && canProxy3(value)) {
+          nextValue = proxy3(value);
+        }
+        const childProxyState = !refSet3.has(nextValue) && proxyStateMap3.get(nextValue);
+        if (childProxyState) {
+          addPropListener(prop, childProxyState);
+        }
+      }
+      Reflect.set(target, prop, nextValue, receiver);
+      notifyUpdate(["set", [prop], value, prevValue]);
+      return true;
+    }
+  };
+  const proxyObject = newProxy(baseObject, handler);
+  proxyCache.set(initialObject, proxyObject);
+  const proxyState = [baseObject, ensureVersion, createSnapshot, addListener];
+  proxyStateMap3.set(proxyObject, proxyState);
+  Reflect.ownKeys(initialObject).forEach((key) => {
+    const desc = Object.getOwnPropertyDescriptor(initialObject, key);
+    if (desc.get || desc.set) {
+      Object.defineProperty(baseObject, key, desc);
+    } else {
+      proxyObject[key] = initialObject[key];
+    }
+  });
+  return proxyObject;
+}) => [
+  // public functions
+  proxyFunction22,
+  // shared state
+  proxyStateMap3,
+  refSet3,
+  // internal things
+  objectIs,
+  newProxy,
+  canProxy3,
+  snapCache,
+  createSnapshot,
+  proxyCache,
+  versionHolder
+];
+var [proxyFunction3] = buildProxyFunction3();
+function proxy3(initialObject = {}) {
+  return proxyFunction3(initialObject);
+}
+function subscribe3(proxyObject, callback, notifyInSync) {
+  const proxyState = proxyStateMap3.get(proxyObject);
+  if (isDev5() && !proxyState) {
+    console.warn("Please use proxy object");
+  }
+  let promise;
+  const ops = [];
+  const addListener = proxyState[3];
+  let isListenerActive = false;
+  const listener = (op) => {
+    ops.push(op);
+    if (notifyInSync) {
+      callback(ops.splice(0));
+      return;
+    }
+    if (!promise) {
+      promise = Promise.resolve().then(() => {
+        promise = void 0;
+        if (isListenerActive) {
+          callback(ops.splice(0));
+        }
+      });
+    }
+  };
+  const removeListener = addListener(listener);
+  isListenerActive = true;
+  return () => {
+    isListenerActive = false;
+    removeListener();
+  };
+}
+function snapshot3(proxyObject) {
+  const proxyState = proxyStateMap3.get(proxyObject);
+  if (isDev5() && !proxyState) {
+    console.warn("Please use proxy object");
+  }
+  const [target, ensureVersion, createSnapshot] = proxyState;
+  return createSnapshot(target, ensureVersion());
+}
+function ref3(obj) {
+  refSet3.add(obj);
+  return obj;
+}
+function proxyWithComputed3(initialObject, computedFns) {
+  const keys = Object.keys(computedFns);
+  keys.forEach((key) => {
+    if (Object.getOwnPropertyDescriptor(initialObject, key)) {
+      throw new Error("object property already defined");
+    }
+    const computedFn = computedFns[key];
+    const { get, set: set22 } = typeof computedFn === "function" ? { get: computedFn } : computedFn;
+    const desc = {};
+    desc.get = () => get(snapshot3(proxyObject));
+    if (set22) {
+      desc.set = (newValue) => set22(proxyObject, newValue);
+    }
+    Object.defineProperty(initialObject, key, desc);
+  });
+  const proxyObject = proxy3(initialObject);
+  return proxyObject;
+}
+
+// node_modules/@zag-js/menu/node_modules/@zag-js/utils/dist/index.mjs
+var first2 = (v) => v[0];
+var last2 = (v) => v[v.length - 1];
+function clear3(v) {
+  while (v.length > 0)
+    v.pop();
+  return v;
+}
+var isArrayLike2 = (value) => value?.constructor.name === "Array";
+var isArrayEqual2 = (a, b) => {
+  if (a.length !== b.length)
+    return false;
+  for (let i = 0; i < a.length; i++) {
+    if (!isEqual2(a[i], b[i]))
+      return false;
+  }
+  return true;
+};
+var isEqual2 = (a, b) => {
+  if (Object.is(a, b))
+    return true;
+  if (a == null && b != null || a != null && b == null)
+    return false;
+  if (typeof a?.isEqual === "function" && typeof b?.isEqual === "function") {
+    return a.isEqual(b);
+  }
+  if (typeof a === "function" && typeof b === "function") {
+    return a.toString() === b.toString();
+  }
+  if (isArrayLike2(a) && isArrayLike2(b)) {
+    return isArrayEqual2(Array.from(a), Array.from(b));
+  }
+  if (!(typeof a === "object") || !(typeof b === "object"))
+    return false;
+  const keys = Object.keys(b ?? /* @__PURE__ */ Object.create(null));
+  const length = keys.length;
+  for (let i = 0; i < length; i++) {
+    const hasKey = Reflect.has(a, keys[i]);
+    if (!hasKey)
+      return false;
+  }
+  for (let i = 0; i < length; i++) {
+    const key = keys[i];
+    if (!isEqual2(a[key], b[key]))
+      return false;
+  }
+  return true;
+};
+var runIfFn3 = (v, ...a) => {
+  const res = typeof v === "function" ? v(...a) : v;
+  return res ?? void 0;
+};
+var cast3 = (v) => v;
+var noop3 = () => {
+};
+var callAll3 = (...fns) => (...a) => {
+  fns.forEach(function(fn) {
+    fn?.(...a);
+  });
+};
+var uuid3 = /* @__PURE__ */ (() => {
+  let id = 0;
+  return () => {
+    id++;
+    return id.toString(36);
+  };
+})();
+var isDev6 = () => true;
+var isArray3 = (v) => Array.isArray(v);
+var isObjectLike3 = (v) => v != null && typeof v === "object";
+var isObject9 = (v) => isObjectLike3(v) && !isArray3(v);
+var isNumber3 = (v) => typeof v === "number" && !Number.isNaN(v);
+var isString3 = (v) => typeof v === "string";
+var isFunction3 = (v) => typeof v === "function";
+var hasProp3 = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop);
+var baseGetTag3 = (v) => Object.prototype.toString.call(v);
+var fnToString3 = Function.prototype.toString;
+var objectCtorString3 = fnToString3.call(Object);
+var isPlainObject4 = (v) => {
+  if (!isObjectLike3(v) || baseGetTag3(v) != "[object Object]")
+    return false;
+  const proto = Object.getPrototypeOf(v);
+  if (proto === null)
+    return true;
+  const Ctor = hasProp3(proto, "constructor") && proto.constructor;
+  return typeof Ctor == "function" && Ctor instanceof Ctor && fnToString3.call(Ctor) == objectCtorString3;
+};
+function splitProps5(props4, keys) {
+  const rest = {};
+  const result = {};
+  const keySet = new Set(keys);
+  for (const key in props4) {
+    if (keySet.has(key)) {
+      result[key] = props4[key];
+    } else {
+      rest[key] = props4[key];
+    }
+  }
+  return [result, rest];
+}
+var createSplitProps3 = (keys) => {
+  return function split(props4) {
+    return splitProps5(props4, keys);
+  };
+};
+function compact3(obj) {
+  if (!isPlainObject23(obj) || obj === void 0) {
+    return obj;
+  }
+  const keys = Reflect.ownKeys(obj).filter((key) => typeof key === "string");
+  const filtered = {};
+  for (const key of keys) {
+    const value = obj[key];
+    if (value !== void 0) {
+      filtered[key] = compact3(value);
+    }
+  }
+  return filtered;
+}
+var isPlainObject23 = (value) => {
+  return value && typeof value === "object" && value.constructor === Object;
+};
+function warn3(...a) {
+  const m = a.length === 1 ? a[0] : a[1];
+  const c = a.length === 2 ? a[0] : true;
+  if (c && true) {
+    console.warn(m);
+  }
+}
+function invariant3(...a) {
+  const m = a.length === 1 ? a[0] : a[1];
+  const c = a.length === 2 ? a[0] : true;
+  if (c && true) {
+    throw new Error(m);
+  }
+}
+
+// node_modules/@zag-js/menu/node_modules/@zag-js/core/dist/index.mjs
+var __defProp5 = Object.defineProperty;
+var __defNormalProp4 = (obj, key, value) => key in obj ? __defProp5(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField4 = (obj, key, value) => __defNormalProp4(obj, typeof key !== "symbol" ? key + "" : key, value);
+function deepMerge3(source, ...objects) {
+  for (const obj of objects) {
+    const target = compact3(obj);
+    for (const key in target) {
+      if (isPlainObject4(obj[key])) {
+        if (!source[key]) {
+          source[key] = {};
+        }
+        deepMerge3(source[key], obj[key]);
+      } else {
+        source[key] = obj[key];
+      }
+    }
+  }
+  return source;
+}
+function toEvent3(event) {
+  const obj = isString3(event) ? { type: event } : event;
+  return obj;
+}
+function toArray3(value) {
+  if (!value)
+    return [];
+  return isArray3(value) ? value.slice() : [value];
+}
+function isGuardHelper3(value) {
+  return isObject9(value) && value.predicate != null;
+}
+var Truthy3 = () => true;
+function exec2(guardMap, ctx, event, meta) {
+  return (guard) => {
+    if (isString3(guard)) {
+      return !!guardMap[guard]?.(ctx, event, meta);
+    }
+    if (isFunction3(guard)) {
+      return guard(ctx, event, meta);
+    }
+    return guard.predicate(guardMap)(ctx, event, meta);
+  };
+}
+function or2(...conditions) {
+  return {
+    predicate: (guardMap) => (ctx, event, meta) => conditions.map(exec2(guardMap, ctx, event, meta)).some(Boolean)
+  };
+}
+function and3(...conditions) {
+  return {
+    predicate: (guardMap) => (ctx, event, meta) => conditions.map(exec2(guardMap, ctx, event, meta)).every(Boolean)
+  };
+}
+function not3(condition) {
+  return {
+    predicate: (guardMap) => (ctx, event, meta) => {
+      return !exec2(guardMap, ctx, event, meta)(condition);
+    }
+  };
+}
+function stateIn2(...values) {
+  return (_ctx, _evt, meta) => meta.state.matches(...values);
+}
+var guards2 = { or: or2, and: and3, not: not3, stateIn: stateIn2 };
+function determineGuardFn3(guard, guardMap) {
+  guard = guard ?? Truthy3;
+  return (context, event, meta) => {
+    if (isString3(guard)) {
+      const value = guardMap[guard];
+      return isFunction3(value) ? value(context, event, meta) : value;
+    }
+    if (isGuardHelper3(guard)) {
+      return guard.predicate(guardMap)(context, event, meta);
+    }
+    return guard?.(context, event, meta);
+  };
+}
+function determineActionsFn3(values, guardMap) {
+  return (context, event, meta) => {
+    if (isGuardHelper3(values)) {
+      return values.predicate(guardMap)(context, event, meta);
+    }
+    return values;
+  };
+}
+function createProxy3(config) {
+  const computedContext = config.computed ?? cast3({});
+  const initialContext = config.context ?? cast3({});
+  const initialTags = config.initial ? config.states?.[config.initial]?.tags : [];
+  const state = proxy3({
+    value: config.initial ?? "",
+    previousValue: "",
+    event: cast3({}),
+    previousEvent: cast3({}),
+    context: proxyWithComputed3(initialContext, computedContext),
+    done: false,
+    tags: initialTags ?? [],
+    hasTag(tag) {
+      return this.tags.includes(tag);
+    },
+    matches(...value) {
+      return value.includes(this.value);
+    },
+    can(event) {
+      return cast3(this).nextEvents.includes(event);
+    },
+    get nextEvents() {
+      const stateEvents = config.states?.[this.value]?.["on"] ?? {};
+      const globalEvents = config?.on ?? {};
+      return Object.keys({ ...stateEvents, ...globalEvents });
+    },
+    get changed() {
+      if (this.event.value === "machine.init" || !this.previousValue)
+        return false;
+      return this.value !== this.previousValue;
+    }
+  });
+  return cast3(state);
+}
+function determineDelayFn3(delay2, delaysMap) {
+  return (context, event) => {
+    if (isNumber3(delay2))
+      return delay2;
+    if (isFunction3(delay2)) {
+      return delay2(context, event);
+    }
+    if (isString3(delay2)) {
+      const value = Number.parseFloat(delay2);
+      if (!Number.isNaN(value)) {
+        return value;
+      }
+      if (delaysMap) {
+        const valueOrFn = delaysMap?.[delay2];
+        invariant3(
+          valueOrFn == null,
+          `[@zag-js/core > determine-delay] Cannot determine delay for \`${delay2}\`. It doesn't exist in \`options.delays\``
+        );
+        return isFunction3(valueOrFn) ? valueOrFn(context, event) : valueOrFn;
+      }
+    }
+  };
+}
+function toTarget3(target) {
+  return isString3(target) ? { target } : target;
+}
+function determineTransitionFn3(transitions, guardMap) {
+  return (context, event, meta) => {
+    return toArray3(transitions).map(toTarget3).find((transition) => {
+      const determineGuard = determineGuardFn3(transition.guard, guardMap);
+      const guard = determineGuard(context, event, meta);
+      return guard ?? transition.target ?? transition.actions;
+    });
+  };
+}
+var Machine3 = class {
+  // Let's get started!
+  constructor(config, options) {
+    __publicField4(
+      this,
+      "status",
+      "Not Started"
+      /* NotStarted */
+    );
+    __publicField4(this, "state");
+    __publicField4(this, "initialState");
+    __publicField4(this, "initialContext");
+    __publicField4(this, "id");
+    __publicField4(
+      this,
+      "type",
+      "machine"
+      /* Machine */
+    );
+    __publicField4(this, "activityEvents", /* @__PURE__ */ new Map());
+    __publicField4(this, "delayedEvents", /* @__PURE__ */ new Map());
+    __publicField4(this, "stateListeners", /* @__PURE__ */ new Set());
+    __publicField4(this, "doneListeners", /* @__PURE__ */ new Set());
+    __publicField4(this, "contextWatchers", /* @__PURE__ */ new Set());
+    __publicField4(this, "removeStateListener", noop3);
+    __publicField4(this, "parent");
+    __publicField4(this, "children", /* @__PURE__ */ new Map());
+    __publicField4(this, "guardMap");
+    __publicField4(this, "actionMap");
+    __publicField4(this, "delayMap");
+    __publicField4(this, "activityMap");
+    __publicField4(this, "sync");
+    __publicField4(this, "options");
+    __publicField4(this, "config");
+    __publicField4(this, "_created", () => {
+      if (!this.config.created)
+        return;
+      const event = toEvent3(
+        "machine.created"
+        /* Created */
+      );
+      this.executeActions(this.config.created, event);
+    });
+    __publicField4(this, "start", (init) => {
+      this.state.value = "";
+      this.state.tags = [];
+      if (this.status === "Running") {
+        return this;
+      }
+      this.status = "Running";
+      this.removeStateListener = subscribe3(
+        this.state,
+        () => {
+          this.stateListeners.forEach((listener) => {
+            listener(this.stateSnapshot);
+          });
+        },
+        this.sync
+      );
+      this.setupContextWatchers();
+      this.executeActivities(
+        toEvent3(
+          "machine.start"
+          /* Start */
+        ),
+        toArray3(this.config.activities),
+        "machine.start"
+        /* Start */
+      );
+      this.executeActions(this.config.entry, toEvent3(
+        "machine.start"
+        /* Start */
+      ));
+      const event = toEvent3(
+        "machine.init"
+        /* Init */
+      );
+      const target = isObject9(init) ? init.value : init;
+      const context = isObject9(init) ? init.context : void 0;
+      if (context) {
+        this.setContext(context);
+      }
+      const transition = {
+        target: target ?? this.config.initial
+      };
+      const next = this.getNextStateInfo(transition, event);
+      this.initialState = next;
+      this.performStateChangeEffects(this.state.value, next, event);
+      return this;
+    });
+    __publicField4(this, "setupContextWatchers", () => {
+      const { watch } = this.config;
+      if (!watch)
+        return;
+      let prev = snapshot3(this.state.context);
+      const cleanup = subscribe3(this.state.context, () => {
+        const next = snapshot3(this.state.context);
+        for (const [key, fn] of Object.entries(watch)) {
+          const isEqual3 = this.options.compareFns?.[key] ?? Object.is;
+          if (isEqual3(prev[key], next[key]))
+            continue;
+          this.executeActions(fn, this.state.event);
+        }
+        prev = next;
+      });
+      this.contextWatchers.add(cleanup);
+    });
+    __publicField4(this, "stop", () => {
+      if (this.status === "Stopped")
+        return;
+      this.performExitEffects(this.state.value, toEvent3(
+        "machine.stop"
+        /* Stop */
+      ));
+      this.executeActions(this.config.exit, toEvent3(
+        "machine.stop"
+        /* Stop */
+      ));
+      this.setState("");
+      this.setEvent(
+        "machine.stop"
+        /* Stop */
+      );
+      this.stopStateListeners();
+      this.stopChildren();
+      this.stopActivities();
+      this.stopDelayedEvents();
+      this.stopContextWatchers();
+      this.status = "Stopped";
+      return this;
+    });
+    __publicField4(this, "stopStateListeners", () => {
+      this.removeStateListener();
+      this.stateListeners.clear();
+    });
+    __publicField4(this, "stopContextWatchers", () => {
+      this.contextWatchers.forEach((fn) => fn());
+      this.contextWatchers.clear();
+    });
+    __publicField4(this, "stopDelayedEvents", () => {
+      this.delayedEvents.forEach((state) => {
+        state.forEach((stop) => stop());
+      });
+      this.delayedEvents.clear();
+    });
+    __publicField4(this, "stopActivities", (state) => {
+      if (state) {
+        this.activityEvents.get(state)?.forEach((stop) => stop());
+        this.activityEvents.get(state)?.clear();
+        this.activityEvents.delete(state);
+      } else {
+        this.activityEvents.forEach((state2) => {
+          state2.forEach((stop) => stop());
+          state2.clear();
+        });
+        this.activityEvents.clear();
+      }
+    });
+    __publicField4(this, "sendChild", (evt, to) => {
+      const event = toEvent3(evt);
+      const id = runIfFn3(to, this.contextSnapshot);
+      const child = this.children.get(id);
+      if (!child) {
+        invariant3(`[@zag-js/core] Cannot send '${event.type}' event to unknown child`);
+      }
+      child.send(event);
+    });
+    __publicField4(this, "stopChild", (id) => {
+      if (!this.children.has(id)) {
+        invariant3(`[@zag-js/core > stop-child] Cannot stop unknown child ${id}`);
+      }
+      this.children.get(id).stop();
+      this.children.delete(id);
+    });
+    __publicField4(this, "removeChild", (id) => {
+      this.children.delete(id);
+    });
+    __publicField4(this, "stopChildren", () => {
+      this.children.forEach((child) => child.stop());
+      this.children.clear();
+    });
+    __publicField4(this, "setParent", (parent) => {
+      this.parent = parent;
+    });
+    __publicField4(this, "spawn", (src, id) => {
+      const actor = runIfFn3(src);
+      if (id)
+        actor.id = id;
+      actor.type = "machine.actor";
+      actor.setParent(this);
+      this.children.set(actor.id, cast3(actor));
+      actor.onDone(() => {
+        this.removeChild(actor.id);
+      }).start();
+      return cast3(ref3(actor));
+    });
+    __publicField4(this, "stopActivity", (key) => {
+      if (!this.state.value)
+        return;
+      const cleanups3 = this.activityEvents.get(this.state.value);
+      cleanups3?.get(key)?.();
+      cleanups3?.delete(key);
+    });
+    __publicField4(this, "addActivityCleanup", (state, key, cleanup) => {
+      if (!state)
+        return;
+      if (!this.activityEvents.has(state)) {
+        this.activityEvents.set(state, /* @__PURE__ */ new Map([[key, cleanup]]));
+      } else {
+        this.activityEvents.get(state)?.set(key, cleanup);
+      }
+    });
+    __publicField4(this, "setState", (target) => {
+      this.state.previousValue = this.state.value;
+      this.state.value = target;
+      const stateNode = this.getStateNode(target);
+      if (target == null) {
+        clear3(this.state.tags);
+      } else {
+        this.state.tags = toArray3(stateNode?.tags);
+      }
+    });
+    __publicField4(this, "setContext", (context) => {
+      if (!context)
+        return;
+      deepMerge3(this.state.context, compact3(context));
+    });
+    __publicField4(this, "setOptions", (options2) => {
+      const opts = compact3(options2);
+      this.actionMap = { ...this.actionMap, ...opts.actions };
+      this.delayMap = { ...this.delayMap, ...opts.delays };
+      this.activityMap = { ...this.activityMap, ...opts.activities };
+      this.guardMap = { ...this.guardMap, ...opts.guards };
+    });
+    __publicField4(this, "getStateNode", (state) => {
+      if (!state)
+        return;
+      return this.config.states?.[state];
+    });
+    __publicField4(this, "getNextStateInfo", (transitions, event) => {
+      const transition = this.determineTransition(transitions, event);
+      const isTargetless = !transition?.target;
+      const target = transition?.target ?? this.state.value;
+      const changed = this.state.value !== target;
+      const stateNode = this.getStateNode(target);
+      const reenter = !isTargetless && !changed && !transition?.internal;
+      const info = {
+        reenter,
+        transition,
+        stateNode,
+        target,
+        changed
+      };
+      this.log("NextState:", `[${event.type}]`, this.state.value, "---->", info.target);
+      return info;
+    });
+    __publicField4(this, "getAfterActions", (transition, delay2) => {
+      let id;
+      const current = this.state.value;
+      return {
+        entry: () => {
+          id = globalThis.setTimeout(() => {
+            const next = this.getNextStateInfo(transition, this.state.event);
+            this.performStateChangeEffects(current, next, this.state.event);
+          }, delay2);
+        },
+        exit: () => {
+          globalThis.clearTimeout(id);
+        }
+      };
+    });
+    __publicField4(this, "getDelayedEventActions", (state) => {
+      const stateNode = this.getStateNode(state);
+      const event = this.state.event;
+      if (!stateNode || !stateNode.after)
+        return;
+      const entries = [];
+      const exits = [];
+      if (isArray3(stateNode.after)) {
+        const transition = this.determineTransition(stateNode.after, event);
+        if (!transition)
+          return;
+        if (!hasProp3(transition, "delay")) {
+          throw new Error(`[@zag-js/core > after] Delay is required for after transition: ${JSON.stringify(transition)}`);
+        }
+        const determineDelay = determineDelayFn3(transition.delay, this.delayMap);
+        const __delay = determineDelay(this.contextSnapshot, event);
+        const actions = this.getAfterActions(transition, __delay);
+        entries.push(actions.entry);
+        exits.push(actions.exit);
+        return { entries, exits };
+      }
+      if (isObject9(stateNode.after)) {
+        for (const delay2 in stateNode.after) {
+          const transition = stateNode.after[delay2];
+          const determineDelay = determineDelayFn3(delay2, this.delayMap);
+          const __delay = determineDelay(this.contextSnapshot, event);
+          const actions = this.getAfterActions(transition, __delay);
+          entries.push(actions.entry);
+          exits.push(actions.exit);
+        }
+      }
+      return { entries, exits };
+    });
+    __publicField4(this, "executeActions", (actions, event) => {
+      const pickedActions = determineActionsFn3(actions, this.guardMap)(this.contextSnapshot, event, this.guardMeta);
+      for (const action of toArray3(pickedActions)) {
+        const fn = isString3(action) ? this.actionMap?.[action] : action;
+        warn3(
+          isString3(action) && !fn,
+          `[@zag-js/core > execute-actions] No implementation found for action: \`${action}\``
+        );
+        fn?.(this.state.context, event, this.meta);
+      }
+    });
+    __publicField4(this, "executeActivities", (event, activities, state) => {
+      for (const activity of activities) {
+        const fn = isString3(activity) ? this.activityMap?.[activity] : activity;
+        if (!fn) {
+          warn3(`[@zag-js/core > execute-activity] No implementation found for activity: \`${activity}\``);
+          continue;
+        }
+        const cleanup = fn(this.state.context, event, this.meta);
+        if (cleanup) {
+          const key = isString3(activity) ? activity : activity.name || uuid3();
+          this.addActivityCleanup(state ?? this.state.value, key, cleanup);
+        }
+      }
+    });
+    __publicField4(this, "createEveryActivities", (every, callbackfn) => {
+      if (!every)
+        return;
+      if (isArray3(every)) {
+        const picked = toArray3(every).find((transition) => {
+          const delayOrFn = transition.delay;
+          const determineDelay2 = determineDelayFn3(delayOrFn, this.delayMap);
+          const delay22 = determineDelay2(this.contextSnapshot, this.state.event);
+          const determineGuard = determineGuardFn3(transition.guard, this.guardMap);
+          const guard = determineGuard(this.contextSnapshot, this.state.event, this.guardMeta);
+          return guard ?? delay22 != null;
+        });
+        if (!picked)
+          return;
+        const determineDelay = determineDelayFn3(picked.delay, this.delayMap);
+        const delay2 = determineDelay(this.contextSnapshot, this.state.event);
+        const activity = () => {
+          const id = globalThis.setInterval(() => {
+            this.executeActions(picked.actions, this.state.event);
+          }, delay2);
+          return () => {
+            globalThis.clearInterval(id);
+          };
+        };
+        callbackfn(activity);
+      } else {
+        for (const interval in every) {
+          const actions = every?.[interval];
+          const determineDelay = determineDelayFn3(interval, this.delayMap);
+          const delay2 = determineDelay(this.contextSnapshot, this.state.event);
+          const activity = () => {
+            const id = globalThis.setInterval(() => {
+              this.executeActions(actions, this.state.event);
+            }, delay2);
+            return () => {
+              globalThis.clearInterval(id);
+            };
+          };
+          callbackfn(activity);
+        }
+      }
+    });
+    __publicField4(this, "setEvent", (event) => {
+      this.state.previousEvent = this.state.event;
+      this.state.event = ref3(toEvent3(event));
+    });
+    __publicField4(this, "performExitEffects", (current, event) => {
+      const currentState = this.state.value;
+      if (currentState === "")
+        return;
+      const stateNode = current ? this.getStateNode(current) : void 0;
+      this.stopActivities(currentState);
+      const _exit = determineActionsFn3(stateNode?.exit, this.guardMap)(this.contextSnapshot, event, this.guardMeta);
+      const exitActions = toArray3(_exit);
+      const afterExitActions = this.delayedEvents.get(currentState);
+      if (afterExitActions) {
+        exitActions.push(...afterExitActions);
+      }
+      this.executeActions(exitActions, event);
+      this.delayedEvents.delete(currentState);
+    });
+    __publicField4(this, "performEntryEffects", (next, event) => {
+      const stateNode = this.getStateNode(next);
+      const activities = toArray3(stateNode?.activities);
+      this.createEveryActivities(stateNode?.every, (activity) => {
+        activities.unshift(activity);
+      });
+      if (activities.length > 0) {
+        this.executeActivities(event, activities);
+      }
+      const pickedActions = determineActionsFn3(stateNode?.entry, this.guardMap)(
+        this.contextSnapshot,
+        event,
+        this.guardMeta
+      );
+      const entryActions = toArray3(pickedActions);
+      const afterActions = this.getDelayedEventActions(next);
+      if (stateNode?.after && afterActions) {
+        this.delayedEvents.set(next, afterActions?.exits);
+        entryActions.push(...afterActions.entries);
+      }
+      this.executeActions(entryActions, event);
+      if (stateNode?.type === "final") {
+        this.state.done = true;
+        this.doneListeners.forEach((listener) => {
+          listener(this.stateSnapshot);
+        });
+        this.stop();
+      }
+    });
+    __publicField4(this, "performTransitionEffects", (transitions, event) => {
+      const transition = this.determineTransition(transitions, event);
+      this.executeActions(transition?.actions, event);
+    });
+    __publicField4(this, "performStateChangeEffects", (current, next, event) => {
+      this.setEvent(event);
+      const changed = next.changed || next.reenter;
+      if (changed) {
+        this.performExitEffects(current, event);
+      }
+      this.performTransitionEffects(next.transition, event);
+      this.setState(next.target);
+      if (changed) {
+        this.performEntryEffects(next.target, event);
+      }
+    });
+    __publicField4(this, "determineTransition", (transition, event) => {
+      const fn = determineTransitionFn3(transition, this.guardMap);
+      return fn?.(this.contextSnapshot, event, this.guardMeta);
+    });
+    __publicField4(this, "sendParent", (evt) => {
+      if (!this.parent) {
+        invariant3("[@zag-js/core > send-parent] Cannot send event to an unknown parent");
+      }
+      const event = toEvent3(evt);
+      this.parent?.send(event);
+    });
+    __publicField4(this, "log", (...args) => {
+      if (isDev6() && this.options.debug) {
+        console.log(...args);
+      }
+    });
+    __publicField4(this, "send", (evt) => {
+      const event = toEvent3(evt);
+      this.transition(this.state.value, event);
+    });
+    __publicField4(this, "transition", (state, evt) => {
+      const stateNode = isString3(state) ? this.getStateNode(state) : state?.stateNode;
+      const event = toEvent3(evt);
+      if (!stateNode && !this.config.on) {
+        const msg = this.status === "Stopped" ? "[@zag-js/core > transition] Cannot transition a stopped machine" : `[@zag-js/core > transition] State does not have a definition for \`state\`: ${state}, \`event\`: ${event.type}`;
+        warn3(msg);
+        return;
+      }
+      const transitions = (
+        // @ts-expect-error - Fix this
+        stateNode?.on?.[event.type] ?? this.config.on?.[event.type]
+      );
+      const next = this.getNextStateInfo(transitions, event);
+      this.performStateChangeEffects(this.state.value, next, event);
+      return next.stateNode;
+    });
+    __publicField4(this, "subscribe", (listener) => {
+      this.stateListeners.add(listener);
+      if (this.status === "Running") {
+        listener(this.stateSnapshot);
+      }
+      return () => {
+        this.stateListeners.delete(listener);
+      };
+    });
+    __publicField4(this, "onDone", (listener) => {
+      this.doneListeners.add(listener);
+      return this;
+    });
+    __publicField4(this, "onTransition", (listener) => {
+      this.stateListeners.add(listener);
+      if (this.status === "Running") {
+        listener(this.stateSnapshot);
+      }
+      return this;
+    });
+    this.config = clone3(config);
+    this.options = clone3(options ?? {});
+    this.id = this.config.id ?? `machine-${uuid3()}`;
+    this.guardMap = this.options?.guards ?? {};
+    this.actionMap = this.options?.actions ?? {};
+    this.delayMap = this.options?.delays ?? {};
+    this.activityMap = this.options?.activities ?? {};
+    this.sync = this.options?.sync ?? false;
+    this.state = createProxy3(this.config);
+    this.initialContext = snapshot3(this.state.context);
+  }
+  // immutable state value
+  get stateSnapshot() {
+    return cast3(snapshot3(this.state));
+  }
+  getState() {
+    return this.stateSnapshot;
+  }
+  // immutable context value
+  get contextSnapshot() {
+    return this.stateSnapshot.context;
+  }
+  /**
+   * A reference to the instance methods of the machine.
+   * Useful when spawning child machines and managing the communication between them.
+   */
+  get self() {
+    const self2 = this;
+    return {
+      id: this.id,
+      send: this.send.bind(this),
+      sendParent: this.sendParent.bind(this),
+      sendChild: this.sendChild.bind(this),
+      stop: this.stop.bind(this),
+      stopChild: this.stopChild.bind(this),
+      spawn: this.spawn.bind(this),
+      stopActivity: this.stopActivity.bind(this),
+      get state() {
+        return self2.stateSnapshot;
+      },
+      get initialContext() {
+        return self2.initialContext;
+      },
+      get initialState() {
+        return self2.initialState?.target ?? "";
+      }
+    };
+  }
+  get meta() {
+    return {
+      state: this.stateSnapshot,
+      guards: this.guardMap,
+      send: this.send.bind(this),
+      self: this.self,
+      initialContext: this.initialContext,
+      initialState: this.initialState?.target ?? "",
+      getState: () => this.stateSnapshot,
+      getAction: (key) => this.actionMap[key],
+      getGuard: (key) => this.guardMap[key]
+    };
+  }
+  get guardMeta() {
+    return {
+      state: this.stateSnapshot
+    };
+  }
+  get [Symbol.toStringTag]() {
+    return "Machine";
+  }
+  getHydrationState() {
+    const state = this.getState();
+    return {
+      value: state.value,
+      tags: state.tags
+    };
+  }
+};
+var createMachine3 = (config, options) => new Machine3(config, options);
 var clsx = (...args) => args.map((str) => str?.trim?.()).filter(Boolean).join(" ");
 var CSS_REGEX = /((?:--)?(?:\w+-?)+)\s*:\s*([^;]*)/g;
 var serialize = (style) => {
@@ -3067,36 +6061,36 @@ var serialize = (style) => {
   return res;
 };
 var css = (a, b) => {
-  if (isString2(a)) {
-    if (isString2(b))
+  if (isString3(a)) {
+    if (isString3(b))
       return `${a};${b}`;
     a = serialize(a);
-  } else if (isString2(b)) {
+  } else if (isString3(b)) {
     b = serialize(b);
   }
   return Object.assign({}, a ?? {}, b ?? {});
 };
 function mergeProps(...args) {
   let result = {};
-  for (let props3 of args) {
+  for (let props4 of args) {
     for (let key in result) {
-      if (key.startsWith("on") && typeof result[key] === "function" && typeof props3[key] === "function") {
-        result[key] = callAll2(props3[key], result[key]);
+      if (key.startsWith("on") && typeof result[key] === "function" && typeof props4[key] === "function") {
+        result[key] = callAll3(props4[key], result[key]);
         continue;
       }
       if (key === "className" || key === "class") {
-        result[key] = clsx(result[key], props3[key]);
+        result[key] = clsx(result[key], props4[key]);
         continue;
       }
       if (key === "style") {
-        result[key] = css(result[key], props3[key]);
+        result[key] = css(result[key], props4[key]);
         continue;
       }
-      result[key] = props3[key] !== void 0 ? props3[key] : result[key];
+      result[key] = props4[key] !== void 0 ? props4[key] : result[key];
     }
-    for (let key in props3) {
+    for (let key in props4) {
       if (result[key] === void 0) {
-        result[key] = props3[key];
+        result[key] = props4[key];
       }
     }
   }
@@ -3105,39 +6099,39 @@ function mergeProps(...args) {
 
 // node_modules/@zag-js/menu/node_modules/@zag-js/dom-query/dist/index.mjs
 var dataAttr2 = (guard) => guard ? "" : void 0;
-var ELEMENT_NODE = 1;
-var DOCUMENT_NODE2 = 9;
-var DOCUMENT_FRAGMENT_NODE = 11;
-var isObject6 = (v) => typeof v === "object" && v !== null;
-var isHTMLElement = (el) => isObject6(el) && el.nodeType === ELEMENT_NODE && typeof el.nodeName === "string";
-var isDocument2 = (el) => isObject6(el) && el.nodeType === DOCUMENT_NODE2;
-var isWindow2 = (el) => isObject6(el) && el === el.window;
-var isNode = (el) => isObject6(el) && el.nodeType !== void 0;
-var isShadowRoot = (el) => isNode(el) && el.nodeType === DOCUMENT_FRAGMENT_NODE && "host" in el;
-function contains(parent, child) {
+var ELEMENT_NODE2 = 1;
+var DOCUMENT_NODE4 = 9;
+var DOCUMENT_FRAGMENT_NODE2 = 11;
+var isObject10 = (v) => typeof v === "object" && v !== null;
+var isHTMLElement3 = (el) => isObject10(el) && el.nodeType === ELEMENT_NODE2 && typeof el.nodeName === "string";
+var isDocument4 = (el) => isObject10(el) && el.nodeType === DOCUMENT_NODE4;
+var isWindow4 = (el) => isObject10(el) && el === el.window;
+var isNode2 = (el) => isObject10(el) && el.nodeType !== void 0;
+var isShadowRoot2 = (el) => isNode2(el) && el.nodeType === DOCUMENT_FRAGMENT_NODE2 && "host" in el;
+function contains2(parent, child) {
   if (!parent || !child)
     return false;
-  if (!isHTMLElement(parent) || !isHTMLElement(child))
+  if (!isHTMLElement3(parent) || !isHTMLElement3(child))
     return false;
   return parent === child || parent.contains(child);
 }
-function getDocument2(el) {
-  if (isDocument2(el))
+function getDocument4(el) {
+  if (isDocument4(el))
     return el;
-  if (isWindow2(el))
+  if (isWindow4(el))
     return el.document;
   return el?.ownerDocument ?? document;
 }
-function getWindow(el) {
-  if (isShadowRoot(el))
-    return getWindow(el.host);
-  if (isDocument2(el))
+function getWindow2(el) {
+  if (isShadowRoot2(el))
+    return getWindow2(el.host);
+  if (isDocument4(el))
     return el.defaultView ?? window;
-  if (isHTMLElement(el))
+  if (isHTMLElement3(el))
     return el.ownerDocument?.defaultView ?? window;
   return window;
 }
-function getActiveElement2(rootNode) {
+function getActiveElement4(rootNode) {
   let activeElement = rootNode.activeElement;
   while (activeElement?.shadowRoot) {
     const el = activeElement.shadowRoot.activeElement;
@@ -3148,25 +6142,25 @@ function getActiveElement2(rootNode) {
   }
   return activeElement;
 }
-var isDom2 = () => typeof document !== "undefined";
-function getPlatform2() {
+var isDom4 = () => typeof document !== "undefined";
+function getPlatform4() {
   const agent = navigator.userAgentData;
   return agent?.platform ?? navigator.platform;
 }
-var pt2 = (v) => isDom2() && v.test(getPlatform2());
-var ua = (v) => isDom2() && v.test(navigator.userAgent);
-var isMac = () => pt2(/^Mac/);
-var isFirefox = () => ua(/firefox\//i);
-var isApple2 = () => pt2(/mac|iphone|ipad|ipod/i);
-function getComposedPath(event) {
+var pt4 = (v) => isDom4() && v.test(getPlatform4());
+var ua = (v) => isDom4() && v.test(navigator.userAgent);
+var isMac2 = () => pt4(/^Mac/);
+var isFirefox2 = () => ua(/firefox\//i);
+var isApple2 = () => pt4(/mac|iphone|ipad|ipod/i);
+function getComposedPath3(event) {
   return event.composedPath?.() ?? event.nativeEvent?.composedPath?.();
 }
-function getEventTarget(event) {
-  const composedPath = getComposedPath(event);
+function getEventTarget3(event) {
+  const composedPath = getComposedPath3(event);
   return composedPath?.[0] ?? event.target;
 }
 var isSelfTarget = (event) => {
-  return contains(event.currentTarget, getEventTarget(event));
+  return contains2(event.currentTarget, getEventTarget3(event));
 };
 function isOpeningInNewTab(event) {
   const element = event.currentTarget;
@@ -3274,35 +6268,35 @@ var getByTypeahead = /* @__PURE__ */ Object.assign(getByTypeaheadImpl, {
 function isValidTypeaheadEvent(event) {
   return event.key.length === 1 && !event.ctrlKey && !event.metaKey;
 }
-var isHTMLElement2 = (element) => typeof element === "object" && element !== null && element.nodeType === 1;
-var isFrame = (element) => isHTMLElement2(element) && element.tagName === "IFRAME";
-function isVisible(el) {
-  if (!isHTMLElement2(el))
+var isHTMLElement23 = (element) => typeof element === "object" && element !== null && element.nodeType === 1;
+var isFrame2 = (element) => isHTMLElement23(element) && element.tagName === "IFRAME";
+function isVisible3(el) {
+  if (!isHTMLElement23(el))
     return false;
   return el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
 }
-function hasNegativeTabIndex(element) {
+function hasNegativeTabIndex2(element) {
   const tabIndex = parseInt(element.getAttribute("tabindex") || "0", 10);
   return tabIndex < 0;
 }
-var focusableSelector = "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], button:not([disabled]), [tabindex], iframe, object, embed, area[href], audio[controls], video[controls], [contenteditable]:not([contenteditable='false']), details > summary:first-of-type";
-function isFocusable(element) {
+var focusableSelector3 = "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], button:not([disabled]), [tabindex], iframe, object, embed, area[href], audio[controls], video[controls], [contenteditable]:not([contenteditable='false']), details > summary:first-of-type";
+function isFocusable3(element) {
   if (!element || element.closest("[inert]"))
     return false;
-  return element.matches(focusableSelector) && isVisible(element);
+  return element.matches(focusableSelector3) && isVisible3(element);
 }
-function getTabbables(container, includeContainer) {
+function getTabbables2(container, includeContainer) {
   if (!container)
     return [];
-  const elements = Array.from(container.querySelectorAll(focusableSelector));
-  const tabbableElements = elements.filter(isTabbable);
-  if (includeContainer && isTabbable(container)) {
+  const elements = Array.from(container.querySelectorAll(focusableSelector3));
+  const tabbableElements = elements.filter(isTabbable2);
+  if (includeContainer && isTabbable2(container)) {
     tabbableElements.unshift(container);
   }
   tabbableElements.forEach((element, i) => {
-    if (isFrame(element) && element.contentDocument) {
+    if (isFrame2(element) && element.contentDocument) {
       const frameBody = element.contentDocument.body;
-      const allFrameTabbable = getTabbables(frameBody);
+      const allFrameTabbable = getTabbables2(frameBody);
       tabbableElements.splice(i, 1, ...allFrameTabbable);
     }
   });
@@ -3311,13 +6305,13 @@ function getTabbables(container, includeContainer) {
   }
   return tabbableElements;
 }
-function isTabbable(el) {
+function isTabbable2(el) {
   if (el != null && el.tabIndex > 0)
     return true;
-  return isFocusable(el) && !hasNegativeTabIndex(el);
+  return isFocusable3(el) && !hasNegativeTabIndex2(el);
 }
 function getTabbableEdges(container, includeContainer) {
-  const elements = getTabbables(container, includeContainer);
+  const elements = getTabbables2(container, includeContainer);
   const first3 = elements[0] || null;
   const last3 = elements[elements.length - 1] || null;
   return [first3, last3];
@@ -3330,7 +6324,7 @@ function getInitialFocus(options) {
   node || (node = typeof getInitialEl === "function" ? getInitialEl() : getInitialEl);
   node || (node = root?.querySelector("[data-autofocus],[autofocus]"));
   if (!node) {
-    const tabbables = getTabbables(root);
+    const tabbables = getTabbables2(root);
     node = filter ? tabbables.filter(filter)[0] : tabbables[0];
   }
   return node || root || void 0;
@@ -3350,23 +6344,23 @@ function isValidTabEvent(event) {
   return true;
 }
 function isEditableElement(el) {
-  if (el == null || !isHTMLElement(el)) {
+  if (el == null || !isHTMLElement3(el)) {
     return false;
   }
   try {
-    const win = getWindow(el);
+    const win = getWindow2(el);
     return el instanceof win.HTMLInputElement && el.selectionStart != null || /(textarea|select)/.test(el.localName) || el.isContentEditable;
   } catch {
     return false;
   }
 }
-var OVERFLOW_RE = /auto|scroll|overlay|hidden|clip/;
-function isOverflowElement(el) {
-  const win = getWindow(el);
+var OVERFLOW_RE2 = /auto|scroll|overlay|hidden|clip/;
+function isOverflowElement2(el) {
+  const win = getWindow2(el);
   const { overflow, overflowX, overflowY, display } = win.getComputedStyle(el);
-  return OVERFLOW_RE.test(overflow + overflowY + overflowX) && !["inline", "contents"].includes(display);
+  return OVERFLOW_RE2.test(overflow + overflowY + overflowX) && !["inline", "contents"].includes(display);
 }
-function raf(fn) {
+function raf4(fn) {
   const id = globalThis.requestAnimationFrame(fn);
   return () => {
     globalThis.cancelAnimationFrame(id);
@@ -3389,29 +6383,29 @@ function observeAttributesImpl(node, options) {
 }
 function observeAttributes(nodeOrFn, options) {
   const { defer } = options;
-  const func = defer ? raf : (v) => v();
-  const cleanups2 = [];
-  cleanups2.push(
+  const func = defer ? raf4 : (v) => v();
+  const cleanups22 = [];
+  cleanups22.push(
     func(() => {
       const node = typeof nodeOrFn === "function" ? nodeOrFn() : nodeOrFn;
-      cleanups2.push(observeAttributesImpl(node, options));
+      cleanups22.push(observeAttributesImpl(node, options));
     })
   );
   return () => {
-    cleanups2.forEach((fn) => fn?.());
+    cleanups22.forEach((fn) => fn?.());
   };
 }
 function queryAll2(root, selector) {
   return Array.from(root?.querySelectorAll(selector) ?? []);
 }
-function createScope2(methods) {
-  const dom3 = {
+function createScope3(methods) {
+  const dom4 = {
     getRootNode: (ctx) => ctx.getRootNode?.() ?? document,
-    getDoc: (ctx) => getDocument2(dom3.getRootNode(ctx)),
-    getWin: (ctx) => dom3.getDoc(ctx).defaultView ?? window,
-    getActiveElement: (ctx) => getActiveElement2(dom3.getRootNode(ctx)),
-    isActiveElement: (ctx, elem) => elem === dom3.getActiveElement(ctx),
-    getById: (ctx, id) => dom3.getRootNode(ctx).getElementById(id),
+    getDoc: (ctx) => getDocument4(dom4.getRootNode(ctx)),
+    getWin: (ctx) => dom4.getDoc(ctx).defaultView ?? window,
+    getActiveElement: (ctx) => getActiveElement4(dom4.getRootNode(ctx)),
+    isActiveElement: (ctx, elem) => elem === dom4.getActiveElement(ctx),
+    getById: (ctx, id) => dom4.getRootNode(ctx).getElementById(id),
     setValue: (elem, value) => {
       if (elem == null || value == null)
         return;
@@ -3421,7 +6415,7 @@ function createScope2(methods) {
       elem.value = value.toString();
     }
   };
-  return { ...dom3, ...methods };
+  return { ...dom4, ...methods };
 }
 function isScrollable(el) {
   return el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth;
@@ -3431,15 +6425,15 @@ function scrollIntoView(el, options) {
   if (!el || !rootEl) {
     return;
   }
-  if (!isOverflowElement(rootEl) || !isScrollable(rootEl)) {
+  if (!isOverflowElement2(rootEl) || !isScrollable(rootEl)) {
     return;
   }
   el.scrollIntoView(scrollOptions);
 }
-var fps2 = 1e3 / 60;
+var fps5 = 1e3 / 60;
 
 // node_modules/@zag-js/menu/node_modules/@zag-js/dom-event/dist/index.mjs
-var addDomEvent = (target, eventName, handler, options) => {
+var addDomEvent3 = (target, eventName, handler, options) => {
   const node = typeof target === "function" ? target() : target;
   node?.addEventListener(eventName, handler, options);
   return () => {
@@ -3449,8 +6443,8 @@ var addDomEvent = (target, eventName, handler, options) => {
 function isPrintableKey(e) {
   return e.key.length === 1 && !e.ctrlKey && !e.metaKey;
 }
-var isContextMenuEvent = (e) => {
-  return e.button === 2 || isMac() && e.ctrlKey && e.button === 0;
+var isContextMenuEvent2 = (e) => {
+  return e.button === 2 || isMac2() && e.ctrlKey && e.button === 0;
 };
 var isModifierKey = (e) => e.ctrlKey || e.altKey || e.metaKey;
 function queueBeforeEvent(element, type, cb) {
@@ -3476,7 +6470,7 @@ function clickIfLink(element) {
   if (!isLinkElement(element))
     return;
   const click = () => element.click();
-  if (isFirefox()) {
+  if (isFirefox2()) {
     queueBeforeEvent(element, "keyup", click);
   } else {
     queueMicrotask(click);
@@ -4357,45 +7351,45 @@ var size = function(options) {
 function hasWindow() {
   return typeof window !== "undefined";
 }
-function getNodeName(node) {
-  if (isNode2(node)) {
+function getNodeName2(node) {
+  if (isNode3(node)) {
     return (node.nodeName || "").toLowerCase();
   }
   return "#document";
 }
-function getWindow2(node) {
+function getWindow3(node) {
   var _node$ownerDocument;
   return (node == null || (_node$ownerDocument = node.ownerDocument) == null ? void 0 : _node$ownerDocument.defaultView) || window;
 }
-function getDocumentElement(node) {
+function getDocumentElement2(node) {
   var _ref;
-  return (_ref = (isNode2(node) ? node.ownerDocument : node.document) || window.document) == null ? void 0 : _ref.documentElement;
+  return (_ref = (isNode3(node) ? node.ownerDocument : node.document) || window.document) == null ? void 0 : _ref.documentElement;
 }
-function isNode2(value) {
+function isNode3(value) {
   if (!hasWindow()) {
     return false;
   }
-  return value instanceof Node || value instanceof getWindow2(value).Node;
+  return value instanceof Node || value instanceof getWindow3(value).Node;
 }
-function isElement3(value) {
+function isElement4(value) {
   if (!hasWindow()) {
     return false;
   }
-  return value instanceof Element || value instanceof getWindow2(value).Element;
+  return value instanceof Element || value instanceof getWindow3(value).Element;
 }
-function isHTMLElement3(value) {
+function isHTMLElement4(value) {
   if (!hasWindow()) {
     return false;
   }
-  return value instanceof HTMLElement || value instanceof getWindow2(value).HTMLElement;
+  return value instanceof HTMLElement || value instanceof getWindow3(value).HTMLElement;
 }
-function isShadowRoot2(value) {
+function isShadowRoot3(value) {
   if (!hasWindow() || typeof ShadowRoot === "undefined") {
     return false;
   }
-  return value instanceof ShadowRoot || value instanceof getWindow2(value).ShadowRoot;
+  return value instanceof ShadowRoot || value instanceof getWindow3(value).ShadowRoot;
 }
-function isOverflowElement2(element) {
+function isOverflowElement3(element) {
   const {
     overflow,
     overflowX,
@@ -4405,7 +7399,7 @@ function isOverflowElement2(element) {
   return /auto|scroll|overlay|hidden|clip/.test(overflow + overflowY + overflowX) && !["inline", "contents"].includes(display);
 }
 function isTableElement(element) {
-  return ["table", "td", "th"].includes(getNodeName(element));
+  return ["table", "td", "th"].includes(getNodeName2(element));
 }
 function isTopLayer(element) {
   return [":popover-open", ":modal"].some((selector) => {
@@ -4418,18 +7412,18 @@ function isTopLayer(element) {
 }
 function isContainingBlock(elementOrCss) {
   const webkit = isWebKit();
-  const css2 = isElement3(elementOrCss) ? getComputedStyle(elementOrCss) : elementOrCss;
+  const css2 = isElement4(elementOrCss) ? getComputedStyle(elementOrCss) : elementOrCss;
   return css2.transform !== "none" || css2.perspective !== "none" || (css2.containerType ? css2.containerType !== "normal" : false) || !webkit && (css2.backdropFilter ? css2.backdropFilter !== "none" : false) || !webkit && (css2.filter ? css2.filter !== "none" : false) || ["transform", "perspective", "filter"].some((value) => (css2.willChange || "").includes(value)) || ["paint", "layout", "strict", "content"].some((value) => (css2.contain || "").includes(value));
 }
 function getContainingBlock(element) {
-  let currentNode = getParentNode(element);
-  while (isHTMLElement3(currentNode) && !isLastTraversableNode(currentNode)) {
+  let currentNode = getParentNode3(element);
+  while (isHTMLElement4(currentNode) && !isLastTraversableNode(currentNode)) {
     if (isContainingBlock(currentNode)) {
       return currentNode;
     } else if (isTopLayer(currentNode)) {
       return null;
     }
-    currentNode = getParentNode(currentNode);
+    currentNode = getParentNode3(currentNode);
   }
   return null;
 }
@@ -4439,13 +7433,13 @@ function isWebKit() {
   return CSS.supports("-webkit-backdrop-filter", "none");
 }
 function isLastTraversableNode(node) {
-  return ["html", "body", "#document"].includes(getNodeName(node));
+  return ["html", "body", "#document"].includes(getNodeName2(node));
 }
 function getComputedStyle(element) {
-  return getWindow2(element).getComputedStyle(element);
+  return getWindow3(element).getComputedStyle(element);
 }
 function getNodeScroll(element) {
-  if (isElement3(element)) {
+  if (isElement4(element)) {
     return {
       scrollLeft: element.scrollLeft,
       scrollTop: element.scrollTop
@@ -4456,28 +7450,28 @@ function getNodeScroll(element) {
     scrollTop: element.scrollY
   };
 }
-function getParentNode(node) {
-  if (getNodeName(node) === "html") {
+function getParentNode3(node) {
+  if (getNodeName2(node) === "html") {
     return node;
   }
   const result = (
     // Step into the shadow DOM of the parent of a slotted node.
     node.assignedSlot || // DOM Element detected.
     node.parentNode || // ShadowRoot detected.
-    isShadowRoot2(node) && node.host || // Fallback.
-    getDocumentElement(node)
+    isShadowRoot3(node) && node.host || // Fallback.
+    getDocumentElement2(node)
   );
-  return isShadowRoot2(result) ? result.host : result;
+  return isShadowRoot3(result) ? result.host : result;
 }
-function getNearestOverflowAncestor(node) {
-  const parentNode = getParentNode(node);
+function getNearestOverflowAncestor2(node) {
+  const parentNode = getParentNode3(node);
   if (isLastTraversableNode(parentNode)) {
     return node.ownerDocument ? node.ownerDocument.body : node.body;
   }
-  if (isHTMLElement3(parentNode) && isOverflowElement2(parentNode)) {
+  if (isHTMLElement4(parentNode) && isOverflowElement3(parentNode)) {
     return parentNode;
   }
-  return getNearestOverflowAncestor(parentNode);
+  return getNearestOverflowAncestor2(parentNode);
 }
 function getOverflowAncestors(node, list, traverseIframes) {
   var _node$ownerDocument2;
@@ -4487,12 +7481,12 @@ function getOverflowAncestors(node, list, traverseIframes) {
   if (traverseIframes === void 0) {
     traverseIframes = true;
   }
-  const scrollableAncestor = getNearestOverflowAncestor(node);
+  const scrollableAncestor = getNearestOverflowAncestor2(node);
   const isBody = scrollableAncestor === ((_node$ownerDocument2 = node.ownerDocument) == null ? void 0 : _node$ownerDocument2.body);
-  const win = getWindow2(scrollableAncestor);
+  const win = getWindow3(scrollableAncestor);
   if (isBody) {
     const frameElement = getFrameElement(win);
-    return list.concat(win, win.visualViewport || [], isOverflowElement2(scrollableAncestor) ? scrollableAncestor : [], frameElement && traverseIframes ? getOverflowAncestors(frameElement) : []);
+    return list.concat(win, win.visualViewport || [], isOverflowElement3(scrollableAncestor) ? scrollableAncestor : [], frameElement && traverseIframes ? getOverflowAncestors(frameElement) : []);
   }
   return list.concat(scrollableAncestor, getOverflowAncestors(scrollableAncestor, [], traverseIframes));
 }
@@ -4505,7 +7499,7 @@ function getCssDimensions(element) {
   const css2 = getComputedStyle(element);
   let width = parseFloat(css2.width) || 0;
   let height = parseFloat(css2.height) || 0;
-  const hasOffset = isHTMLElement3(element);
+  const hasOffset = isHTMLElement4(element);
   const offsetWidth = hasOffset ? element.offsetWidth : width;
   const offsetHeight = hasOffset ? element.offsetHeight : height;
   const shouldFallback = round(width) !== offsetWidth || round(height) !== offsetHeight;
@@ -4520,11 +7514,11 @@ function getCssDimensions(element) {
   };
 }
 function unwrapElement(element) {
-  return !isElement3(element) ? element.contextElement : element;
+  return !isElement4(element) ? element.contextElement : element;
 }
 function getScale(element) {
   const domElement = unwrapElement(element);
-  if (!isHTMLElement3(domElement)) {
+  if (!isHTMLElement4(domElement)) {
     return createCoords(1);
   }
   const rect = domElement.getBoundingClientRect();
@@ -4548,7 +7542,7 @@ function getScale(element) {
 }
 var noOffsets = /* @__PURE__ */ createCoords(0);
 function getVisualOffsets(element) {
-  const win = getWindow2(element);
+  const win = getWindow3(element);
   if (!isWebKit() || !win.visualViewport) {
     return noOffsets;
   }
@@ -4561,7 +7555,7 @@ function shouldAddVisualOffsets(element, isFixed, floatingOffsetParent) {
   if (isFixed === void 0) {
     isFixed = false;
   }
-  if (!floatingOffsetParent || isFixed && floatingOffsetParent !== getWindow2(element)) {
+  if (!floatingOffsetParent || isFixed && floatingOffsetParent !== getWindow3(element)) {
     return false;
   }
   return isFixed;
@@ -4578,7 +7572,7 @@ function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetPar
   let scale = createCoords(1);
   if (includeScale) {
     if (offsetParent) {
-      if (isElement3(offsetParent)) {
+      if (isElement4(offsetParent)) {
         scale = getScale(offsetParent);
       }
     } else {
@@ -4591,8 +7585,8 @@ function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetPar
   let width = clientRect.width / scale.x;
   let height = clientRect.height / scale.y;
   if (domElement) {
-    const win = getWindow2(domElement);
-    const offsetWin = offsetParent && isElement3(offsetParent) ? getWindow2(offsetParent) : offsetParent;
+    const win = getWindow3(domElement);
+    const offsetWin = offsetParent && isElement4(offsetParent) ? getWindow3(offsetParent) : offsetParent;
     let currentWin = win;
     let currentIFrame = getFrameElement(currentWin);
     while (currentIFrame && offsetParent && offsetWin !== currentWin) {
@@ -4607,7 +7601,7 @@ function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetPar
       height *= iframeScale.y;
       x += left;
       y += top;
-      currentWin = getWindow2(currentIFrame);
+      currentWin = getWindow3(currentIFrame);
       currentIFrame = getFrameElement(currentWin);
     }
   }
@@ -4621,7 +7615,7 @@ function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetPar
 function getWindowScrollBarX(element, rect) {
   const leftScroll = getNodeScroll(element).scrollLeft;
   if (!rect) {
-    return getBoundingClientRect(getDocumentElement(element)).left + leftScroll;
+    return getBoundingClientRect(getDocumentElement2(element)).left + leftScroll;
   }
   return rect.left + leftScroll;
 }
@@ -4648,7 +7642,7 @@ function convertOffsetParentRelativeRectToViewportRelativeRect(_ref) {
     strategy
   } = _ref;
   const isFixed = strategy === "fixed";
-  const documentElement = getDocumentElement(offsetParent);
+  const documentElement = getDocumentElement2(offsetParent);
   const topLayer = elements ? isTopLayer(elements.floating) : false;
   if (offsetParent === documentElement || topLayer && isFixed) {
     return rect;
@@ -4659,12 +7653,12 @@ function convertOffsetParentRelativeRectToViewportRelativeRect(_ref) {
   };
   let scale = createCoords(1);
   const offsets = createCoords(0);
-  const isOffsetParentAnElement = isHTMLElement3(offsetParent);
+  const isOffsetParentAnElement = isHTMLElement4(offsetParent);
   if (isOffsetParentAnElement || !isOffsetParentAnElement && !isFixed) {
-    if (getNodeName(offsetParent) !== "body" || isOverflowElement2(documentElement)) {
+    if (getNodeName2(offsetParent) !== "body" || isOverflowElement3(documentElement)) {
       scroll = getNodeScroll(offsetParent);
     }
-    if (isHTMLElement3(offsetParent)) {
+    if (isHTMLElement4(offsetParent)) {
       const offsetRect = getBoundingClientRect(offsetParent);
       scale = getScale(offsetParent);
       offsets.x = offsetRect.x + offsetParent.clientLeft;
@@ -4683,7 +7677,7 @@ function getClientRects(element) {
   return Array.from(element.getClientRects());
 }
 function getDocumentRect(element) {
-  const html = getDocumentElement(element);
+  const html = getDocumentElement2(element);
   const scroll = getNodeScroll(element);
   const body = element.ownerDocument.body;
   const width = max(html.scrollWidth, html.clientWidth, body.scrollWidth, body.clientWidth);
@@ -4701,8 +7695,8 @@ function getDocumentRect(element) {
   };
 }
 function getViewportRect(element, strategy) {
-  const win = getWindow2(element);
-  const html = getDocumentElement(element);
+  const win = getWindow3(element);
+  const html = getDocumentElement2(element);
   const visualViewport = win.visualViewport;
   let width = html.clientWidth;
   let height = html.clientHeight;
@@ -4728,7 +7722,7 @@ function getInnerBoundingClientRect(element, strategy) {
   const clientRect = getBoundingClientRect(element, true, strategy === "fixed");
   const top = clientRect.top + element.clientTop;
   const left = clientRect.left + element.clientLeft;
-  const scale = isHTMLElement3(element) ? getScale(element) : createCoords(1);
+  const scale = isHTMLElement4(element) ? getScale(element) : createCoords(1);
   const width = element.clientWidth * scale.x;
   const height = element.clientHeight * scale.y;
   const x = left * scale.x;
@@ -4745,8 +7739,8 @@ function getClientRectFromClippingAncestor(element, clippingAncestor, strategy) 
   if (clippingAncestor === "viewport") {
     rect = getViewportRect(element, strategy);
   } else if (clippingAncestor === "document") {
-    rect = getDocumentRect(getDocumentElement(element));
-  } else if (isElement3(clippingAncestor)) {
+    rect = getDocumentRect(getDocumentElement2(element));
+  } else if (isElement4(clippingAncestor)) {
     rect = getInnerBoundingClientRect(clippingAncestor, strategy);
   } else {
     const visualOffsets = getVisualOffsets(element);
@@ -4760,8 +7754,8 @@ function getClientRectFromClippingAncestor(element, clippingAncestor, strategy) 
   return rectToClientRect(rect);
 }
 function hasFixedPositionAncestor(element, stopNode) {
-  const parentNode = getParentNode(element);
-  if (parentNode === stopNode || !isElement3(parentNode) || isLastTraversableNode(parentNode)) {
+  const parentNode = getParentNode3(element);
+  if (parentNode === stopNode || !isElement4(parentNode) || isLastTraversableNode(parentNode)) {
     return false;
   }
   return getComputedStyle(parentNode).position === "fixed" || hasFixedPositionAncestor(parentNode, stopNode);
@@ -4771,23 +7765,23 @@ function getClippingElementAncestors(element, cache) {
   if (cachedResult) {
     return cachedResult;
   }
-  let result = getOverflowAncestors(element, [], false).filter((el) => isElement3(el) && getNodeName(el) !== "body");
+  let result = getOverflowAncestors(element, [], false).filter((el) => isElement4(el) && getNodeName2(el) !== "body");
   let currentContainingBlockComputedStyle = null;
   const elementIsFixed = getComputedStyle(element).position === "fixed";
-  let currentNode = elementIsFixed ? getParentNode(element) : element;
-  while (isElement3(currentNode) && !isLastTraversableNode(currentNode)) {
+  let currentNode = elementIsFixed ? getParentNode3(element) : element;
+  while (isElement4(currentNode) && !isLastTraversableNode(currentNode)) {
     const computedStyle = getComputedStyle(currentNode);
     const currentNodeIsContaining = isContainingBlock(currentNode);
     if (!currentNodeIsContaining && computedStyle.position === "fixed") {
       currentContainingBlockComputedStyle = null;
     }
-    const shouldDropCurrentNode = elementIsFixed ? !currentNodeIsContaining && !currentContainingBlockComputedStyle : !currentNodeIsContaining && computedStyle.position === "static" && !!currentContainingBlockComputedStyle && ["absolute", "fixed"].includes(currentContainingBlockComputedStyle.position) || isOverflowElement2(currentNode) && !currentNodeIsContaining && hasFixedPositionAncestor(element, currentNode);
+    const shouldDropCurrentNode = elementIsFixed ? !currentNodeIsContaining && !currentContainingBlockComputedStyle : !currentNodeIsContaining && computedStyle.position === "static" && !!currentContainingBlockComputedStyle && ["absolute", "fixed"].includes(currentContainingBlockComputedStyle.position) || isOverflowElement3(currentNode) && !currentNodeIsContaining && hasFixedPositionAncestor(element, currentNode);
     if (shouldDropCurrentNode) {
       result = result.filter((ancestor) => ancestor !== currentNode);
     } else {
       currentContainingBlockComputedStyle = computedStyle;
     }
-    currentNode = getParentNode(currentNode);
+    currentNode = getParentNode3(currentNode);
   }
   cache.set(element, result);
   return result;
@@ -4828,8 +7822,8 @@ function getDimensions(element) {
   };
 }
 function getRectRelativeToOffsetParent(element, offsetParent, strategy) {
-  const isOffsetParentAnElement = isHTMLElement3(offsetParent);
-  const documentElement = getDocumentElement(offsetParent);
+  const isOffsetParentAnElement = isHTMLElement4(offsetParent);
+  const documentElement = getDocumentElement2(offsetParent);
   const isFixed = strategy === "fixed";
   const rect = getBoundingClientRect(element, true, isFixed, offsetParent);
   let scroll = {
@@ -4838,7 +7832,7 @@ function getRectRelativeToOffsetParent(element, offsetParent, strategy) {
   };
   const offsets = createCoords(0);
   if (isOffsetParentAnElement || !isOffsetParentAnElement && !isFixed) {
-    if (getNodeName(offsetParent) !== "body" || isOverflowElement2(documentElement)) {
+    if (getNodeName2(offsetParent) !== "body" || isOverflowElement3(documentElement)) {
       scroll = getNodeScroll(offsetParent);
     }
     if (isOffsetParentAnElement) {
@@ -4863,30 +7857,30 @@ function isStaticPositioned(element) {
   return getComputedStyle(element).position === "static";
 }
 function getTrueOffsetParent(element, polyfill) {
-  if (!isHTMLElement3(element) || getComputedStyle(element).position === "fixed") {
+  if (!isHTMLElement4(element) || getComputedStyle(element).position === "fixed") {
     return null;
   }
   if (polyfill) {
     return polyfill(element);
   }
   let rawOffsetParent = element.offsetParent;
-  if (getDocumentElement(element) === rawOffsetParent) {
+  if (getDocumentElement2(element) === rawOffsetParent) {
     rawOffsetParent = rawOffsetParent.ownerDocument.body;
   }
   return rawOffsetParent;
 }
 function getOffsetParent(element, polyfill) {
-  const win = getWindow2(element);
+  const win = getWindow3(element);
   if (isTopLayer(element)) {
     return win;
   }
-  if (!isHTMLElement3(element)) {
-    let svgOffsetParent = getParentNode(element);
+  if (!isHTMLElement4(element)) {
+    let svgOffsetParent = getParentNode3(element);
     while (svgOffsetParent && !isLastTraversableNode(svgOffsetParent)) {
-      if (isElement3(svgOffsetParent) && !isStaticPositioned(svgOffsetParent)) {
+      if (isElement4(svgOffsetParent) && !isStaticPositioned(svgOffsetParent)) {
         return svgOffsetParent;
       }
-      svgOffsetParent = getParentNode(svgOffsetParent);
+      svgOffsetParent = getParentNode3(svgOffsetParent);
     }
     return win;
   }
@@ -4918,20 +7912,20 @@ function isRTL(element) {
 }
 var platform = {
   convertOffsetParentRelativeRectToViewportRelativeRect,
-  getDocumentElement,
+  getDocumentElement: getDocumentElement2,
   getClippingRect,
   getOffsetParent,
   getElementRects,
   getClientRects,
   getDimensions,
   getScale,
-  isElement: isElement3,
+  isElement: isElement4,
   isRTL
 };
 function observeMove(element, onMove) {
   let io = null;
   let timeoutId;
-  const root = getDocumentElement(element);
+  const root = getDocumentElement2(element);
   function cleanup() {
     var _io;
     clearTimeout(timeoutId);
@@ -5090,50 +8084,50 @@ var computePosition2 = (reference, floating, options) => {
 };
 
 // node_modules/@zag-js/popper/node_modules/@zag-js/dom-query/dist/index.mjs
-var ELEMENT_NODE2 = 1;
-var DOCUMENT_NODE3 = 9;
-var DOCUMENT_FRAGMENT_NODE2 = 11;
-var isObject7 = (v) => typeof v === "object" && v !== null;
-var isHTMLElement4 = (el) => isObject7(el) && el.nodeType === ELEMENT_NODE2 && typeof el.nodeName === "string";
-var isDocument3 = (el) => isObject7(el) && el.nodeType === DOCUMENT_NODE3;
-var isNode3 = (el) => isObject7(el) && el.nodeType !== void 0;
-var isShadowRoot3 = (el) => isNode3(el) && el.nodeType === DOCUMENT_FRAGMENT_NODE2 && "host" in el;
-function getWindow3(el) {
-  if (isShadowRoot3(el))
-    return getWindow3(el.host);
-  if (isDocument3(el))
+var ELEMENT_NODE3 = 1;
+var DOCUMENT_NODE5 = 9;
+var DOCUMENT_FRAGMENT_NODE3 = 11;
+var isObject11 = (v) => typeof v === "object" && v !== null;
+var isHTMLElement5 = (el) => isObject11(el) && el.nodeType === ELEMENT_NODE3 && typeof el.nodeName === "string";
+var isDocument5 = (el) => isObject11(el) && el.nodeType === DOCUMENT_NODE5;
+var isNode4 = (el) => isObject11(el) && el.nodeType !== void 0;
+var isShadowRoot4 = (el) => isNode4(el) && el.nodeType === DOCUMENT_FRAGMENT_NODE3 && "host" in el;
+function getWindow4(el) {
+  if (isShadowRoot4(el))
+    return getWindow4(el.host);
+  if (isDocument5(el))
     return el.defaultView ?? window;
-  if (isHTMLElement4(el))
+  if (isHTMLElement5(el))
     return el.ownerDocument?.defaultView ?? window;
   return window;
 }
 var styleCache = /* @__PURE__ */ new WeakMap();
 function getComputedStyle2(el) {
   if (!styleCache.has(el)) {
-    styleCache.set(el, getWindow3(el).getComputedStyle(el));
+    styleCache.set(el, getWindow4(el).getComputedStyle(el));
   }
   return styleCache.get(el);
 }
-function raf2(fn) {
+function raf5(fn) {
   const id = globalThis.requestAnimationFrame(fn);
   return () => {
     globalThis.cancelAnimationFrame(id);
   };
 }
-var fps3 = 1e3 / 60;
+var fps6 = 1e3 / 60;
 
 // node_modules/@zag-js/popper/node_modules/@zag-js/utils/dist/index.mjs
-var runIfFn3 = (v, ...a) => {
+var runIfFn4 = (v, ...a) => {
   const res = typeof v === "function" ? v(...a) : v;
   return res ?? void 0;
 };
-var noop3 = () => {
+var noop4 = () => {
 };
 var isNull = (v) => v == null;
-var fnToString3 = Function.prototype.toString;
-var objectCtorString3 = fnToString3.call(Object);
-function compact3(obj) {
-  if (!isPlainObject23(obj) || obj === void 0) {
+var fnToString4 = Function.prototype.toString;
+var objectCtorString4 = fnToString4.call(Object);
+function compact4(obj) {
+  if (!isPlainObject24(obj) || obj === void 0) {
     return obj;
   }
   const keys = Reflect.ownKeys(obj).filter((key) => typeof key === "string");
@@ -5141,12 +8135,12 @@ function compact3(obj) {
   for (const key of keys) {
     const value = obj[key];
     if (value !== void 0) {
-      filtered[key] = compact3(value);
+      filtered[key] = compact4(value);
     }
   }
   return filtered;
 }
-var isPlainObject23 = (value) => {
+var isPlainObject24 = (value) => {
   return value && typeof value === "object" && value.constructor === Object;
 };
 
@@ -5175,7 +8169,7 @@ function getDOMRect(anchorRect) {
 }
 function getAnchorElement(anchorElement, getAnchorRect) {
   return {
-    contextElement: isHTMLElement4(anchorElement) ? anchorElement : void 0,
+    contextElement: isHTMLElement5(anchorElement) ? anchorElement : void 0,
     getBoundingClientRect: () => {
       const anchor = anchorElement;
       const anchorRect = getAnchorRect?.(anchor);
@@ -5272,7 +8266,7 @@ function roundByDpr(win, value) {
   return Math.round(value * dpr) / dpr;
 }
 function getBoundaryMiddleware(opts) {
-  return runIfFn3(opts.boundary);
+  return runIfFn4(opts.boundary);
 }
 function getArrowMiddleware(arrowElement, opts) {
   if (!arrowElement)
@@ -5292,7 +8286,7 @@ function getOffsetMiddleware(arrowElement, opts) {
     const { hasAlign } = getPlacementDetails(placement);
     const shift22 = !hasAlign ? opts.shift : void 0;
     const crossAxis = opts.offset?.crossAxis ?? shift22;
-    return compact3({
+    return compact4({
       crossAxis,
       mainAxis,
       alignmentAxis: opts.shift
@@ -5374,7 +8368,7 @@ function getPlacementImpl(referenceOrVirtual, floating, opts = {}) {
     });
     onComplete?.(pos);
     onPositioned?.({ placed: true });
-    const win = getWindow3(floating);
+    const win = getWindow4(floating);
     const x = roundByDpr(win, pos.x);
     const y = roundByDpr(win, pos.y);
     floating.style.setProperty("--x", `${x}px`);
@@ -5404,7 +8398,7 @@ function getPlacementImpl(referenceOrVirtual, floating, opts = {}) {
     }
   };
   const autoUpdateOptions = getAutoUpdateOptions(options.listeners);
-  const cancelAutoUpdate = options.listeners ? autoUpdate(reference, floating, update, autoUpdateOptions) : noop3;
+  const cancelAutoUpdate = options.listeners ? autoUpdate(reference, floating, update, autoUpdateOptions) : noop4;
   update();
   return () => {
     cancelAutoUpdate?.();
@@ -5413,17 +8407,17 @@ function getPlacementImpl(referenceOrVirtual, floating, opts = {}) {
 }
 function getPlacement(referenceOrFn, floatingOrFn, opts = {}) {
   const { defer, ...options } = opts;
-  const func = defer ? raf2 : (v) => v();
-  const cleanups2 = [];
-  cleanups2.push(
+  const func = defer ? raf5 : (v) => v();
+  const cleanups3 = [];
+  cleanups3.push(
     func(() => {
       const reference = typeof referenceOrFn === "function" ? referenceOrFn() : referenceOrFn;
       const floating = typeof floatingOrFn === "function" ? floatingOrFn() : floatingOrFn;
-      cleanups2.push(getPlacementImpl(reference, floating, options));
+      cleanups3.push(getPlacementImpl(reference, floating, options));
     })
   );
   return () => {
-    cleanups2.forEach((fn) => fn?.());
+    cleanups3.forEach((fn) => fn?.());
   };
 }
 var ARROW_FLOATING_STYLE = {
@@ -5470,45 +8464,45 @@ function getPlacementStyles(options = {}) {
 }
 
 // node_modules/@zag-js/dismissable/node_modules/@zag-js/dom-query/dist/index.mjs
-var ELEMENT_NODE3 = 1;
-var DOCUMENT_NODE4 = 9;
-var isObject8 = (v) => typeof v === "object" && v !== null;
-var isHTMLElement5 = (el) => isObject8(el) && el.nodeType === ELEMENT_NODE3 && typeof el.nodeName === "string";
-var isDocument4 = (el) => isObject8(el) && el.nodeType === DOCUMENT_NODE4;
-var isWindow3 = (el) => isObject8(el) && el === el.window;
-function contains2(parent, child) {
+var ELEMENT_NODE4 = 1;
+var DOCUMENT_NODE6 = 9;
+var isObject12 = (v) => typeof v === "object" && v !== null;
+var isHTMLElement6 = (el) => isObject12(el) && el.nodeType === ELEMENT_NODE4 && typeof el.nodeName === "string";
+var isDocument6 = (el) => isObject12(el) && el.nodeType === DOCUMENT_NODE6;
+var isWindow5 = (el) => isObject12(el) && el === el.window;
+function contains3(parent, child) {
   if (!parent || !child)
     return false;
-  if (!isHTMLElement5(parent) || !isHTMLElement5(child))
+  if (!isHTMLElement6(parent) || !isHTMLElement6(child))
     return false;
   return parent === child || parent.contains(child);
 }
-function getDocument3(el) {
-  if (isDocument4(el))
+function getDocument5(el) {
+  if (isDocument6(el))
     return el;
-  if (isWindow3(el))
+  if (isWindow5(el))
     return el.document;
   return el?.ownerDocument ?? document;
 }
-function getComposedPath2(event) {
+function getComposedPath4(event) {
   return event.composedPath?.() ?? event.nativeEvent?.composedPath?.();
 }
-function getEventTarget2(event) {
-  const composedPath = getComposedPath2(event);
+function getEventTarget4(event) {
+  const composedPath = getComposedPath4(event);
   return composedPath?.[0] ?? event.target;
 }
-function raf3(fn) {
+function raf6(fn) {
   const id = globalThis.requestAnimationFrame(fn);
   return () => {
     globalThis.cancelAnimationFrame(id);
   };
 }
-var cleanups = /* @__PURE__ */ new WeakMap();
-function set4(element, key, setup) {
-  if (!cleanups.has(element)) {
-    cleanups.set(element, /* @__PURE__ */ new Map());
+var cleanups2 = /* @__PURE__ */ new WeakMap();
+function set6(element, key, setup) {
+  if (!cleanups2.has(element)) {
+    cleanups2.set(element, /* @__PURE__ */ new Map());
   }
-  const elementCleanups = cleanups.get(element);
+  const elementCleanups = cleanups2.get(element);
   const prevCleanup = elementCleanups.get(key);
   if (!prevCleanup) {
     elementCleanups.set(key, setup());
@@ -5532,7 +8526,7 @@ function set4(element, key, setup) {
     elementCleanups.set(key, prevCleanup);
   };
 }
-function setStyle(element, style) {
+function setStyle2(element, style) {
   if (!element)
     return () => {
     };
@@ -5543,155 +8537,155 @@ function setStyle(element, style) {
       element.style.cssText = prevStyle;
     };
   };
-  return set4(element, "style", setup);
+  return set6(element, "style", setup);
 }
-var fps4 = 1e3 / 60;
-function waitForElement(query2, cb) {
+var fps7 = 1e3 / 60;
+function waitForElement2(query2, cb) {
   const el = query2();
-  if (isHTMLElement5(el) && el.isConnected) {
+  if (isHTMLElement6(el) && el.isConnected) {
     cb(el);
     return () => void 0;
   } else {
     const timerId = setInterval(() => {
       const el2 = query2();
-      if (isHTMLElement5(el2) && el2.isConnected) {
+      if (isHTMLElement6(el2) && el2.isConnected) {
         cb(el2);
         clearInterval(timerId);
       }
-    }, fps4);
+    }, fps7);
     return () => clearInterval(timerId);
   }
 }
-function waitForElements(queries, cb) {
-  const cleanups2 = [];
+function waitForElements2(queries, cb) {
+  const cleanups22 = [];
   queries?.forEach((query2) => {
-    const clean = waitForElement(query2, cb);
-    cleanups2.push(clean);
+    const clean = waitForElement2(query2, cb);
+    cleanups22.push(clean);
   });
   return () => {
-    cleanups2.forEach((fn) => fn());
+    cleanups22.forEach((fn) => fn());
   };
 }
 
 // node_modules/@zag-js/interact-outside/node_modules/@zag-js/dom-query/dist/index.mjs
-var ELEMENT_NODE4 = 1;
-var DOCUMENT_NODE5 = 9;
-var DOCUMENT_FRAGMENT_NODE3 = 11;
-var isObject9 = (v) => typeof v === "object" && v !== null;
-var isHTMLElement6 = (el) => isObject9(el) && el.nodeType === ELEMENT_NODE4 && typeof el.nodeName === "string";
-var isDocument5 = (el) => isObject9(el) && el.nodeType === DOCUMENT_NODE5;
-var isWindow4 = (el) => isObject9(el) && el === el.window;
-var getNodeName2 = (node) => {
-  if (isHTMLElement6(node))
+var ELEMENT_NODE5 = 1;
+var DOCUMENT_NODE7 = 9;
+var DOCUMENT_FRAGMENT_NODE4 = 11;
+var isObject13 = (v) => typeof v === "object" && v !== null;
+var isHTMLElement7 = (el) => isObject13(el) && el.nodeType === ELEMENT_NODE5 && typeof el.nodeName === "string";
+var isDocument7 = (el) => isObject13(el) && el.nodeType === DOCUMENT_NODE7;
+var isWindow6 = (el) => isObject13(el) && el === el.window;
+var getNodeName3 = (node) => {
+  if (isHTMLElement7(node))
     return node.localName || "";
   return "#document";
 };
-function isRootElement(node) {
-  return ["html", "body", "#document"].includes(getNodeName2(node));
+function isRootElement2(node) {
+  return ["html", "body", "#document"].includes(getNodeName3(node));
 }
-var isNode4 = (el) => isObject9(el) && el.nodeType !== void 0;
-var isShadowRoot4 = (el) => isNode4(el) && el.nodeType === DOCUMENT_FRAGMENT_NODE3 && "host" in el;
-function contains3(parent, child) {
+var isNode5 = (el) => isObject13(el) && el.nodeType !== void 0;
+var isShadowRoot5 = (el) => isNode5(el) && el.nodeType === DOCUMENT_FRAGMENT_NODE4 && "host" in el;
+function contains4(parent, child) {
   if (!parent || !child)
     return false;
-  if (!isHTMLElement6(parent) || !isHTMLElement6(child))
+  if (!isHTMLElement7(parent) || !isHTMLElement7(child))
     return false;
   return parent === child || parent.contains(child);
 }
-function getDocument4(el) {
-  if (isDocument5(el))
+function getDocument6(el) {
+  if (isDocument7(el))
     return el;
-  if (isWindow4(el))
+  if (isWindow6(el))
     return el.document;
   return el?.ownerDocument ?? document;
 }
-function getDocumentElement2(el) {
-  return getDocument4(el).documentElement;
+function getDocumentElement3(el) {
+  return getDocument6(el).documentElement;
 }
-function getWindow4(el) {
-  if (isShadowRoot4(el))
-    return getWindow4(el.host);
-  if (isDocument5(el))
+function getWindow5(el) {
+  if (isShadowRoot5(el))
+    return getWindow5(el.host);
+  if (isDocument7(el))
     return el.defaultView ?? window;
-  if (isHTMLElement6(el))
+  if (isHTMLElement7(el))
     return el.ownerDocument?.defaultView ?? window;
   return window;
 }
-var isDom3 = () => typeof document !== "undefined";
-function getPlatform3() {
+var isDom5 = () => typeof document !== "undefined";
+function getPlatform5() {
   const agent = navigator.userAgentData;
   return agent?.platform ?? navigator.platform;
 }
-var pt3 = (v) => isDom3() && v.test(getPlatform3());
-var isMac2 = () => pt3(/^Mac/);
-function getComposedPath3(event) {
+var pt5 = (v) => isDom5() && v.test(getPlatform5());
+var isMac3 = () => pt5(/^Mac/);
+function getComposedPath5(event) {
   return event.composedPath?.() ?? event.nativeEvent?.composedPath?.();
 }
-function getEventTarget3(event) {
-  const composedPath = getComposedPath3(event);
+function getEventTarget5(event) {
+  const composedPath = getComposedPath5(event);
   return composedPath?.[0] ?? event.target;
 }
-function getParentNode2(node) {
-  if (getNodeName2(node) === "html") {
+function getParentNode4(node) {
+  if (getNodeName3(node) === "html") {
     return node;
   }
   const result = (
     // Step into the shadow DOM of the parent of a slotted node.
     node.assignedSlot || // DOM Element detected.
     node.parentNode || // ShadowRoot detected.
-    isShadowRoot4(node) && node.host || // Fallback.
-    getDocumentElement2(node)
+    isShadowRoot5(node) && node.host || // Fallback.
+    getDocumentElement3(node)
   );
-  return isShadowRoot4(result) ? result.host : result;
+  return isShadowRoot5(result) ? result.host : result;
 }
-var isHTMLElement22 = (element) => typeof element === "object" && element !== null && element.nodeType === 1;
-function isVisible2(el) {
-  if (!isHTMLElement22(el))
+var isHTMLElement24 = (element) => typeof element === "object" && element !== null && element.nodeType === 1;
+function isVisible4(el) {
+  if (!isHTMLElement24(el))
     return false;
   return el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
 }
-var focusableSelector2 = "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], button:not([disabled]), [tabindex], iframe, object, embed, area[href], audio[controls], video[controls], [contenteditable]:not([contenteditable='false']), details > summary:first-of-type";
-function isFocusable2(element) {
+var focusableSelector4 = "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], button:not([disabled]), [tabindex], iframe, object, embed, area[href], audio[controls], video[controls], [contenteditable]:not([contenteditable='false']), details > summary:first-of-type";
+function isFocusable4(element) {
   if (!element || element.closest("[inert]"))
     return false;
-  return element.matches(focusableSelector2) && isVisible2(element);
+  return element.matches(focusableSelector4) && isVisible4(element);
 }
-var OVERFLOW_RE2 = /auto|scroll|overlay|hidden|clip/;
-function isOverflowElement3(el) {
-  const win = getWindow4(el);
+var OVERFLOW_RE3 = /auto|scroll|overlay|hidden|clip/;
+function isOverflowElement4(el) {
+  const win = getWindow5(el);
   const { overflow, overflowX, overflowY, display } = win.getComputedStyle(el);
-  return OVERFLOW_RE2.test(overflow + overflowY + overflowX) && !["inline", "contents"].includes(display);
+  return OVERFLOW_RE3.test(overflow + overflowY + overflowX) && !["inline", "contents"].includes(display);
 }
-function raf4(fn) {
+function raf7(fn) {
   const id = globalThis.requestAnimationFrame(fn);
   return () => {
     globalThis.cancelAnimationFrame(id);
   };
 }
-function getNearestOverflowAncestor2(el) {
-  const parentNode = getParentNode2(el);
-  if (isRootElement(parentNode)) {
-    return getDocument4(parentNode).body;
+function getNearestOverflowAncestor3(el) {
+  const parentNode = getParentNode4(el);
+  if (isRootElement2(parentNode)) {
+    return getDocument6(parentNode).body;
   }
-  if (isHTMLElement6(parentNode) && isOverflowElement3(parentNode)) {
+  if (isHTMLElement7(parentNode) && isOverflowElement4(parentNode)) {
     return parentNode;
   }
-  return getNearestOverflowAncestor2(parentNode);
+  return getNearestOverflowAncestor3(parentNode);
 }
-var fps5 = 1e3 / 60;
+var fps8 = 1e3 / 60;
 
 // node_modules/@zag-js/interact-outside/node_modules/@zag-js/dom-event/dist/index.mjs
-var addDomEvent2 = (target, eventName, handler, options) => {
+var addDomEvent4 = (target, eventName, handler, options) => {
   const node = typeof target === "function" ? target() : target;
   node?.addEventListener(eventName, handler, options);
   return () => {
     node?.removeEventListener(eventName, handler, options);
   };
 };
-var isContextMenuEvent2 = (e) => {
-  return e.button === 2 || isMac2() && e.ctrlKey && e.button === 0;
+var isContextMenuEvent3 = (e) => {
+  return e.button === 2 || isMac3() && e.ctrlKey && e.button === 0;
 };
-function fireCustomEvent(el, type, init) {
+function fireCustomEvent2(el, type, init) {
   if (!el)
     return;
   const win = el.ownerDocument.defaultView || window;
@@ -5700,16 +8694,16 @@ function fireCustomEvent(el, type, init) {
 }
 
 // node_modules/@zag-js/interact-outside/node_modules/@zag-js/utils/dist/index.mjs
-var callAll3 = (...fns) => (...a) => {
+var callAll4 = (...fns) => (...a) => {
   fns.forEach(function(fn) {
     fn?.(...a);
   });
 };
-var fnToString4 = Function.prototype.toString;
-var objectCtorString4 = fnToString4.call(Object);
+var fnToString5 = Function.prototype.toString;
+var objectCtorString5 = fnToString5.call(Object);
 
 // node_modules/@zag-js/interact-outside/dist/index.mjs
-function getWindowFrames(win) {
+function getWindowFrames2(win) {
   const frames = {
     each(cb) {
       for (let i = 0; i < win.frames?.length; i += 1) {
@@ -5743,7 +8737,7 @@ function getWindowFrames(win) {
   };
   return frames;
 }
-function getParentWindow(win) {
+function getParentWindow2(win) {
   const parent = win.frameElement != null ? win.parent : null;
   return {
     addEventListener: (event, listener, options) => {
@@ -5766,29 +8760,29 @@ function getParentWindow(win) {
     }
   };
 }
-var POINTER_OUTSIDE_EVENT = "pointerdown.outside";
-var FOCUS_OUTSIDE_EVENT = "focus.outside";
-function isComposedPathFocusable(composedPath) {
+var POINTER_OUTSIDE_EVENT2 = "pointerdown.outside";
+var FOCUS_OUTSIDE_EVENT2 = "focus.outside";
+function isComposedPathFocusable2(composedPath) {
   for (const node of composedPath) {
-    if (isHTMLElement6(node) && isFocusable2(node))
+    if (isHTMLElement7(node) && isFocusable4(node))
       return true;
   }
   return false;
 }
-var isPointerEvent = (event) => "clientY" in event;
-function isEventPointWithin(node, event) {
-  if (!isPointerEvent(event) || !node)
+var isPointerEvent2 = (event) => "clientY" in event;
+function isEventPointWithin2(node, event) {
+  if (!isPointerEvent2(event) || !node)
     return false;
   const rect = node.getBoundingClientRect();
   if (rect.width === 0 || rect.height === 0)
     return false;
   return rect.top <= event.clientY && event.clientY <= rect.top + rect.height && rect.left <= event.clientX && event.clientX <= rect.left + rect.width;
 }
-function isPointInRect(rect, point) {
+function isPointInRect2(rect, point) {
   return rect.y <= point.y && point.y <= rect.y + rect.height && rect.x <= point.x && point.x <= rect.x + rect.width;
 }
-function isEventWithinScrollbar(event, ancestor) {
-  if (!ancestor || !isPointerEvent(event))
+function isEventWithinScrollbar2(event, ancestor) {
+  if (!ancestor || !isPointerEvent2(event))
     return false;
   const isScrollableY = ancestor.scrollHeight > ancestor.clientHeight;
   const onScrollbarY = isScrollableY && event.clientX > ancestor.offsetLeft + ancestor.clientWidth;
@@ -5804,126 +8798,126 @@ function isEventWithinScrollbar(event, ancestor) {
     x: event.clientX,
     y: event.clientY
   };
-  if (!isPointInRect(rect, point))
+  if (!isPointInRect2(rect, point))
     return false;
   return onScrollbarY || onScrollbarX;
 }
-function trackInteractOutsideImpl(node, options) {
+function trackInteractOutsideImpl2(node, options) {
   const { exclude, onFocusOutside, onPointerDownOutside, onInteractOutside, defer } = options;
   if (!node)
     return;
-  const doc = getDocument4(node);
-  const win = getWindow4(node);
-  const frames = getWindowFrames(win);
-  const parentWin = getParentWindow(win);
+  const doc = getDocument6(node);
+  const win = getWindow5(node);
+  const frames = getWindowFrames2(win);
+  const parentWin = getParentWindow2(win);
   function isEventOutside(event) {
-    const target = getEventTarget3(event);
-    if (!isHTMLElement6(target))
+    const target = getEventTarget5(event);
+    if (!isHTMLElement7(target))
       return false;
     if (!target.isConnected)
       return false;
-    if (contains3(node, target))
+    if (contains4(node, target))
       return false;
-    if (isEventPointWithin(node, event))
+    if (isEventPointWithin2(node, event))
       return false;
     const triggerEl = doc.querySelector(`[aria-controls="${node.id}"]`);
     if (triggerEl) {
-      const triggerAncestor = getNearestOverflowAncestor2(triggerEl);
-      if (isEventWithinScrollbar(event, triggerAncestor))
+      const triggerAncestor = getNearestOverflowAncestor3(triggerEl);
+      if (isEventWithinScrollbar2(event, triggerAncestor))
         return false;
     }
-    const nodeAncestor = getNearestOverflowAncestor2(node);
-    if (isEventWithinScrollbar(event, nodeAncestor))
+    const nodeAncestor = getNearestOverflowAncestor3(node);
+    if (isEventWithinScrollbar2(event, nodeAncestor))
       return false;
     return !exclude?.(target);
   }
   const pointerdownCleanups = /* @__PURE__ */ new Set();
   function onPointerDown(event) {
     function handler() {
-      const func = defer ? raf4 : (v) => v();
+      const func = defer ? raf7 : (v) => v();
       const composedPath = event.composedPath?.() ?? [event.target];
       func(() => {
         if (!node || !isEventOutside(event))
           return;
         if (onPointerDownOutside || onInteractOutside) {
-          const handler2 = callAll3(onPointerDownOutside, onInteractOutside);
-          node.addEventListener(POINTER_OUTSIDE_EVENT, handler2, { once: true });
+          const handler2 = callAll4(onPointerDownOutside, onInteractOutside);
+          node.addEventListener(POINTER_OUTSIDE_EVENT2, handler2, { once: true });
         }
-        fireCustomEvent(node, POINTER_OUTSIDE_EVENT, {
+        fireCustomEvent2(node, POINTER_OUTSIDE_EVENT2, {
           bubbles: false,
           cancelable: true,
           detail: {
             originalEvent: event,
-            contextmenu: isContextMenuEvent2(event),
-            focusable: isComposedPathFocusable(composedPath)
+            contextmenu: isContextMenuEvent3(event),
+            focusable: isComposedPathFocusable2(composedPath)
           }
         });
       });
     }
     if (event.pointerType === "touch") {
       pointerdownCleanups.forEach((fn) => fn());
-      pointerdownCleanups.add(addDomEvent2(doc, "click", handler, { once: true }));
+      pointerdownCleanups.add(addDomEvent4(doc, "click", handler, { once: true }));
       pointerdownCleanups.add(parentWin.addEventListener("click", handler, { once: true }));
       pointerdownCleanups.add(frames.addEventListener("click", handler, { once: true }));
     } else {
       handler();
     }
   }
-  const cleanups2 = /* @__PURE__ */ new Set();
+  const cleanups3 = /* @__PURE__ */ new Set();
   const timer = setTimeout(() => {
-    cleanups2.add(addDomEvent2(doc, "pointerdown", onPointerDown, true));
-    cleanups2.add(parentWin.addEventListener("pointerdown", onPointerDown, true));
-    cleanups2.add(frames.addEventListener("pointerdown", onPointerDown, true));
+    cleanups3.add(addDomEvent4(doc, "pointerdown", onPointerDown, true));
+    cleanups3.add(parentWin.addEventListener("pointerdown", onPointerDown, true));
+    cleanups3.add(frames.addEventListener("pointerdown", onPointerDown, true));
   }, 0);
   function onFocusin(event) {
-    const func = defer ? raf4 : (v) => v();
+    const func = defer ? raf7 : (v) => v();
     func(() => {
       if (!node || !isEventOutside(event))
         return;
       if (onFocusOutside || onInteractOutside) {
-        const handler = callAll3(onFocusOutside, onInteractOutside);
-        node.addEventListener(FOCUS_OUTSIDE_EVENT, handler, { once: true });
+        const handler = callAll4(onFocusOutside, onInteractOutside);
+        node.addEventListener(FOCUS_OUTSIDE_EVENT2, handler, { once: true });
       }
-      fireCustomEvent(node, FOCUS_OUTSIDE_EVENT, {
+      fireCustomEvent2(node, FOCUS_OUTSIDE_EVENT2, {
         bubbles: false,
         cancelable: true,
         detail: {
           originalEvent: event,
           contextmenu: false,
-          focusable: isFocusable2(getEventTarget3(event))
+          focusable: isFocusable4(getEventTarget5(event))
         }
       });
     });
   }
-  cleanups2.add(addDomEvent2(doc, "focusin", onFocusin, true));
-  cleanups2.add(parentWin.addEventListener("focusin", onFocusin, true));
-  cleanups2.add(frames.addEventListener("focusin", onFocusin, true));
+  cleanups3.add(addDomEvent4(doc, "focusin", onFocusin, true));
+  cleanups3.add(parentWin.addEventListener("focusin", onFocusin, true));
+  cleanups3.add(frames.addEventListener("focusin", onFocusin, true));
   return () => {
     clearTimeout(timer);
     pointerdownCleanups.forEach((fn) => fn());
-    cleanups2.forEach((fn) => fn());
+    cleanups3.forEach((fn) => fn());
   };
 }
-function trackInteractOutside(nodeOrFn, options) {
+function trackInteractOutside2(nodeOrFn, options) {
   const { defer } = options;
-  const func = defer ? raf4 : (v) => v();
-  const cleanups2 = [];
-  cleanups2.push(
+  const func = defer ? raf7 : (v) => v();
+  const cleanups3 = [];
+  cleanups3.push(
     func(() => {
       const node = typeof nodeOrFn === "function" ? nodeOrFn() : nodeOrFn;
-      cleanups2.push(trackInteractOutsideImpl(node, options));
+      cleanups3.push(trackInteractOutsideImpl2(node, options));
     })
   );
   return () => {
-    cleanups2.forEach((fn) => fn?.());
+    cleanups3.forEach((fn) => fn?.());
   };
 }
 
 // node_modules/@zag-js/dismissable/node_modules/@zag-js/utils/dist/index.mjs
-var isFunction3 = (v) => typeof v === "function";
-var fnToString5 = Function.prototype.toString;
-var objectCtorString5 = fnToString5.call(Object);
-function warn3(...a) {
+var isFunction4 = (v) => typeof v === "function";
+var fnToString6 = Function.prototype.toString;
+var objectCtorString6 = fnToString6.call(Object);
+function warn4(...a) {
   const m = a.length === 1 ? a[0] : a[1];
   const c = a.length === 2 ? a[0] : true;
   if (c && true) {
@@ -5932,7 +8926,7 @@ function warn3(...a) {
 }
 
 // node_modules/@zag-js/dismissable/node_modules/@zag-js/dom-event/dist/index.mjs
-var addDomEvent3 = (target, eventName, handler, options) => {
+var addDomEvent5 = (target, eventName, handler, options) => {
   const node = typeof target === "function" ? target() : target;
   node?.addEventListener(eventName, handler, options);
   return () => {
@@ -5941,7 +8935,7 @@ var addDomEvent3 = (target, eventName, handler, options) => {
 };
 
 // node_modules/@zag-js/dismissable/dist/index.mjs
-function trackEscapeKeydown(node, fn) {
+function trackEscapeKeydown2(node, fn) {
   const handleKeyDown = (event) => {
     if (event.key !== "Escape")
       return;
@@ -5949,9 +8943,9 @@ function trackEscapeKeydown(node, fn) {
       return;
     fn?.(event);
   };
-  return addDomEvent3(getDocument3(node), "keydown", handleKeyDown, { capture: true });
+  return addDomEvent5(getDocument5(node), "keydown", handleKeyDown, { capture: true });
 }
-var layerStack = {
+var layerStack2 = {
   layers: [],
   branches: [],
   count() {
@@ -5979,10 +8973,10 @@ var layerStack = {
     return Array.from(this.layers).slice(this.indexOf(node) + 1);
   },
   isInNestedLayer(node, target) {
-    return this.getNestedLayers(node).some((layer) => contains2(layer.node, target));
+    return this.getNestedLayers(node).some((layer) => contains3(layer.node, target));
   },
   isInBranch(target) {
-    return Array.from(this.branches).some((branch) => contains2(branch, target));
+    return Array.from(this.branches).some((branch) => contains3(branch, target));
   },
   add(layer) {
     const num = this.layers.push(layer);
@@ -6017,55 +9011,55 @@ var layerStack = {
     this.remove(this.layers[0].node);
   }
 };
-var originalBodyPointerEvents;
-function assignPointerEventToLayers() {
-  layerStack.layers.forEach(({ node }) => {
-    node.style.pointerEvents = layerStack.isBelowPointerBlockingLayer(node) ? "none" : "auto";
+var originalBodyPointerEvents2;
+function assignPointerEventToLayers2() {
+  layerStack2.layers.forEach(({ node }) => {
+    node.style.pointerEvents = layerStack2.isBelowPointerBlockingLayer(node) ? "none" : "auto";
   });
 }
-function clearPointerEvent(node) {
+function clearPointerEvent2(node) {
   node.style.pointerEvents = "";
 }
-function disablePointerEventsOutside(node, persistentElements) {
-  const doc = getDocument3(node);
-  const cleanups2 = [];
-  if (layerStack.hasPointerBlockingLayer() && !doc.body.hasAttribute("data-inert")) {
-    originalBodyPointerEvents = document.body.style.pointerEvents;
+function disablePointerEventsOutside2(node, persistentElements) {
+  const doc = getDocument5(node);
+  const cleanups3 = [];
+  if (layerStack2.hasPointerBlockingLayer() && !doc.body.hasAttribute("data-inert")) {
+    originalBodyPointerEvents2 = document.body.style.pointerEvents;
     queueMicrotask(() => {
       doc.body.style.pointerEvents = "none";
       doc.body.setAttribute("data-inert", "");
     });
   }
   if (persistentElements) {
-    const persistedCleanup = waitForElements(persistentElements, (el) => {
-      cleanups2.push(setStyle(el, { pointerEvents: "auto" }));
+    const persistedCleanup = waitForElements2(persistentElements, (el) => {
+      cleanups3.push(setStyle2(el, { pointerEvents: "auto" }));
     });
-    cleanups2.push(persistedCleanup);
+    cleanups3.push(persistedCleanup);
   }
   return () => {
-    if (layerStack.hasPointerBlockingLayer())
+    if (layerStack2.hasPointerBlockingLayer())
       return;
     queueMicrotask(() => {
-      doc.body.style.pointerEvents = originalBodyPointerEvents;
+      doc.body.style.pointerEvents = originalBodyPointerEvents2;
       doc.body.removeAttribute("data-inert");
       if (doc.body.style.length === 0)
         doc.body.removeAttribute("style");
     });
-    cleanups2.forEach((fn) => fn());
+    cleanups3.forEach((fn) => fn());
   };
 }
-function trackDismissableElementImpl(node, options) {
+function trackDismissableElementImpl2(node, options) {
   if (!node) {
-    warn3("[@zag-js/dismissable] node is `null` or `undefined`");
+    warn4("[@zag-js/dismissable] node is `null` or `undefined`");
     return;
   }
   const { onDismiss, pointerBlocking, exclude: excludeContainers, debug } = options;
   const layer = { dismiss: onDismiss, node, pointerBlocking };
-  layerStack.add(layer);
-  assignPointerEventToLayers();
+  layerStack2.add(layer);
+  assignPointerEventToLayers2();
   function onPointerDownOutside(event) {
-    const target = getEventTarget2(event.detail.originalEvent);
-    if (layerStack.isBelowPointerBlockingLayer(node) || layerStack.isInBranch(target))
+    const target = getEventTarget4(event.detail.originalEvent);
+    if (layerStack2.isBelowPointerBlockingLayer(node) || layerStack2.isInBranch(target))
       return;
     options.onPointerDownOutside?.(event);
     options.onInteractOutside?.(event);
@@ -6077,8 +9071,8 @@ function trackDismissableElementImpl(node, options) {
     onDismiss?.();
   }
   function onFocusOutside(event) {
-    const target = getEventTarget2(event.detail.originalEvent);
-    if (layerStack.isInBranch(target))
+    const target = getEventTarget4(event.detail.originalEvent);
+    if (layerStack2.isInBranch(target))
       return;
     options.onFocusOutside?.(event);
     options.onInteractOutside?.(event);
@@ -6090,7 +9084,7 @@ function trackDismissableElementImpl(node, options) {
     onDismiss?.();
   }
   function onEscapeKeyDown(event) {
-    if (!layerStack.isTopMost(node))
+    if (!layerStack2.isTopMost(node))
       return;
     options.onEscapeKeyDown?.(event);
     if (!event.defaultPrevented && onDismiss) {
@@ -6103,36 +9097,36 @@ function trackDismissableElementImpl(node, options) {
       return false;
     const containers = typeof excludeContainers === "function" ? excludeContainers() : excludeContainers;
     const _containers = Array.isArray(containers) ? containers : [containers];
-    const persistentElements = options.persistentElements?.map((fn) => fn()).filter(isHTMLElement5);
+    const persistentElements = options.persistentElements?.map((fn) => fn()).filter(isHTMLElement6);
     if (persistentElements)
       _containers.push(...persistentElements);
-    return _containers.some((node2) => contains2(node2, target)) || layerStack.isInNestedLayer(node, target);
+    return _containers.some((node2) => contains3(node2, target)) || layerStack2.isInNestedLayer(node, target);
   }
-  const cleanups2 = [
-    pointerBlocking ? disablePointerEventsOutside(node, options.persistentElements) : void 0,
-    trackEscapeKeydown(node, onEscapeKeyDown),
-    trackInteractOutside(node, { exclude, onFocusOutside, onPointerDownOutside, defer: options.defer })
+  const cleanups3 = [
+    pointerBlocking ? disablePointerEventsOutside2(node, options.persistentElements) : void 0,
+    trackEscapeKeydown2(node, onEscapeKeyDown),
+    trackInteractOutside2(node, { exclude, onFocusOutside, onPointerDownOutside, defer: options.defer })
   ];
   return () => {
-    layerStack.remove(node);
-    assignPointerEventToLayers();
-    clearPointerEvent(node);
-    cleanups2.forEach((fn) => fn?.());
+    layerStack2.remove(node);
+    assignPointerEventToLayers2();
+    clearPointerEvent2(node);
+    cleanups3.forEach((fn) => fn?.());
   };
 }
-function trackDismissableElement(nodeOrFn, options) {
+function trackDismissableElement2(nodeOrFn, options) {
   const { defer } = options;
-  const func = defer ? raf3 : (v) => v();
-  const cleanups2 = [];
-  cleanups2.push(
+  const func = defer ? raf6 : (v) => v();
+  const cleanups3 = [];
+  cleanups3.push(
     func(() => {
-      const node = isFunction3(nodeOrFn) ? nodeOrFn() : nodeOrFn;
-      cleanups2.push(trackDismissableElementImpl(node, options));
+      const node = isFunction4(nodeOrFn) ? nodeOrFn() : nodeOrFn;
+      cleanups3.push(trackDismissableElementImpl2(node, options));
     })
   );
   return () => {
     func(() => {
-      cleanups2.forEach((fn) => fn?.());
+      cleanups3.forEach((fn) => fn?.());
     });
   };
 }
@@ -6193,10 +9187,10 @@ function isPointInPolygon(polygon, point) {
 var { sign, abs, min: min22 } = Math;
 
 // node_modules/@zag-js/menu/node_modules/@zag-js/types/dist/index.mjs
-var createProps2 = () => (props3) => Array.from(new Set(props3));
+var createProps3 = () => (props4) => Array.from(new Set(props4));
 
 // node_modules/@zag-js/menu/dist/index.mjs
-var anatomy2 = createAnatomy2("menu").parts(
+var anatomy3 = createAnatomy3("menu").parts(
   "arrow",
   "arrowTip",
   "content",
@@ -6212,8 +9206,8 @@ var anatomy2 = createAnatomy2("menu").parts(
   "trigger",
   "triggerItem"
 );
-var parts2 = anatomy2.build();
-var dom2 = createScope2({
+var parts3 = anatomy3.build();
+var dom3 = createScope3({
   getTriggerId: (ctx) => ctx.ids?.trigger ?? `menu:${ctx.id}:trigger`,
   getContextTriggerId: (ctx) => ctx.ids?.contextTrigger ?? `menu:${ctx.id}:ctx-trigger`,
   getContentId: (ctx) => ctx.ids?.content ?? `menu:${ctx.id}:content`,
@@ -6221,23 +9215,23 @@ var dom2 = createScope2({
   getPositionerId: (ctx) => ctx.ids?.positioner ?? `menu:${ctx.id}:popper`,
   getGroupId: (ctx, id) => ctx.ids?.group?.(id) ?? `menu:${ctx.id}:group:${id}`,
   getGroupLabelId: (ctx, id) => ctx.ids?.groupLabel?.(id) ?? `menu:${ctx.id}:group-label:${id}`,
-  getContentEl: (ctx) => dom2.getById(ctx, dom2.getContentId(ctx)),
-  getPositionerEl: (ctx) => dom2.getById(ctx, dom2.getPositionerId(ctx)),
-  getTriggerEl: (ctx) => dom2.getById(ctx, dom2.getTriggerId(ctx)),
-  getHighlightedItemEl: (ctx) => ctx.highlightedValue ? dom2.getById(ctx, ctx.highlightedValue) : null,
-  getArrowEl: (ctx) => dom2.getById(ctx, dom2.getArrowId(ctx)),
+  getContentEl: (ctx) => dom3.getById(ctx, dom3.getContentId(ctx)),
+  getPositionerEl: (ctx) => dom3.getById(ctx, dom3.getPositionerId(ctx)),
+  getTriggerEl: (ctx) => dom3.getById(ctx, dom3.getTriggerId(ctx)),
+  getHighlightedItemEl: (ctx) => ctx.highlightedValue ? dom3.getById(ctx, ctx.highlightedValue) : null,
+  getArrowEl: (ctx) => dom3.getById(ctx, dom3.getArrowId(ctx)),
   getElements: (ctx) => {
-    const ownerId = CSS.escape(dom2.getContentId(ctx));
+    const ownerId = CSS.escape(dom3.getContentId(ctx));
     const selector = `[role^="menuitem"][data-ownedby=${ownerId}]:not([data-disabled])`;
-    return queryAll2(dom2.getContentEl(ctx), selector);
+    return queryAll2(dom3.getContentEl(ctx), selector);
   },
-  getFirstEl: (ctx) => first2(dom2.getElements(ctx)),
-  getLastEl: (ctx) => last2(dom2.getElements(ctx)),
-  getNextEl: (ctx, loop) => nextById2(dom2.getElements(ctx), ctx.highlightedValue, loop ?? ctx.loopFocus),
-  getPrevEl: (ctx, loop) => prevById2(dom2.getElements(ctx), ctx.highlightedValue, loop ?? ctx.loopFocus),
-  getElemByKey: (ctx, key) => getByTypeahead(dom2.getElements(ctx), { state: ctx.typeaheadState, key, activeId: ctx.highlightedValue }),
+  getFirstEl: (ctx) => first2(dom3.getElements(ctx)),
+  getLastEl: (ctx) => last2(dom3.getElements(ctx)),
+  getNextEl: (ctx, loop) => nextById2(dom3.getElements(ctx), ctx.highlightedValue, loop ?? ctx.loopFocus),
+  getPrevEl: (ctx, loop) => prevById2(dom3.getElements(ctx), ctx.highlightedValue, loop ?? ctx.loopFocus),
+  getElemByKey: (ctx, key) => getByTypeahead(dom3.getElements(ctx), { state: ctx.typeaheadState, key, activeId: ctx.highlightedValue }),
   isTargetDisabled: (v) => {
-    return isHTMLElement(v) && (v.dataset.disabled === "" || v.hasAttribute("disabled"));
+    return isHTMLElement3(v) && (v.dataset.disabled === "" || v.hasAttribute("disabled"));
   },
   isTriggerItem: (el) => {
     return !!el?.getAttribute("role")?.startsWith("menuitem") && !!el?.hasAttribute("aria-controls");
@@ -6252,7 +9246,7 @@ var dom2 = createScope2({
     };
   }
 });
-function connect2(state, send, normalize) {
+function connect3(state, send, normalize) {
   const isSubmenu = state.context.isSubmenu;
   const isTypingAhead = state.context.isTypingAhead;
   const composite = state.context.composite;
@@ -6282,12 +9276,12 @@ function connect2(state, send, normalize) {
     const { value: id, closeOnSelect, valueText } = props22;
     const itemState = getItemState(props22);
     return normalize.element({
-      ...parts2.item.attrs,
+      ...parts3.item.attrs,
       id,
       role: "menuitem",
       "aria-disabled": itemState.disabled,
       "data-disabled": dataAttr2(itemState.disabled),
-      "data-ownedby": dom2.getContentId(state.context),
+      "data-ownedby": dom3.getContentId(state.context),
       "data-highlighted": dataAttr2(itemState.highlighted),
       "data-valuetext": valueText,
       onDragStart(event) {
@@ -6356,9 +9350,9 @@ function connect2(state, send, normalize) {
     },
     getContextTriggerProps() {
       return normalize.element({
-        ...parts2.contextTrigger.attrs,
+        ...parts3.contextTrigger.attrs,
         dir: state.context.dir,
-        id: dom2.getContextTriggerId(state.context),
+        id: dom3.getContextTriggerId(state.context),
         onPointerDown(event) {
           if (event.pointerType === "mouse")
             return;
@@ -6400,26 +9394,26 @@ function connect2(state, send, normalize) {
     },
     getTriggerProps() {
       return normalize.button({
-        ...isSubmenu ? parts2.triggerItem.attrs : parts2.trigger.attrs,
+        ...isSubmenu ? parts3.triggerItem.attrs : parts3.trigger.attrs,
         "data-placement": state.context.currentPlacement,
         type: "button",
         dir: state.context.dir,
-        id: dom2.getTriggerId(state.context),
+        id: dom3.getTriggerId(state.context),
         "data-uid": state.context.id,
         "aria-haspopup": composite ? "menu" : "dialog",
-        "aria-controls": dom2.getContentId(state.context),
+        "aria-controls": dom3.getContentId(state.context),
         "aria-expanded": open || void 0,
         "data-state": open ? "open" : "closed",
         onPointerMove(event) {
           if (event.pointerType !== "mouse")
             return;
-          const disabled = dom2.isTargetDisabled(event.currentTarget);
+          const disabled = dom3.isTargetDisabled(event.currentTarget);
           if (disabled || !isSubmenu)
             return;
           send({ type: "TRIGGER_POINTERMOVE", target: event.currentTarget });
         },
         onPointerLeave(event) {
-          if (dom2.isTargetDisabled(event.currentTarget))
+          if (dom3.isTargetDisabled(event.currentTarget))
             return;
           if (event.pointerType !== "mouse")
             return;
@@ -6429,16 +9423,16 @@ function connect2(state, send, normalize) {
           send({ type: "TRIGGER_POINTERLEAVE", target: event.currentTarget, point });
         },
         onPointerDown(event) {
-          if (dom2.isTargetDisabled(event.currentTarget))
+          if (dom3.isTargetDisabled(event.currentTarget))
             return;
-          if (isContextMenuEvent(event))
+          if (isContextMenuEvent2(event))
             return;
           event.preventDefault();
         },
         onClick(event) {
           if (event.defaultPrevented)
             return;
-          if (dom2.isTargetDisabled(event.currentTarget))
+          if (dom3.isTargetDisabled(event.currentTarget))
             return;
           send({ type: "TRIGGER_CLICK", target: event.currentTarget });
         },
@@ -6476,38 +9470,38 @@ function connect2(state, send, normalize) {
     },
     getIndicatorProps() {
       return normalize.element({
-        ...parts2.indicator.attrs,
+        ...parts3.indicator.attrs,
         dir: state.context.dir,
         "data-state": open ? "open" : "closed"
       });
     },
     getPositionerProps() {
       return normalize.element({
-        ...parts2.positioner.attrs,
+        ...parts3.positioner.attrs,
         dir: state.context.dir,
-        id: dom2.getPositionerId(state.context),
+        id: dom3.getPositionerId(state.context),
         style: popperStyles.floating
       });
     },
     getArrowProps() {
       return normalize.element({
-        id: dom2.getArrowId(state.context),
-        ...parts2.arrow.attrs,
+        id: dom3.getArrowId(state.context),
+        ...parts3.arrow.attrs,
         dir: state.context.dir,
         style: popperStyles.arrow
       });
     },
     getArrowTipProps() {
       return normalize.element({
-        ...parts2.arrowTip.attrs,
+        ...parts3.arrowTip.attrs,
         dir: state.context.dir,
         style: popperStyles.arrowTip
       });
     },
     getContentProps() {
       return normalize.element({
-        ...parts2.content.attrs,
-        id: dom2.getContentId(state.context),
+        ...parts3.content.attrs,
+        id: dom3.getContentId(state.context),
         "aria-label": state.context["aria-label"],
         hidden: !open,
         "data-state": open ? "open" : "closed",
@@ -6515,7 +9509,7 @@ function connect2(state, send, normalize) {
         tabIndex: 0,
         dir: state.context.dir,
         "aria-activedescendant": state.context.highlightedValue ?? void 0,
-        "aria-labelledby": dom2.getTriggerId(state.context),
+        "aria-labelledby": dom3.getTriggerId(state.context),
         "data-placement": state.context.currentPlacement,
         onPointerEnter(event) {
           if (event.pointerType !== "mouse")
@@ -6527,7 +9521,7 @@ function connect2(state, send, normalize) {
             return;
           if (!isSelfTarget(event))
             return;
-          const target = getEventTarget(event);
+          const target = getEventTarget3(event);
           const sameMenu = target?.closest("[role=menu]") === event.currentTarget || target === event.currentTarget;
           if (!sameMenu)
             return;
@@ -6538,7 +9532,7 @@ function connect2(state, send, normalize) {
               return;
             }
           }
-          const item = dom2.getHighlightedItemEl(state.context);
+          const item = dom3.getHighlightedItemEl(state.context);
           const keyMap3 = {
             ArrowDown() {
               send("ARROW_DOWN");
@@ -6593,7 +9587,7 @@ function connect2(state, send, normalize) {
     },
     getSeparatorProps() {
       return normalize.element({
-        ...parts2.separator.attrs,
+        ...parts3.separator.attrs,
         role: "separator",
         dir: state.context.dir,
         "aria-orientation": "horizontal"
@@ -6610,7 +9604,7 @@ function connect2(state, send, normalize) {
         ...getItemProps(option),
         ...normalize.element({
           "data-type": type,
-          ...parts2.item.attrs,
+          ...parts3.item.attrs,
           dir: state.context.dir,
           "data-value": option.value,
           role: `menuitem${type}`,
@@ -6633,7 +9627,7 @@ function connect2(state, send, normalize) {
     getItemIndicatorProps(props22) {
       const itemState = getOptionItemState(props22);
       return normalize.element({
-        ...parts2.itemIndicator.attrs,
+        ...parts3.itemIndicator.attrs,
         dir: state.context.dir,
         "data-disabled": dataAttr2(itemState.disabled),
         "data-highlighted": dataAttr2(itemState.highlighted),
@@ -6644,7 +9638,7 @@ function connect2(state, send, normalize) {
     getItemTextProps(props22) {
       const itemState = getOptionItemState(props22);
       return normalize.element({
-        ...parts2.itemText.attrs,
+        ...parts3.itemText.attrs,
         dir: state.context.dir,
         "data-disabled": dataAttr2(itemState.disabled),
         "data-highlighted": dataAttr2(itemState.highlighted),
@@ -6653,26 +9647,26 @@ function connect2(state, send, normalize) {
     },
     getItemGroupLabelProps(props22) {
       return normalize.element({
-        id: dom2.getGroupLabelId(state.context, props22.htmlFor),
+        id: dom3.getGroupLabelId(state.context, props22.htmlFor),
         dir: state.context.dir,
-        ...parts2.itemGroupLabel.attrs
+        ...parts3.itemGroupLabel.attrs
       });
     },
     getItemGroupProps(props22) {
       return normalize.element({
-        id: dom2.getGroupId(state.context, props22.id),
-        ...parts2.itemGroup.attrs,
+        id: dom3.getGroupId(state.context, props22.id),
+        ...parts3.itemGroup.attrs,
         dir: state.context.dir,
-        "aria-labelledby": dom2.getGroupLabelId(state.context, props22.id),
+        "aria-labelledby": dom3.getGroupLabelId(state.context, props22.id),
         role: "group"
       });
     }
   };
 }
 var { not: not4, and: and4, or: or3 } = guards2;
-function machine2(userContext) {
-  const ctx = compact2(userContext);
-  return createMachine2(
+function machine3(userContext) {
+  const ctx = compact3(userContext);
+  return createMachine3(
     {
       id: "menu",
       initial: ctx.open ? "open" : "idle",
@@ -6692,7 +9686,7 @@ function machine2(userContext) {
         intentPolygon: null,
         parent: null,
         lastHighlightedValue: null,
-        children: cast2(ref2({})),
+        children: cast3(ref3({})),
         suspendPointer: false,
         typeaheadState: getByTypeahead.defaultOptions
       },
@@ -7094,15 +10088,15 @@ function machine2(userContext) {
       guards: {
         closeOnSelect: (ctx2, evt) => !!(evt?.closeOnSelect ?? ctx2.closeOnSelect),
         // whether the trigger is also a menu item
-        isTriggerItem: (_ctx, evt) => dom2.isTriggerItem(evt.target),
+        isTriggerItem: (_ctx, evt) => dom3.isTriggerItem(evt.target),
         // whether the trigger item is the active item
         isTriggerItemHighlighted: (ctx2, evt) => {
-          const target = evt.target ?? dom2.getHighlightedItemEl(ctx2);
+          const target = evt.target ?? dom3.getHighlightedItemEl(ctx2);
           return !!target?.hasAttribute("aria-controls");
         },
         isSubmenu: (ctx2) => ctx2.isSubmenu,
         suspendPointer: (ctx2) => ctx2.suspendPointer,
-        isHighlightedItemEditable: (ctx2) => isEditableElement(dom2.getHighlightedItemEl(ctx2)),
+        isHighlightedItemEditable: (ctx2) => isEditableElement(dom3.getHighlightedItemEl(ctx2)),
         isWithinPolygon: (ctx2, evt) => {
           if (!ctx2.intentPolygon)
             return false;
@@ -7120,8 +10114,8 @@ function machine2(userContext) {
           if (ctx2.anchorPoint)
             return;
           ctx2.currentPlacement = ctx2.positioning.placement;
-          const getPositionerEl = () => dom2.getPositionerEl(ctx2);
-          return getPlacement(dom2.getTriggerEl(ctx2), getPositionerEl, {
+          const getPositionerEl = () => dom3.getPositionerEl(ctx2);
+          return getPlacement(dom3.getTriggerEl(ctx2), getPositionerEl, {
             ...ctx2.positioning,
             defer: true,
             onComplete(data) {
@@ -7130,11 +10124,11 @@ function machine2(userContext) {
           });
         },
         trackInteractOutside(ctx2, _evt, { send }) {
-          const getContentEl = () => dom2.getContentEl(ctx2);
+          const getContentEl = () => dom3.getContentEl(ctx2);
           let restoreFocus = true;
-          return trackDismissableElement(getContentEl, {
+          return trackDismissableElement2(getContentEl, {
             defer: true,
-            exclude: [dom2.getTriggerEl(ctx2)],
+            exclude: [dom3.getTriggerEl(ctx2)],
             onInteractOutside: ctx2.onInteractOutside,
             onFocusOutside: ctx2.onFocusOutside,
             onEscapeKeyDown(event) {
@@ -7155,8 +10149,8 @@ function machine2(userContext) {
         trackPointerMove(ctx2, _evt, { guards: guards22, send }) {
           const { isWithinPolygon } = guards22;
           ctx2.parent.state.context.suspendPointer = true;
-          const doc = dom2.getDoc(ctx2);
-          return addDomEvent(doc, "pointermove", (e) => {
+          const doc = dom3.getDoc(ctx2);
+          return addDomEvent3(doc, "pointermove", (e) => {
             const point = { x: e.clientX, y: e.clientY };
             const isMovingToSubmenu = isWithinPolygon(ctx2, { point });
             if (!isMovingToSubmenu) {
@@ -7170,12 +10164,12 @@ function machine2(userContext) {
             const state = getState();
             if (state.event.type.startsWith("ITEM_POINTER"))
               return;
-            const itemEl = dom2.getHighlightedItemEl(ctx2);
-            const contentEl2 = dom2.getContentEl(ctx2);
+            const itemEl = dom3.getHighlightedItemEl(ctx2);
+            const contentEl2 = dom3.getContentEl(ctx2);
             scrollIntoView(itemEl, { rootEl: contentEl2, block: "nearest" });
           };
-          raf(() => exec3());
-          const contentEl = () => dom2.getContentEl(ctx2);
+          raf4(() => exec3());
+          const contentEl = () => dom3.getContentEl(ctx2);
           return observeAttributes(contentEl, {
             defer: true,
             attributes: ["aria-activedescendant"],
@@ -7194,9 +10188,9 @@ function machine2(userContext) {
           ctx2.positioning.gutter = 0;
         },
         reposition(ctx2, evt) {
-          const getPositionerEl = () => dom2.getPositionerEl(ctx2);
+          const getPositionerEl = () => dom3.getPositionerEl(ctx2);
           const getAnchorRect = ctx2.anchorPoint ? () => ({ width: 0, height: 0, ...ctx2.anchorPoint }) : void 0;
-          getPlacement(dom2.getTriggerEl(ctx2), getPositionerEl, {
+          getPlacement(dom3.getTriggerEl(ctx2), getPositionerEl, {
             ...ctx2.positioning,
             defer: true,
             getAnchorRect,
@@ -7218,13 +10212,13 @@ function machine2(userContext) {
           }
         },
         clickHighlightedItem(ctx2, _evt) {
-          const itemEl = dom2.getHighlightedItemEl(ctx2);
+          const itemEl = dom3.getHighlightedItemEl(ctx2);
           if (!itemEl || itemEl.dataset.disabled)
             return;
           queueMicrotask(() => itemEl.click());
         },
         setIntentPolygon(ctx2, evt) {
-          const menu = dom2.getContentEl(ctx2);
+          const menu = dom3.getContentEl(ctx2);
           const placement = ctx2.currentPlacement;
           if (!menu || !placement)
             return;
@@ -7245,17 +10239,17 @@ function machine2(userContext) {
           ctx2.parent.state.context.suspendPointer = false;
         },
         setHighlightedItem(ctx2, evt) {
-          set5.highlighted(ctx2, evt.id);
+          set7.highlighted(ctx2, evt.id);
         },
         clearHighlightedItem(ctx2) {
-          set5.highlighted(ctx2, null);
+          set7.highlighted(ctx2, null);
         },
         focusMenu(ctx2) {
-          raf(() => {
-            const contentEl = dom2.getContentEl(ctx2);
+          raf4(() => {
+            const contentEl = dom3.getContentEl(ctx2);
             const initialFocusEl = getInitialFocus({
               root: contentEl,
-              enabled: !contains(contentEl, dom2.getActiveElement(ctx2)),
+              enabled: !contains2(contentEl, dom3.getActiveElement(ctx2)),
               filter(node) {
                 return !node.role?.startsWith("menuitem");
               }
@@ -7264,30 +10258,30 @@ function machine2(userContext) {
           });
         },
         highlightFirstItem(ctx2) {
-          const fn = !!dom2.getContentEl(ctx2) ? queueMicrotask : raf;
+          const fn = !!dom3.getContentEl(ctx2) ? queueMicrotask : raf4;
           fn(() => {
-            const first22 = dom2.getFirstEl(ctx2);
+            const first22 = dom3.getFirstEl(ctx2);
             if (!first22)
               return;
-            set5.highlighted(ctx2, first22.id);
+            set7.highlighted(ctx2, first22.id);
           });
         },
         highlightLastItem(ctx2) {
-          const fn = !!dom2.getContentEl(ctx2) ? queueMicrotask : raf;
+          const fn = !!dom3.getContentEl(ctx2) ? queueMicrotask : raf4;
           fn(() => {
-            const last22 = dom2.getLastEl(ctx2);
+            const last22 = dom3.getLastEl(ctx2);
             if (!last22)
               return;
-            set5.highlighted(ctx2, last22.id);
+            set7.highlighted(ctx2, last22.id);
           });
         },
         highlightNextItem(ctx2, evt) {
-          const next = dom2.getNextEl(ctx2, evt.loop);
-          set5.highlighted(ctx2, next?.id ?? null);
+          const next = dom3.getNextEl(ctx2, evt.loop);
+          set7.highlighted(ctx2, next?.id ?? null);
         },
         highlightPrevItem(ctx2, evt) {
-          const prev = dom2.getPrevEl(ctx2, evt.loop);
-          set5.highlighted(ctx2, prev?.id ?? null);
+          const prev = dom3.getPrevEl(ctx2, evt.loop);
+          set7.highlighted(ctx2, prev?.id ?? null);
         },
         invokeOnSelect(ctx2) {
           if (!ctx2.highlightedValue)
@@ -7297,25 +10291,25 @@ function machine2(userContext) {
         focusTrigger(ctx2, evt) {
           if (ctx2.isSubmenu || ctx2.anchorPoint || evt.restoreFocus === false)
             return;
-          queueMicrotask(() => dom2.getTriggerEl(ctx2)?.focus({ preventScroll: true }));
+          queueMicrotask(() => dom3.getTriggerEl(ctx2)?.focus({ preventScroll: true }));
         },
         highlightMatchedItem(ctx2, evt) {
-          const node = dom2.getElemByKey(ctx2, evt.key);
+          const node = dom3.getElemByKey(ctx2, evt.key);
           if (!node)
             return;
-          set5.highlighted(ctx2, node.id);
+          set7.highlighted(ctx2, node.id);
         },
         setParentMenu(ctx2, evt) {
-          ctx2.parent = ref2(evt.value);
+          ctx2.parent = ref3(evt.value);
         },
         setChildMenu(ctx2, evt) {
-          ctx2.children[evt.id] = ref2(evt.value);
+          ctx2.children[evt.id] = ref3(evt.value);
         },
         closeRootMenu(ctx2) {
           closeRootMenu(ctx2);
         },
         openSubmenu(ctx2) {
-          const item = dom2.getHighlightedItemEl(ctx2);
+          const item = dom3.getHighlightedItemEl(ctx2);
           const id = item?.getAttribute("data-uid");
           const child = id ? ctx2.children[id] : null;
           child?.send("OPEN_AUTOFOCUS");
@@ -7329,7 +10323,7 @@ function machine2(userContext) {
         restoreHighlightedItem(ctx2) {
           if (!ctx2.lastHighlightedValue)
             return;
-          set5.highlighted(ctx2, ctx2.lastHighlightedValue);
+          set7.highlighted(ctx2, ctx2.lastHighlightedValue);
           ctx2.lastHighlightedValue = null;
         },
         restoreParentHighlightedItem(ctx2) {
@@ -7355,7 +10349,7 @@ function closeRootMenu(ctx) {
   }
   parent?.send("CLOSE");
 }
-var set5 = {
+var set7 = {
   highlighted(ctx, value) {
     if (isEqual2(ctx.highlightedValue, value))
       return;
@@ -7363,7 +10357,7 @@ var set5 = {
     ctx.onHighlightChange?.({ highlightedValue: value });
   }
 };
-var props2 = createProps2()([
+var props3 = createProps3()([
   "anchorPoint",
   "aria-label",
   "closeOnSelect",
@@ -7386,14 +10380,14 @@ var props2 = createProps2()([
   "typeahead",
   "composite"
 ]);
-var splitProps4 = createSplitProps2(props2);
-var itemProps2 = createProps2()(["closeOnSelect", "disabled", "value", "valueText"]);
-var splitItemProps2 = createSplitProps2(itemProps2);
-var itemGroupLabelProps = createProps2()(["htmlFor"]);
-var splitItemGroupLabelProps = createSplitProps2(itemGroupLabelProps);
-var itemGroupProps = createProps2()(["id"]);
-var splitItemGroupProps = createSplitProps2(itemGroupProps);
-var optionItemProps = createProps2()([
+var splitProps6 = createSplitProps3(props3);
+var itemProps2 = createProps3()(["closeOnSelect", "disabled", "value", "valueText"]);
+var splitItemProps2 = createSplitProps3(itemProps2);
+var itemGroupLabelProps = createProps3()(["htmlFor"]);
+var splitItemGroupLabelProps = createSplitProps3(itemGroupLabelProps);
+var itemGroupProps = createProps3()(["id"]);
+var splitItemGroupProps = createSplitProps3(itemGroupProps);
+var optionItemProps = createProps3()([
   "disabled",
   "valueText",
   "closeOnSelect",
@@ -7402,19 +10396,19 @@ var optionItemProps = createProps2()([
   "checked",
   "onCheckedChange"
 ]);
-var splitOptionItemProps = createSplitProps2(optionItemProps);
+var splitOptionItemProps = createSplitProps3(optionItemProps);
 
 // js/widgex/menu.ts
 var Menu = class extends Component {
   initService(context) {
-    return machine2(context);
+    return machine3(context);
   }
   initApi() {
-    return connect2(this.service.state, this.service.send, normalizeProps);
+    return connect3(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts3 = ["trigger", "positioner", "content"];
-    for (const part of parts3)
+    const parts4 = ["trigger", "positioner", "content"];
+    for (const part of parts4)
       renderPart(this.el, part, this.api);
     this.renderItemGroupLabels();
     this.renderItemGroups();
@@ -7473,6 +10467,7 @@ var menu_default = {
 // js/widgex/index.ts
 var Hooks = {
   Accordion: accordion_default,
+  Dialog: dialog_default,
   Menu: menu_default
 };
 //# sourceMappingURL=widgex.cjs.js.map
