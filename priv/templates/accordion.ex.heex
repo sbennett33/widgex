@@ -2,6 +2,8 @@ defmodule <%= @web_module %>.Components.Accordion do
   @moduledoc false
   use <%= @web_module %>, :component
 
+  import <%= @web_module %>.Components.Icon
+
   @doc """
   A vertically stacked set of interactive headings that each reveal a section of content.
 
@@ -52,20 +54,19 @@ defmodule <%= @web_module %>.Components.Accordion do
     ~H"""
     <div id="accordion" phx-hook="Accordion" class={classes(["", @class])} {@rest}>
       <div data-part="root">
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
       </div>
     </div>
     """
   end
 
-  attr :value, :string, default: nil
   attr :class, :string, default: nil
   slot :inner_block, required: true
 
   def accordion_item(assigns) do
     ~H"""
     <div data-part="item" data-value={@value} class={classes(["border-b", @class])}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -85,22 +86,11 @@ defmodule <%= @web_module %>.Components.Accordion do
           ])
         }
       >
-        <%= render_slot(@inner_block) %>
-
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+        {render_slot(@inner_block)}
+        <.icon
+          name="hero-chevron-down"
           class="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
-        >
-          <path d="m6 9 6 6 6-6"></path>
-        </svg>
+        />
       </button>
     </h3>
     """
@@ -117,7 +107,7 @@ defmodule <%= @web_module %>.Components.Accordion do
     >
       <div class="overflow-hidden">
         <div class={classes(["pb-4 pt-0", @class])}>
-          <%= render_slot(@inner_block) %>
+          {render_slot(@inner_block)}
         </div>
       </div>
     </div>
