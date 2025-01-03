@@ -1,0 +1,152 @@
+defmodule <% @web_module %>.Components.DropdownMenu do
+  @moduledoc false
+  use <% @web_module %>, :component
+
+  @doc """
+  Displays a menu to the user — such as a set of actions or functions — triggered by a button.
+
+  ## Installation
+
+      mix widgex.add dropdown_menu
+
+  ## Usage
+
+      <.dropdown_menu>
+        <.dropdown_menu_trigger>Open</.dropdown_menu_trigger>
+        <.dropdown_menu_content>
+          <.dropdown_menu_label>My Account</.dropdown_menu_label>
+          <.dropdown_menu_separator />
+          <.dropdown_menu_item>Profile</.dropdown_menu_item>
+          <.dropdown_menu_item>Billing</.dropdown_menu_item>
+          <.dropdown_menu_item>Team</.dropdown_menu_item>
+          <.dropdown_menu_item>Subscription</.dropdown_menu_item>
+        </.dropdown_menu_content>
+      </.dropdown_menu>
+
+  """
+  attr :id, :string, default: "dropdown-menu"
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def dropdown_menu(assigns) do
+    ~H"""
+    <div id={@id} phx-hook="Menu" class={classes(["relative group inline-block", @class])} {@rest}>
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def dropdown_menu_trigger(assigns) do
+    ~H"""
+    <div data-part="trigger" class={@class} {@rest}>
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def dropdown_menu_label(assigns) do
+    ~H"""
+    <div class={classes(["px-2 py-1.5 text-sm font-semibold", @class])} {@rest}>
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def dropdown_menu_content(assigns) do
+    ~H"""
+    <div data-part="positioner">
+      <div
+        data-part="content"
+        class={
+          classes([
+            "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[placement=bottom-start]:slide-in-from-top-2 data-[placement=top-start]:slide-in-from-bottom-2 w-56 outline-none",
+            @class
+          ])
+        }
+        {@rest}
+      >
+        {render_slot(@inner_block)}
+      </div>
+    </div>
+    """
+  end
+
+  attr :value, :string, default: nil
+  attr :disabled, :boolean, default: false
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def dropdown_menu_item(assigns) do
+    ~H"""
+    <div
+      data-part="item"
+      data-value={@value}
+      class={
+        classes([
+          "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+          @class
+        ])
+      }
+      {%{"data-disabled" => @disabled}}
+      {@rest}
+    >
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
+
+  attr :value, :string, default: nil
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def dropdown_menu_group(assigns) do
+    ~H"""
+    <div data-part="item-group" data-value={@value} class={@class} {@rest}>
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  def dropdown_menu_separator(assigns) do
+    ~H"""
+    <div data-part="separator" class={classes(["-mx-1 my-1 h-px bg-muted", @class])} {@rest}></div>
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def dropdown_menu_shortcut(assigns) do
+    ~H"""
+    <span class={classes(["ml-auto text-xs tracking-widest opacity-60", @class])} {@rest}>
+      {render_slot(@inner_block)}
+    </span>
+    """
+  end
+end
