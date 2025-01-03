@@ -22,7 +22,7 @@ defmodule Mix.Tasks.Widgex.Add do
       component_module =
         Igniter.Libs.Phoenix.web_module_name(
           igniter,
-          "Components.#{String.capitalize(component)}"
+          "Components.#{Macro.camelize(component)}"
         )
 
       path =
