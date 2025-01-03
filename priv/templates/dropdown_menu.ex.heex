@@ -9,6 +9,18 @@ defmodule <%= @web_module %>.Components.DropdownMenu do
 
       mix widgex.add dropdown_menu
 
+  Install the hook in your app.js:
+
+      import { ..., Menu, ... } from "widgex";
+
+      let liveSocket = new LiveSocket("/live", Socket, {
+        hooks: {
+          ...,
+          Menu,
+          ...
+        },
+      });
+
   ## Usage
 
       <.dropdown_menu>

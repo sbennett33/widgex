@@ -11,6 +11,18 @@ defmodule <%= @web_module %>.Components.AlertDialog do
 
       mix widgex.add alert_dialog
 
+  Install the hook in your app.js:
+
+      import { ..., Dialog, ... } from "widgex";
+
+      let liveSocket = new LiveSocket("/live", Socket, {
+        hooks: {
+          ...,
+          Dialog,
+          ...
+        },
+      });
+
   ## Usage
 
       <.alert_dialog>
