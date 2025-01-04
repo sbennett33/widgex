@@ -3375,6 +3375,7 @@ var collapsible_default = {
       id: this.el.id,
       dir,
       disabled: this.el.dataset.disabled === "true" || this.el.dataset.disabled === "",
+      open: this.el.hasAttribute("open"),
       onOpenChange: (details) => {
         if (this.el.dataset.onOpenChange) {
           this.pushEvent(this.el.dataset.onOpenChange, details);
