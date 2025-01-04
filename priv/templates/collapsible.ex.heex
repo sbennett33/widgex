@@ -1,0 +1,75 @@
+defmodule <%= @web_module %>.Components.Collapsible do
+  @moduledoc false
+  use <%= @web_module %>, :component
+
+  @doc """
+  An interactive component which expands/collapses a panel.
+
+  ## Installation
+
+      mix widgex.add collapsible
+
+  Install the hook in your app.js:
+
+      import { Collapsible } from "widgex";
+
+      let liveSocket = new LiveSocket("/live", Socket, {
+        hooks: {
+          ...,
+          Collapsible,
+          ...
+        },
+      });
+
+  ## Usage
+
+      <.collapsible>
+        <.collapsible_trigger>Can I use this in my project?</.collapsible_trigger>
+        <.collapsible_content>
+          Yes. Free to use for personal and commercial projects. No attribution
+          required.
+        </.collapsible_content>
+      </.collapsible>
+
+  """
+
+  attr :id, :string, default: "collapsible"
+  attr :class, :string, default: ""
+  attr :rest, :global
+
+  slot :inner_block
+
+  def collapsible(assigns) do
+    ~H"""
+    <div id={@id} phx-hook="Collapsible" data-part="root" class={@class} {@rest}>
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
+
+  attr :class, :string, default: ""
+  attr :rest, :global
+
+  slot :inner_block
+
+  def collapsible_trigger(assigns) do
+    ~H"""
+    <div data-part="trigger" class={@class} {@rest}>
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
+
+  attr :class, :string, default: ""
+  attr :rest, :global
+
+  slot :inner_block
+
+  def collapsible_content(assigns) do
+    ~H"""
+    <div data-part="content" class={@class} {@rest}>
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
+end
