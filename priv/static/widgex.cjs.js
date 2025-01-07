@@ -1763,6 +1763,15 @@ var renderPart = (root, name, api) => {
   if (part)
     spreadProps(part, api[getterName]());
 };
+var getOption = (el, name, validOptions) => {
+  const kebabName = name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+  let initial = el.dataset[kebabName];
+  if (validOptions && initial !== void 0 && !validOptions.includes(initial)) {
+    console.error(`Invalid '${name}' specified: '${initial}'. Expected one of '${validOptions.join("', '")}'.`);
+    initial = void 0;
+  }
+  return initial;
+};
 var getBooleanOption = (el, name) => {
   const kebabName = name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
   return el.dataset[kebabName] === "true" || el.dataset[kebabName] === "";
@@ -14067,7 +14076,7 @@ var tabs_default = {
   context() {
     return {
       id: this.el.id,
-      value: [""],
+      value: getOption(this.el, "value"),
       loopFocus: getBooleanOption(this.el, "loop-focus"),
       activationMode: getBooleanOption(this.el, "activation-mode"),
       onValueChange: (details) => {

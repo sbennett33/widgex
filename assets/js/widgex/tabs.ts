@@ -1,5 +1,5 @@
 import * as tabs from "@zag-js/tabs";
-import { normalizeProps, spreadProps, renderPart, getBooleanOption } from "./util";
+import { normalizeProps, spreadProps, renderPart, getOption, getBooleanOption } from "./util";
 import { Component } from "./component";
 import type { ViewHook } from "phoenix_live_view";
 import type { Machine } from "@zag-js/core";
@@ -72,7 +72,7 @@ export default {
   context(): tabs.Context {
     return {
       id: this.el.id,
-      value: [""],
+      value: getOption(this.el, "value"),
       loopFocus: getBooleanOption(this.el, "loop-focus"),
       activationMode: getBooleanOption(this.el, "activation-mode"),
       onValueChange: (details: tabs.ValueChangeDetails) => {
