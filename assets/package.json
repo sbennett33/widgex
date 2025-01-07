@@ -13,6 +13,7 @@
     "@zag-js/accordion": "^0.79.2",
     "@zag-js/collapsible": "^0.80.0",
     "@zag-js/dialog": "^0.80.0",
-    "@zag-js/menu": "^0.79.3"
+    "@zag-js/menu": "^0.79.3",
+    "@zag-js/tabs": "^0.80.0"
   }
 }
