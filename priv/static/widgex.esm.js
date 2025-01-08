@@ -11939,7 +11939,7 @@ var Menu = class extends Component {
     return connect4(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts6 = ["trigger", "backdrop", "positioner", "content"];
+    const parts6 = ["trigger", "context-trigger", "positioner", "content"];
     for (const part of parts6)
       renderPart(this.el, part, this.api);
     this.renderItemGroupLabels();
