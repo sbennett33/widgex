@@ -1,13 +1,6 @@
 defmodule <%= @web_module %>.Components.Badge do
-  @moduledoc false
-  use <%= @web_module %>, :component
-
-  @doc """
+  @moduledoc """
   Renders a badge component.
-
-  ## Installation
-
-      mix widgex.add badge
 
   ## Usage
 
@@ -20,6 +13,7 @@ defmodule <%= @web_module %>.Components.Badge do
       <.badge variant="outline"><.link href="#">Badge</.link></.badge>
 
   """
+  use <%= @web_module %>, :component
 
   @default_classes ~w(inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2)
 

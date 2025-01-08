@@ -118,6 +118,19 @@ defmodule Mix.Tasks.Widgex.Install do
 
                alias Phoenix.LiveView.JS
              end
+
+             Add to your web module:
+
+             defp components() do
+               quote do
+               end
+             end
+
+             And add:
+
+             unquote(components())
+
+             to your html_helpers() function.
              """}
 
           _ ->
