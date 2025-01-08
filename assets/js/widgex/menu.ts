@@ -14,7 +14,7 @@ class Menu extends Component<menu.Context, menu.Api> {
   }
 
   render() {
-    const parts = ["trigger", "positioner", "content"];
+    const parts = ["trigger", "context-trigger", "positioner", "content"];
     for (const part of parts) renderPart(this.el, part, this.api);
     this.renderItemGroupLabels();
     this.renderItemGroups();
