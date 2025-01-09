@@ -2,6 +2,7 @@ import Accordion from "./accordion";
 import Collapsible from "./collapsible";
 import Dialog from "./dialog";
 import Menu from "./menu";
+import Popover from "./popover";
 import Tabs from "./tabs";
 
 const Hooks = {
@@ -12,4 +13,4 @@ const Hooks = {
   Tabs,
 };
 
-export { Accordion, Collapsible, Dialog, Menu, Hooks, Tabs };
+export { Accordion, Collapsible, Dialog, Menu, Popover, Hooks, Tabs };
