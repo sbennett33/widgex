@@ -107,7 +107,7 @@ export default {
       allowCustomValue: getBooleanOption(this.el, "allowCustomValue"),
       onOpenChange: (details: combobox.OpenChangeDetails) => {
         if (this.el.dataset.onOpenChange) {
-          this.pushEvent(this.el.dataset.onOpenChange, details);
+          this.pushEventTo(`#${this.el.id}`, this.el.dataset.onOpenChange, details);
         }
       },
       onInputValueChange: (details: combobox.InputValueChangeDetails) => {
@@ -117,12 +117,12 @@ export default {
       },
       onHighlightChange: (details: combobox.HighlightChangeDetails) => {
         if (this.el.dataset.onHighlightChange) {
-          this.pushEvent(this.el.dataset.onHighlightChange, details);
+          this.pushEventTo(`#${this.el.id}`, this.el.dataset.onHighlightChange, details);
         }
       },
       onValueChange: (details: combobox.ValueChangeDetails) => {
         if (this.el.dataset.onValueChange) {
-          this.pushEvent(this.el.dataset.onValueChange, details);
+          this.pushEventTo(`#${this.el.id}`, this.el.dataset.onValueChange, details);
         }
       },
     };
