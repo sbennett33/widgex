@@ -1,13 +1,6 @@
 defmodule <%= @web_module %>.Components.Alert do
-  @moduledoc false
-  use <%= @web_module %>, :component
-
-  @doc """
+  @moduledoc """
   Displays a callout for user attention.
-
-  ## Installation
-
-      mix widgex.add alert
 
   ## Usage
 
@@ -20,11 +13,13 @@ defmodule <%= @web_module %>.Components.Alert do
       </.alert>
 
   """
-  @default_classes ~w(relative w-full rounded-lg border p-4 [&>span~*]:pl-7 [&>span+div]:translate-y-[-3px] [&>span]:absolute [&>span]:left-4 [&>span]:top-4 [&>span]:text-foreground)
+  use <%= @web_module %>, :component
+
+  @default_classes ~w(relative w-full rounded-lg bg-background border p-4 [&>span~*]:pl-7 [&>span+div]:translate-y-[-3px] [&>span]:absolute [&>span]:left-4 [&>span]:top-4 [&>span]:text-foreground)
 
   variant :variant,
           [
-            default: "bg-background text-foreground",
+            default: "text-foreground",
             destructive:
               "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive"
           ],
