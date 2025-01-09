@@ -9301,7 +9301,7 @@ var combobox_default = {
       },
       onInputValueChange: (details) => {
         if (this.el.dataset.onInputValueChange) {
-          this.pushEventTo(this.el.id, this.el.dataset.onInputValueChange, details);
+          this.pushEventTo(`#${this.el.id}`, this.el.dataset.onInputValueChange, details);
         }
       },
       onHighlightChange: (details) => {
