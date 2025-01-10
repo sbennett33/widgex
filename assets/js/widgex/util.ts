@@ -155,6 +155,8 @@ export const getAttributes = (root: HTMLElement, name: string) => {
 
 export const restoreAttributes = (root: HTMLElement, attributeMaps: AttributeCache[]) => {
   for (const attributeMap of attributeMaps) {
+    if (!attributeMap) return;
+
     const part = root.querySelector<HTMLElement>(`[data-part='${attributeMap.part}']`);
     if (!part) return;
 

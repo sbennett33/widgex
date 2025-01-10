@@ -1797,6 +1797,8 @@ var getAttributes = (root, name) => {
 };
 var restoreAttributes = (root, attributeMaps) => {
   for (const attributeMap of attributeMaps) {
+    if (!attributeMap)
+      return;
     const part = root.querySelector(`[data-part='${attributeMap.part}']`);
     if (!part)
       return;
