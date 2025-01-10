@@ -1746,38 +1746,6 @@ var getBooleanOption = (el, name) => {
   const kebabName = name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
   return el.dataset[kebabName] === "true" || el.dataset[kebabName] === "";
 };
-var getAttributes = (root, name) => {
-  const part = root.querySelector(`[data-part='${name}']`);
-  if (!part)
-    return;
-  const attrs = [];
-  for (const attr of part.attributes) {
-    if (attr.name.startsWith("data-") || attr.name.startsWith("aria-")) {
-      attrs.push({ name: attr.name, value: attr.value });
-    }
-  }
-  return {
-    part: name,
-    cssText: part.style.cssText,
-    hasFocus: part === document.activeElement,
-    attrs
-  };
-};
-var restoreAttributes = (root, attributeMaps) => {
-  for (const attributeMap of attributeMaps) {
-    if (!attributeMap)
-      return;
-    const part = root.querySelector(`[data-part='${attributeMap.part}']`);
-    if (!part)
-      return;
-    for (const attr of attributeMap.attrs) {
-      part.setAttribute(attr.name, attr.value);
-    }
-    part.style.cssText = attributeMap.cssText;
-    if (attributeMap.hasFocus)
-      part.focus();
-  }
-};
 
 // js/widgex/component.ts
 var Component = class {
@@ -9252,16 +9220,15 @@ var combobox_default = {
     this.combobox = new Combobox(this.el, this.context());
     this.combobox.init();
   },
-  beforeUpdate() {
-    const parts8 = ["root", "label", "control", "input", "trigger", "positioner", "content"];
-    this.attributeCache = parts8.map((part) => {
-      return getAttributes(this.el, part);
-    });
-  },
+  // beforeUpdate() {
+  //   const parts = ["root", "label", "control", "input", "trigger", "positioner", "content"];
+  //   this.attributeCache = parts.map((part) => {
+  //     return getAttributes(this.el, part);
+  //   });
+  // },
   updated() {
     this.combobox.api.setCollection(this.collection());
     this.combobox.render();
-    restoreAttributes(this.el, this.attributeCache);
   },
   beforeDestroy() {
     this.combobox.destroy();

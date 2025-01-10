@@ -53,17 +53,17 @@ export default {
     this.combobox.init();
   },
 
-  beforeUpdate() {
-    const parts = ["root", "label", "control", "input", "trigger", "positioner", "content"];
-    this.attributeCache = parts.map((part) => {
-      return getAttributes(this.el, part);
-    });
-  },
+  // beforeUpdate() {
+  //   const parts = ["root", "label", "control", "input", "trigger", "positioner", "content"];
+  //   this.attributeCache = parts.map((part) => {
+  //     return getAttributes(this.el, part);
+  //   });
+  // },
 
   updated() {
     this.combobox.api.setCollection(this.collection());
     this.combobox.render();
-    restoreAttributes(this.el, this.attributeCache);
+    // restoreAttributes(this.el, this.attributeCache);
   },
 
   beforeDestroy() {
