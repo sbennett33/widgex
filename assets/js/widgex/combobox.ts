@@ -19,7 +19,7 @@ class Combobox extends Component<combobox.Context, combobox.Api> {
   }
 
   render() {
-    const parts = ["root", "label", "control", "input", "trigger", "positioner", "content"];
+    const parts = ["root", "control", "input", "trigger", "positioner", "content"];
     for (const part of parts) renderPart(this.el, part, this.api);
     this.renderItems();
   }
@@ -53,17 +53,18 @@ export default {
     this.combobox.init();
   },
 
-  // beforeUpdate() {
-  //   const parts = ["root", "label", "control", "input", "trigger", "positioner", "content"];
-  //   this.attributeCache = parts.map((part) => {
-  //     return getAttributes(this.el, part);
-  //   });
-  // },
+  beforeUpdate() {
+    const parts = ["root", "control", "input", "trigger", "positioner", "content"];
+    this.attributeCache = parts.map((part) => {
+      return getAttributes(this.el, part);
+    })
+      .filter(cache => cache !== undefined);
+  },
 
   updated() {
     this.combobox.api.setCollection(this.collection());
     this.combobox.render();
-    // restoreAttributes(this.el, this.attributeCache);
+    restoreAttributes(this.el, this.attributeCache);
   },
 
   beforeDestroy() {
