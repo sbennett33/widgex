@@ -21806,11 +21806,7 @@ var tabs_default = {
     this.tabs = new Tabs(this.el, this.context());
     this.tabs.init();
   },
-  beforeUpdate() {
-    console.log(this.el);
-  },
   updated() {
-    console.log(this.el);
     this.tabs.render();
   },
   beforeDestroy() {
