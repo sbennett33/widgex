@@ -51,7 +51,7 @@ class Tabs extends Component<tabs.Context, tabs.Api> {
 }
 
 export interface TabsHook extends ViewHook {
-  accordion: Tabs;
+  tabs: Tabs;
   context(): tabs.Context;
 }
 
