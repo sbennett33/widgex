@@ -61,12 +61,7 @@ export default {
     this.tabs.init();
   },
 
-  beforeUpdate() {
-    console.log(this.el);
-  },
-
   updated() {
-    console.log(this.el);
     this.tabs.render();
   },
 
