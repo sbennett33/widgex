@@ -165,10 +165,11 @@ defmodule Mix.Tasks.Widgex.Install do
               end
               """)
 
-            Igniter.Code.Common.add_code(zipper, """
+            {:ok,
+             Igniter.Code.Common.add_code(zipper, """
 
-            unquote(components())
-            """)
+             unquote(components())
+             """)}
         end
       end
     )
