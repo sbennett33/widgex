@@ -16319,13 +16319,33 @@ var Menu = class extends Component {
     ];
     for (const part of parts8)
       renderPart(this.el, part, this.api);
+    this.renderItemGroups();
     this.renderItems();
+    this.renderSeparators();
+  }
+  renderItemGroups() {
+    for (const itemGroup of this.el.querySelectorAll(`[id^='menu:${this.el.id}:group']`)) {
+      const value = itemGroup.dataset.value;
+      if (!value) {
+        console.error("Missing `data-value` attribute on item group.");
+        return;
+      }
+      spreadProps(itemGroup, this.api.getItemGroupProps({ id: value }));
+    }
   }
   renderItems() {
-    for (const item of this.el.querySelectorAll("[data-value]")) {
+    for (const item of this.el.querySelectorAll("[data-part='item']")) {
       const value = item.dataset.value;
+      if (!value) {
+        console.error("Missing `data-value` attribute on item.");
+        return;
+      }
       spreadProps(item, this.api.getItemProps({ value }));
     }
+  }
+  renderSeparators() {
+    for (const separator of this.el.querySelectorAll("[data-part='separator']"))
+      spreadProps(separator, this.api.getSeparatorProps());
   }
 };
 var menu_default = {
