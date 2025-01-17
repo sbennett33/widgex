@@ -27,38 +27,49 @@ defmodule <%= @web_module %>.Components.Accordion do
 
   import <%= @web_module %>.Components.Icon
 
-  attr :class, :string, default: nil
+  attr :id, :string, default: "accordion"
+  attr :class, :string, default: ""
   attr :rest, :global
 
   slot :inner_block, required: true
 
   def accordion(assigns) do
     ~H"""
-    <div id="accordion" phx-hook="Accordion" class={classes(["", @class])} {@rest} data-part="root">
-      {render_slot(@inner_block)}
+    <div id={@id} phx-hook="Accordion" class={classes(["", @class])} {@rest}>
+      <div id={"accordion:#{@id}"}>
+        {render_slot(@inner_block)}
+      </div>
     </div>
     """
   end
 
-  attr :class, :string, default: nil
+  attr :parent_id, :string, default: "accordion"
+  attr :value, :string, required: true
+  attr :class, :string, default: ""
   slot :inner_block, required: true
 
   def accordion_item(assigns) do
     ~H"""
-    <div data-part="item" data-value={@value} class={classes(["border-b", @class])}>
+    <div
+      id={"accordion:#{@parent_id}:item:#{@value}"}
+      data-value={@value}
+      class={classes(["border-b", @class])}
+    >
       {render_slot(@inner_block)}
     </div>
     """
   end
 
-  attr :class, :string, default: nil
+  attr :parent_id, :string, default: "accordion"
+  attr :value, :string, required: true
+  attr :class, :string, default: ""
   slot :inner_block, required: true
 
   def accordion_trigger(assigns) do
     ~H"""
     <h3 class="flex">
       <button
-        data-part="item-trigger"
+        id={"accordion:#{@parent_id}:trigger:#{@value}"}
         class={
           classes([
             "group flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline outline-none cursor-pointer",
@@ -76,17 +87,19 @@ defmodule <%= @web_module %>.Components.Accordion do
     """
   end
 
+  attr :parent_id, :string, default: "accordion"
+  attr :value, :string, required: true
   attr :class, :string, default: nil
   slot :inner_block, required: true
 
   def accordion_content(assigns) do
     ~H"""
     <div
-      data-part="item-content"
+      id={"accordion:#{@parent_id}:content:#{@value}"}
       class="text-sm overflow-hidden grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 data-[state=open]:grid-rows-[1fr]"
     >
       <div class="overflow-hidden">
-        <div class={classes(["pb-4 pt-0", @class])}>
+        <div class={classes(["pb-32 pt-0", @class])}>
           {render_slot(@inner_block)}
         </div>
       </div>
