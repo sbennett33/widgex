@@ -1758,12 +1758,12 @@ var spreadProps = (node, attrs) => {
     attrKeys.filter(onEvents).forEach(teardown);
   };
 };
-var renderPart = (root, name, api) => {
-  const camelizedName = name.replace(/(^|-)([a-z])/g, (_match, _prefix, letter) => letter.toUpperCase());
-  const part = root.querySelector(`[data-part='${name}']`);
+var renderPart = (root, part, api) => {
+  const camelizedName = part.name.replace(/(^|-)([a-z])/g, (_match, _prefix, letter) => letter.toUpperCase());
+  const node = root.querySelector(`[id='${part.id}']`);
   const getterName = `get${camelizedName}Props`;
-  if (part)
-    spreadProps(part, api[getterName]());
+  if (node)
+    spreadProps(node, api[getterName]());
 };
 var getOption = (el, name, validOptions) => {
   const kebabName = name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
@@ -1778,20 +1778,18 @@ var getBooleanOption = (el, name) => {
   const kebabName = name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
   return el.dataset[kebabName] === "true" || el.dataset[kebabName] === "";
 };
-var getAttributes = (root, name) => {
-  const part = root.querySelector(`[data-part='${name}']`);
-  if (!part)
+var getAttributes = (root, part) => {
+  const node = root.querySelector(`[id='${part.id}']`);
+  if (!node)
     return;
   const attrs = [];
-  for (const attr of part.attributes) {
-    if (attr.name.startsWith("data-") || attr.name.startsWith("aria-")) {
-      attrs.push({ name: attr.name, value: attr.value });
-    }
+  for (const attr of node.attributes) {
+    attrs.push({ name: attr.name, value: attr.value });
   }
   return {
-    part: name,
-    cssText: part.style.cssText,
-    hasFocus: part === document.activeElement,
+    part,
+    cssText: node.style.cssText,
+    hasFocus: node === document.activeElement,
     attrs
   };
 };
@@ -1799,15 +1797,15 @@ var restoreAttributes = (root, attributeMaps) => {
   for (const attributeMap of attributeMaps) {
     if (!attributeMap)
       return;
-    const part = root.querySelector(`[data-part='${attributeMap.part}']`);
-    if (!part)
+    const node = root.querySelector(`[id='${attributeMap.part.id}']`);
+    if (!node)
       return;
     for (const attr of attributeMap.attrs) {
-      part.setAttribute(attr.name, attr.value);
+      node.setAttribute(attr.name, attr.value);
     }
-    part.style.cssText = attributeMap.cssText;
+    node.style.cssText = attributeMap.cssText;
     if (attributeMap.hasFocus)
-      part.focus();
+      node.focus();
   }
 };
 
@@ -1843,38 +1841,31 @@ var Accordion = class extends Component {
     return connect(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = ["root"];
+    const parts8 = [{ name: "root", id: `accordion:${this.el.id}` }];
     for (const part of parts8)
       renderPart(this.el, part, this.api);
-    this.renderItems();
+    this.renderItems(this.el.id);
   }
-  renderItems() {
-    for (const item of this.el.querySelectorAll("[data-part='item']")) {
+  renderItems(parent_id) {
+    for (const item of this.el.querySelectorAll(`[id^='accordion:${parent_id}:item']`)) {
       const value = item.dataset.value;
       if (!value) {
         console.error("Missing `data-value` attribute on item.");
         return;
       }
       spreadProps(item, this.api.getItemProps({ value }));
-      this.renderItemTrigger(item, value);
-      this.renderItemIndicator(item, value);
-      this.renderItemContent(item, value);
+      this.renderItemTrigger(item, parent_id, value);
+      this.renderItemContent(item, parent_id, value);
     }
   }
-  renderItemTrigger(item, value) {
-    const itemTrigger = item.querySelector("[data-part='item-trigger']");
+  renderItemTrigger(item, parent_id, value) {
+    const itemTrigger = item.querySelector(`[id='accordion:${parent_id}:trigger:${value}']`);
     if (!itemTrigger)
       return;
     spreadProps(itemTrigger, this.api.getItemTriggerProps({ value }));
   }
-  renderItemIndicator(item, value) {
-    const itemIndicator = item.querySelector("[data-part='item-indicator']");
-    if (!itemIndicator)
-      return;
-    spreadProps(itemIndicator, this.api.getItemIndicatorProps({ value }));
-  }
-  renderItemContent(item, value) {
-    const itemContent = item.querySelector("[data-part='item-content']");
+  renderItemContent(item, parent_id, value) {
+    const itemContent = item.querySelector(`[id='accordion:${parent_id}:content:${value}']`);
     if (!itemContent)
       return;
     spreadProps(itemContent, this.api.getItemContentProps({ value }));
@@ -3421,7 +3412,11 @@ var Collapsible = class extends Component {
     return connect2(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = ["root", "trigger", "content"];
+    const parts8 = [
+      { name: "root", id: `collapsible:${this.el.id}` },
+      { name: "trigger", id: `collapsible:${this.el.id}:trigger` },
+      { name: "content", id: `collapsible:${this.el.id}:content` }
+    ];
     for (const part of parts8)
       renderPart(this.el, part, this.api);
   }
@@ -9262,13 +9257,20 @@ var Combobox = class extends Component {
     return connect3(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = ["root", "control", "input", "trigger", "positioner", "content"];
+    const parts8 = [
+      { name: "root", id: `combobox:${this.el.id}` },
+      { name: "control", id: `combobox:${this.el.id}:control` },
+      { name: "input", id: `combobox:${this.el.id}:input` },
+      { name: "trigger", id: `combobox:${this.el.id}:toggle-btn` },
+      { name: "positioner", id: `combobox:${this.el.id}:popper` },
+      { name: "content", id: `combobox:${this.el.id}:content` }
+    ];
     for (const part of parts8)
       renderPart(this.el, part, this.api);
-    this.renderItems();
+    this.renderItems(this.el.id);
   }
-  renderItems() {
-    for (const item of this.el.querySelectorAll("[data-part='item']")) {
+  renderItems(parentId) {
+    for (const item of this.el.querySelectorAll(`[id^='combobox:${parentId}:option:']`)) {
       const value = item.dataset.value;
       const label = item.dataset.label;
       if (!value || !label) {
@@ -9285,9 +9287,17 @@ var combobox_default = {
     this.combobox.init();
   },
   beforeUpdate() {
-    const parts8 = ["root", "control", "input", "trigger", "positioner", "content"];
+    const parts8 = [
+      { name: "root", id: `combobox:${this.el.id}` },
+      { name: "control", id: `combobox:${this.el.id}:control` },
+      { name: "input", id: `combobox:${this.el.id}:input` },
+      { name: "trigger", id: `combobox:${this.el.id}:toggle-btn` },
+      { name: "positioner", id: `combobox:${this.el.id}:popper` },
+      { name: "content", id: `combobox:${this.el.id}:content` }
+    ];
     this.attributeCache = parts8.map((part) => {
-      return getAttributes(this.el, part);
+      const attrs = getAttributes(this.el, part);
+      return attrs;
     }).filter((cache) => cache !== void 0);
   },
   updated() {
@@ -9299,7 +9309,7 @@ var combobox_default = {
     this.combobox.destroy();
   },
   items() {
-    return Array.from(this.el.querySelectorAll("[data-part='item']")).map((item) => {
+    return Array.from(this.el.querySelectorAll(`[id^='combobox:${this.el.id}:option']`)).map((item) => {
       const value = item.dataset.value;
       const label = item.dataset.label;
       if (!value || !label) {
@@ -12307,7 +12317,15 @@ var Dialog = class extends Component {
     return connect4(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = ["trigger", "backdrop", "positioner", "content", "title", "description", "close-trigger"];
+    const parts8 = [
+      { name: "trigger", id: `dialog:${this.el.id}:trigger` },
+      { name: "backdrop", id: `dialog:${this.el.id}:backdrop` },
+      { name: "positioner", id: `dialog:${this.el.id}:positioner` },
+      { name: "content", id: `dialog:${this.el.id}:content` },
+      { name: "title", id: `dialog:${this.el.id}:title` },
+      { name: "description", id: `dialog:${this.el.id}:description` },
+      { name: "close-trigger", id: `dialog:${this.el.id}:close` }
+    ];
     for (const part of parts8)
       renderPart(this.el, part, this.api);
   }
@@ -16325,47 +16343,21 @@ var Menu = class extends Component {
     return connect5(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = ["trigger", "context-trigger", "positioner", "content"];
+    const parts8 = [
+      { name: "trigger", id: `menu:${this.el.id}:trigger` },
+      { name: "context-trigger", id: `menu:${this.el.id}:ctx-trigger` },
+      { name: "positioner", id: `menu:${this.el.id}:popper` },
+      { name: "content", id: `menu:${this.el.id}:content` }
+    ];
     for (const part of parts8)
       renderPart(this.el, part, this.api);
-    this.renderItemGroupLabels();
-    this.renderItemGroups();
     this.renderItems();
-    this.renderSeparators();
-  }
-  renderItemGroupLabels() {
-    for (const itemGroupLabel of this.el.querySelectorAll("[data-part='item-group-label']")) {
-      const htmlFor = itemGroupLabel.getAttribute("for");
-      if (!htmlFor) {
-        console.error("Missing `for` attribute on item group label.");
-        return;
-      }
-      spreadProps(itemGroupLabel, this.api.getItemGroupLabelProps({ htmlFor }));
-    }
-  }
-  renderItemGroups() {
-    for (const itemGroup of this.el.querySelectorAll("[data-part='item-group']")) {
-      const value = itemGroup.dataset.value;
-      if (!value) {
-        console.error("Missing `data-value` attribute on item group.");
-        return;
-      }
-      spreadProps(itemGroup, this.api.getItemGroupProps({ id: value }));
-    }
   }
   renderItems() {
-    for (const item of this.el.querySelectorAll("[data-part='item']")) {
+    for (const item of this.el.querySelectorAll("[data-value]")) {
       const value = item.dataset.value;
-      if (!value) {
-        console.error("Missing `data-value` attribute on item.");
-        return;
-      }
       spreadProps(item, this.api.getItemProps({ value }));
     }
-  }
-  renderSeparators() {
-    for (const separator of this.el.querySelectorAll("[data-part='separator']"))
-      spreadProps(separator, this.api.getSeparatorProps());
   }
 };
 var menu_default = {
@@ -19772,7 +19764,14 @@ var Popover = class extends Component {
     return connect6(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = ["trigger", "arrow", "positioner", "content", "title", "description"];
+    const parts8 = [
+      { name: "trigger", id: `popover:${this.el.id}:trigger` },
+      { name: "arrow", id: `popover:${this.el.id}:arrow` },
+      { name: "positioner", id: `popover:${this.el.id}:popper` },
+      { name: "content", id: `popover:${this.el.id}:content` },
+      { name: "title", id: `popover:${this.el.id}:title` },
+      { name: "description", id: `popover:${this.el.id}:desc` }
+    ];
     for (const part of parts8)
       renderPart(this.el, part, this.api);
   }
@@ -21799,21 +21798,21 @@ var Tabs = class extends Component {
     return connect7(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = ["root"];
+    const parts8 = [{ name: "root", id: `tabs:${this.el.id}` }];
     for (const part of parts8)
       renderPart(this.el, part, this.api);
-    this.renderTabList();
-    this.renderTabContent();
+    this.renderTabList(this.el.id);
+    this.renderTabContent(this.el.id);
   }
-  renderTabList() {
-    const tabList = this.el.querySelector("[data-part='list']");
+  renderTabList(parentId) {
+    const tabList = this.el.querySelector(`[id='tabs:${parentId}:list']`);
     if (!tabList)
       return;
     spreadProps(tabList, this.api.getListProps());
-    this.renderTriggers();
+    this.renderTriggers(parentId);
   }
-  renderTabContent() {
-    for (const content of this.el.querySelectorAll("[data-part='content']")) {
+  renderTabContent(parentId) {
+    for (const content of this.el.querySelectorAll(`[id^='tabs:${parentId}:content-']`)) {
       const value = content.dataset.value;
       if (!value) {
         console.error("Missing `data-value` attribute on content.");
@@ -21822,8 +21821,8 @@ var Tabs = class extends Component {
       spreadProps(content, this.api.getContentProps({ value }));
     }
   }
-  renderTriggers() {
-    for (const trigger of this.el.querySelectorAll("[data-part='trigger']")) {
+  renderTriggers(parentId) {
+    for (const trigger of this.el.querySelectorAll(`[id^="tabs:${parentId}:trigger-"]`)) {
       const value = trigger.dataset.value;
       if (!value) {
         console.error("Missing `data-value` attribute on trigger.");
