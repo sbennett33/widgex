@@ -21885,6 +21885,7 @@ var Hooks = {
   Combobox: combobox_default,
   Dialog: dialog_default,
   Menu: menu_default,
+  Popover: popover_default,
   Tabs: tabs_default
 };
 //# sourceMappingURL=widgex.cjs.js.map

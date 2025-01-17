@@ -12,6 +12,7 @@ const Hooks = {
   Combobox,
   Dialog,
   Menu,
+  Popover,
   Tabs,
 };
 
