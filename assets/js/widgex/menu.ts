@@ -24,14 +24,36 @@ class Menu extends Component<menu.Context, menu.Api> {
 
     for (const part of parts) renderPart(this.el, part, this.api);
 
+    this.renderItemGroups();
     this.renderItems();
+    this.renderSeparators();
+  }
+
+  renderItemGroups() {
+    for (const itemGroup of this.el.querySelectorAll<HTMLElement>(`[id^='menu:${this.el.id}:group']`)) {
+      const value = itemGroup.dataset.value;
+      if (!value) {
+        console.error("Missing `data-value` attribute on item group.");
+        return;
+      }
+      spreadProps(itemGroup, this.api.getItemGroupProps({ id: value }));
+    }
   }
 
   renderItems() {
-    for (const item of this.el.querySelectorAll<HTMLElement>("[data-value]")) {
-      const value = item.dataset.value!;
+    for (const item of this.el.querySelectorAll<HTMLElement>("[data-part='item']")) {
+      const value = item.dataset.value;
+      if (!value) {
+        console.error("Missing `data-value` attribute on item.");
+        return;
+      }
       spreadProps(item, this.api.getItemProps({ value }));
     }
+  }
+
+  renderSeparators() {
+    for (const separator of this.el.querySelectorAll<HTMLElement>("[data-part='separator']"))
+      spreadProps(separator, this.api.getSeparatorProps());
   }
 }
 
