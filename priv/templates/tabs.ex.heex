@@ -10,7 +10,7 @@ defmodule <%= @web_module %>.Components.Tabs do
 
   ## Usage
 
-      <.tabs default="account" class="w-[400px]">
+      <.tabs default_value="account" class="w-[400px]">
         <.tabs_list>
           <.tabs_trigger value="account">Account</.tabs_trigger>
           <.tabs_trigger value="password">Password</.tabs_trigger>
@@ -18,7 +18,6 @@ defmodule <%= @web_module %>.Components.Tabs do
         <.tabs_content value="account">Make changes to your account here.</.tabs_content>
         <.tabs_content value="password">Change your password here.</.tabs_content>
       </.tabs>
-
   """
   use <%= @web_module %>, :component
 
@@ -31,12 +30,15 @@ defmodule <%= @web_module %>.Components.Tabs do
 
   def tabs(assigns) do
     ~H"""
-    <div id={@id} phx-hook="Tabs" data-part="root" data-value={@default} class={@class} {@rest}>
-      {render_slot(@inner_block)}
+    <div id={@id} phx-hook="Tabs" data-value={@default} class={@class} {@rest}>
+      <div id={"tabs:#{@id}"}>
+        {render_slot(@inner_block, @id)}
+      </div>
     </div>
     """
   end
 
+  attr :parent_id, :string, default: "tabs"
   attr :class, :string, default: ""
   attr :rest, :global
 
@@ -45,7 +47,7 @@ defmodule <%= @web_module %>.Components.Tabs do
   def tabs_list(assigns) do
     ~H"""
     <div
-      data-part="list"
+      id={"tabs:#{@parent_id}:list"}
       class={
         classes([
           "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
@@ -59,6 +61,7 @@ defmodule <%= @web_module %>.Components.Tabs do
     """
   end
 
+  attr :parent_id, :string, default: "tabs"
   attr :value, :string, required: true
   attr :class, :string, default: ""
   attr :rest, :global
@@ -68,7 +71,7 @@ defmodule <%= @web_module %>.Components.Tabs do
   def tabs_trigger(assigns) do
     ~H"""
     <button
-      data-part="trigger"
+      id={"tabs:#{@parent_id}:trigger-#{@value}"}
       data-value={@value}
       class={
         classes([
@@ -83,6 +86,7 @@ defmodule <%= @web_module %>.Components.Tabs do
     """
   end
 
+  attr :parent_id, :string, default: "tabs"
   attr :value, :string, required: true
   attr :class, :string, default: ""
   attr :rest, :global
@@ -92,7 +96,7 @@ defmodule <%= @web_module %>.Components.Tabs do
   def tabs_content(assigns) do
     ~H"""
     <div
-      data-part="content"
+      id={"tabs:#{@parent_id}:content-#{@value}"}
       data-value={@value}
       class={
         classes([
