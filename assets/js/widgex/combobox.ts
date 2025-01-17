@@ -4,6 +4,8 @@ import { getAttributes, restoreAttributes, normalizeProps, renderPart, spreadPro
 import { Component } from "./component";
 import type { ViewHook } from "phoenix_live_view";
 import type { Machine } from "@zag-js/core";
+import type { Part } from "./component";
+
 
 type Item = { value: string; label: string };
 type InputBehavior = "autocomplete" | "autohighlight" | "none" | undefined;
@@ -19,13 +21,22 @@ class Combobox extends Component<combobox.Context, combobox.Api> {
   }
 
   render() {
-    const parts = ["root", "control", "input", "trigger", "positioner", "content"];
+    const parts: Part[] = [
+      { name: "root", id: `combobox:${this.el.id}` },
+      { name: "control", id: `combobox:${this.el.id}:control` },
+      { name: "input", id: `combobox:${this.el.id}:input` },
+      { name: "trigger", id: `combobox:${this.el.id}:toggle-btn` },
+      { name: "positioner", id: `combobox:${this.el.id}:popper` },
+      { name: "content", id: `combobox:${this.el.id}:content` }
+    ];
+
     for (const part of parts) renderPart(this.el, part, this.api);
-    this.renderItems();
+
+    this.renderItems(this.el.id);
   }
 
-  renderItems() {
-    for (const item of this.el.querySelectorAll<HTMLElement>("[data-part='item']")) {
+  renderItems(parentId: string) {
+    for (const item of this.el.querySelectorAll<HTMLElement>(`[id^='combobox:${parentId}:option:']`)) {
       const value = item.dataset.value;
       const label = item.dataset.label;
       if (!value || !label) {
@@ -54,9 +65,18 @@ export default {
   },
 
   beforeUpdate() {
-    const parts = ["root", "control", "input", "trigger", "positioner", "content"];
+    const parts: Part[] = [
+      { name: "root", id: `combobox:${this.el.id}` },
+      { name: "control", id: `combobox:${this.el.id}:control` },
+      { name: "input", id: `combobox:${this.el.id}:input` },
+      { name: "trigger", id: `combobox:${this.el.id}:toggle-btn` },
+      { name: "positioner", id: `combobox:${this.el.id}:popper` },
+      { name: "content", id: `combobox:${this.el.id}:content` }
+    ];
+
     this.attributeCache = parts.map((part) => {
-      return getAttributes(this.el, part);
+      const attrs = getAttributes(this.el, part);
+      return attrs
     })
       .filter(cache => cache !== undefined);
   },
@@ -72,7 +92,7 @@ export default {
   },
 
   items(): Item[] {
-    return Array.from(this.el.querySelectorAll<HTMLElement>("[data-part='item']"))
+    return Array.from(this.el.querySelectorAll<HTMLElement>(`[id^='combobox:${this.el.id}:option']`))
       .map((item: HTMLElement) => {
         const value = item.dataset.value;
         const label = item.dataset.label;

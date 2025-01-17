@@ -1,4 +1,5 @@
 import { createNormalizer } from "@zag-js/types";
+import type { Part } from "./component";
 
 type Attribute = {
   name: string;
@@ -6,7 +7,7 @@ type Attribute = {
 };
 
 type AttributeCache = {
-  part: string;
+  part: Part;
   cssText: string;
   hasFocus: boolean;
   attrs: Attribute[];
@@ -108,13 +109,13 @@ export const spreadProps = (node: HTMLElement, attrs: Record<string, any>) => {
   };
 };
 
-export const renderPart = (root: HTMLElement, name: string, api: any) => {
-  const camelizedName = name.replace(/(^|-)([a-z])/g, (_match, _prefix, letter) => letter.toUpperCase());
+export const renderPart = (root: HTMLElement, part: Part, api: any) => {
+  const camelizedName = part.name.replace(/(^|-)([a-z])/g, (_match, _prefix, letter) => letter.toUpperCase());
 
-  const part = root.querySelector<HTMLElement>(`[data-part='${name}']`);
+  const node = root.querySelector<HTMLElement>(`[id='${part.id}']`);
   const getterName = `get${camelizedName}Props`;
 
-  if (part) spreadProps(part, api[getterName]());
+  if (node) spreadProps(node, api[getterName]());
 };
 
 export const getOption = (el: HTMLElement, name: string, validOptions: string[]) => {
@@ -134,21 +135,19 @@ export const getBooleanOption = (el: HTMLElement, name: string) => {
   return el.dataset[kebabName] === "true" || el.dataset[kebabName] === "";
 };
 
-export const getAttributes = (root: HTMLElement, name: string) => {
-  const part = root.querySelector<HTMLElement>(`[data-part='${name}']`);
-  if (!part) return;
+export const getAttributes = (root: HTMLElement, part: Part) => {
+  const node = root.querySelector<HTMLElement>(`[id='${part.id}']`);
+  if (!node) return;
 
   const attrs = [];
-  for (const attr of part.attributes) {
-    if (attr.name.startsWith("data-") || attr.name.startsWith("aria-")) {
-      attrs.push({ name: attr.name, value: attr.value });
-    }
+  for (const attr of node.attributes) {
+    attrs.push({ name: attr.name, value: attr.value });
   }
 
   return {
-    part: name,
-    cssText: part.style.cssText,
-    hasFocus: part === document.activeElement,
+    part: part,
+    cssText: node.style.cssText,
+    hasFocus: node === document.activeElement,
     attrs,
   };
 };
@@ -157,13 +156,13 @@ export const restoreAttributes = (root: HTMLElement, attributeMaps: AttributeCac
   for (const attributeMap of attributeMaps) {
     if (!attributeMap) return;
 
-    const part = root.querySelector<HTMLElement>(`[data-part='${attributeMap.part}']`);
-    if (!part) return;
+    const node = root.querySelector<HTMLElement>(`[id='${attributeMap.part.id}']`);
+    if (!node) return;
 
     for (const attr of attributeMap.attrs) {
-      part.setAttribute(attr.name, attr.value);
+      node.setAttribute(attr.name, attr.value);
     }
-    part.style.cssText = attributeMap.cssText;
-    if (attributeMap.hasFocus) part.focus();
+    node.style.cssText = attributeMap.cssText;
+    if (attributeMap.hasFocus) node.focus();
   }
 };

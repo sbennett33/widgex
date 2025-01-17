@@ -16,7 +16,7 @@ defmodule Mix.Tasks.Widgex.Install do
     template_dir = Application.app_dir(:widgex, ["priv", "templates"])
 
     igniter
-    |> Igniter.Project.Deps.add_dep({:cva, "~> 0.2.1"})
+    |> Igniter.Project.Deps.add_dep({:cva, "~> 0.2.2"})
     |> Igniter.Project.Formatter.import_dep(:cva)
     |> Igniter.Project.Deps.add_dep({:tails, "~> 0.1.11"})
     |> Igniter.Project.Config.configure(
@@ -133,9 +133,7 @@ defmodule Mix.Tasks.Widgex.Install do
              to your html_helpers() function.
              """}
 
-          _ ->
-            {:ok, zipper} = Igniter.Code.Common.move_to_do_block(zipper)
-
+          _error ->
             zipper =
               Igniter.Code.Common.add_code(zipper, """
               def component do

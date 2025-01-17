@@ -3,6 +3,7 @@ import { normalizeProps, renderPart } from "./util";
 import { Component } from "./component";
 import type { ViewHook } from "phoenix_live_view";
 import type { Machine } from "@zag-js/core";
+import type { Part } from "./component";
 
 type Role = "dialog" | "alertdialog" | undefined;
 
@@ -16,7 +17,15 @@ class Dialog extends Component<dialog.Context, dialog.Api> {
   }
 
   render() {
-    const parts = ["trigger", "backdrop", "positioner", "content", "title", "description", "close-trigger"];
+    const parts: Part[] = [
+      { name: "trigger", id: `dialog:${this.el.id}:trigger` },
+      { name: "backdrop", id: `dialog:${this.el.id}:backdrop` },
+      { name: "positioner", id: `dialog:${this.el.id}:positioner` },
+      { name: "content", id: `dialog:${this.el.id}:content` },
+      { name: "title", id: `dialog:${this.el.id}:title` },
+      { name: "description", id: `dialog:${this.el.id}:description` },
+      { name: "close-trigger", id: `dialog:${this.el.id}:close` }
+    ];
     for (const part of parts) renderPart(this.el, part, this.api);
   }
 }

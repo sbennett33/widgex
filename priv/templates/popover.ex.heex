@@ -1,0 +1,59 @@
+defmodule <%= @web_module %>.Components.Popover do
+  @moduledoc """
+  Displays rich content in a portal, triggered by a button.
+  """
+  use <%= @web_module %>, :component
+
+  attr :id, :string, default: "popover"
+  attr :class, :string, default: ""
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def popover(assigns) do
+    ~H"""
+    <div id={@id} phx-hook="Popover" class={@class} {@rest}>
+      {render_slot(@inner_block, @id)}
+    </div>
+    """
+  end
+
+  attr :parent_id, :string, default: "popover"
+  attr :class, :string, default: ""
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def popover_trigger(assigns) do
+    ~H"""
+    <div id={"popover:#{@parent_id}:trigger"} class={@class} {@rest}>
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
+
+  attr :parent_id, :string, default: "popover"
+  attr :class, :string, default: ""
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def popover_content(assigns) do
+    ~H"""
+    <div id={"popover:#{@parent_id}:popper"}>
+      <div
+        id={"popover:#{@parent_id}:content"}
+        class={
+          classes([
+            "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+            @class
+          ])
+        }
+        {@rest}
+      >
+        {render_slot(@inner_block)}
+      </div>
+    </div>
+    """
+  end
+end

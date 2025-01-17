@@ -3,6 +3,7 @@ import { normalizeProps, renderPart } from "./util";
 import { Component } from "./component";
 import type { ViewHook } from "phoenix_live_view";
 import type { Machine } from "@zag-js/core";
+import type { Part } from "./component";
 
 type Dir = "ltr" | "rtl" | undefined;
 
@@ -16,7 +17,11 @@ class Collapsible extends Component<collapsible.Context, collapsible.Api> {
   }
 
   render() {
-    const parts = ["root", "trigger", "content"];
+    const parts: Part[] = [
+      { name: "root", id: `collapsible:${this.el.id}` },
+      { name: "trigger", id: `collapsible:${this.el.id}:trigger` },
+      { name: "content", id: `collapsible:${this.el.id}:content` }
+    ];
     for (const part of parts) renderPart(this.el, part, this.api);
   }
 }

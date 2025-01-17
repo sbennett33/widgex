@@ -3,6 +3,7 @@ import { normalizeProps, spreadProps, renderPart, getBooleanOption } from "./uti
 import { Component } from "./component";
 import type { ViewHook } from "phoenix_live_view";
 import type { Machine } from "@zag-js/core";
+import type { Part } from "./component";
 
 class Accordion extends Component<accordion.Context, accordion.Api> {
   initService(context: accordion.Context): Machine<any, any, any> {
@@ -14,13 +15,13 @@ class Accordion extends Component<accordion.Context, accordion.Api> {
   }
 
   render() {
-    const parts = ["root"];
+    const parts: Part[] = [{ name: "root", id: `accordion:${this.el.id}` }];
     for (const part of parts) renderPart(this.el, part, this.api);
-    this.renderItems();
+    this.renderItems(this.el.id);
   }
 
-  renderItems() {
-    for (const item of this.el.querySelectorAll<HTMLElement>("[data-part='item']")) {
+  renderItems(parent_id: string) {
+    for (const item of this.el.querySelectorAll<HTMLElement>(`[id^='accordion:${parent_id}:item']`)) {
       const value = item.dataset.value;
       if (!value) {
         console.error("Missing `data-value` attribute on item.");
@@ -28,26 +29,19 @@ class Accordion extends Component<accordion.Context, accordion.Api> {
       }
       spreadProps(item, this.api.getItemProps({ value }));
 
-      this.renderItemTrigger(item, value);
-      this.renderItemIndicator(item, value);
-      this.renderItemContent(item, value);
+      this.renderItemTrigger(item, parent_id, value);
+      this.renderItemContent(item, parent_id, value);
     }
   }
 
-  renderItemTrigger(item: HTMLElement, value: string) {
-    const itemTrigger = item.querySelector<HTMLElement>("[data-part='item-trigger']");
+  renderItemTrigger(item: HTMLElement, parent_id: string, value: string) {
+    const itemTrigger = item.querySelector<HTMLElement>(`[id='accordion:${parent_id}:trigger:${value}']`);
     if (!itemTrigger) return;
     spreadProps(itemTrigger, this.api.getItemTriggerProps({ value }));
   }
 
-  renderItemIndicator(item: HTMLElement, value: string) {
-    const itemIndicator = item.querySelector<HTMLElement>("[data-part='item-indicator']");
-    if (!itemIndicator) return;
-    spreadProps(itemIndicator, this.api.getItemIndicatorProps({ value }));
-  }
-
-  renderItemContent(item: HTMLElement, value: string) {
-    const itemContent = item.querySelector<HTMLElement>("[data-part='item-content']");
+  renderItemContent(item: HTMLElement, parent_id: string, value: string) {
+    const itemContent = item.querySelector<HTMLElement>(`[id='accordion:${parent_id}:content:${value}']`);
     if (!itemContent) return;
     spreadProps(itemContent, this.api.getItemContentProps({ value }));
   }

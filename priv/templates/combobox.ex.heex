@@ -1,0 +1,148 @@
+defmodule <%= @web_module %>.Components.Combobox do
+  @moduledoc """
+  Autocomplete input with a list of suggestions.
+  """
+  use <%= @web_module %>, :live_component
+
+  def combobox(assigns) do
+    ~H"""
+    <.live_component id={@id} module={__MODULE__} {assigns} />
+    """
+  end
+
+  def update(assigns, socket) do
+    socket =
+      socket
+      |> assign(assigns)
+      |> assign_new(:id, fn -> "combobox" end)
+      |> assign_new(:class, fn -> "" end)
+      |> assign_new(:disabled, fn -> false end)
+      |> assign(:filtered_items, assigns.items)
+
+    {:ok, socket}
+  end
+
+  def render(assigns) do
+    ~H"""
+    <div
+      id={@id}
+      phx-hook="Combobox"
+      data-on-input-value-change="search"
+      data-on-value-change="save"
+      data-disabled={@disabled}
+      class={@class}
+    >
+      <div id={"combobox:#{@id}"}>
+        {render_slot(@inner_block, %{id: @id, items: @filtered_items})}
+      </div>
+    </div>
+    """
+  end
+
+  attr :parent_id, :string, default: "combobox"
+  attr :class, :string, default: ""
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def combobox_trigger(assigns) do
+    ~H"""
+    <div
+      id={"combobox:#{@parent_id}:control"}
+      class={
+        classes([
+          "group flex h-10 w-full rounded-md border border-input bg-background pr-3 py-2 text-sm ring-offset-background data-[focus]:outline-none data-[focus]:ring-2 data-[focus]:ring-ring data-[focus]:ring-offset-2 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
+          @class
+        ])
+      }
+      {@rest}
+    >
+      <input
+        id={"combobox:#{@parent_id}:input"}
+        class="bg-background border-none focus:ring-0 focus:ring-offset-0 group-data-[disabled]:cursor-not-allowed"
+        placeholder={render_slot(@inner_block)}
+      />
+      <button
+        id={"combobox:#{@parent_id}:toggle-btn"}
+        class="group transition-all group-data-[disabled]:cursor-not-allowed"
+      >
+        <.icon
+          name="hero-chevron-down"
+          class="size-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+        />
+      </button>
+    </div>
+    """
+  end
+
+  attr :parent_id, :string, default: "combobox"
+  attr :class, :string, default: ""
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def combobox_content(assigns) do
+    ~H"""
+    <div id={"combobox:#{@parent_id}:popper"}>
+      <div
+        id={"combobox:#{@parent_id}:content"}
+        class={
+          classes([
+            "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+            @class
+          ])
+        }
+        {@rest}
+      >
+        {render_slot(@inner_block)}
+      </div>
+    </div>
+    """
+  end
+
+  attr :parent_id, :string, default: "combobox"
+  attr :label, :string, required: true
+  attr :value, :string, required: true
+  attr :class, :string, default: ""
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def combobox_item(assigns) do
+    ~H"""
+    <div
+      id={"combobox:#{@parent_id}:option:#{@value}"}
+      data-value={@value}
+      data-label={@label}
+      class={
+        classes([
+          "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+          @class
+        ])
+      }
+      {@rest}
+    >
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
+
+  def handle_event("search", %{"inputValue" => query}, socket) do
+    filtered_items =
+      if String.trim(query) == "",
+        do: socket.assigns.items,
+        else:
+          Enum.filter(
+            socket.assigns.items,
+            &String.starts_with?(String.downcase(&1.label), String.downcase(query))
+          )
+
+    {:noreply, assign(socket, :filtered_items, filtered_items)}
+  end
+
+  def handle_event("save", %{"value" => _value}, socket) do
+    # Do something with value...
+
+    {:noreply, socket}
+  end
+end

@@ -10,6 +10,11 @@ interface ComponentInterface<Api> {
   render(): void;
 }
 
+export type Part = {
+  name: string,
+  id: string
+};
+
 export abstract class Component<Context, Api> implements ComponentInterface<Api> {
   el: HTMLElement;
   service: ReturnType<any>;

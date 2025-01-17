@@ -3,6 +3,7 @@ import { normalizeProps, spreadProps, renderPart, getOption, getBooleanOption } 
 import { Component } from "./component";
 import type { ViewHook } from "phoenix_live_view";
 import type { Machine } from "@zag-js/core";
+import type { Part } from "./component";
 
 class Tabs extends Component<tabs.Context, tabs.Api> {
   initService(context: tabs.Context): Machine<any, any, any> {
@@ -14,21 +15,25 @@ class Tabs extends Component<tabs.Context, tabs.Api> {
   }
 
   render() {
-    const parts = ["root"];
+    const parts: Part[] = [{ name: "root", id: `tabs:${this.el.id}` }];
+
     for (const part of parts) renderPart(this.el, part, this.api);
-    this.renderTabList();
-    this.renderTabContent();
+
+    this.renderTabList(this.el.id);
+    this.renderTabContent(this.el.id);
   }
 
-  renderTabList() {
-    const tabList = this.el.querySelector<HTMLElement>("[data-part='list']");
+  renderTabList(parentId: string) {
+    const tabList = this.el.querySelector<HTMLElement>(`[id='tabs:${parentId}:list']`);
+
     if (!tabList) return;
+
     spreadProps(tabList, this.api.getListProps());
-    this.renderTriggers();
+    this.renderTriggers(parentId);
   }
 
-  renderTabContent() {
-    for (const content of this.el.querySelectorAll<HTMLElement>("[data-part='content']")) {
+  renderTabContent(parentId: string) {
+    for (const content of this.el.querySelectorAll<HTMLElement>(`[id^='tabs:${parentId}:content-']`)) {
       const value = content.dataset.value;
       if (!value) {
         console.error("Missing `data-value` attribute on content.");
@@ -38,8 +43,8 @@ class Tabs extends Component<tabs.Context, tabs.Api> {
     }
   }
 
-  renderTriggers() {
-    for (const trigger of this.el.querySelectorAll<HTMLElement>("[data-part='trigger']")) {
+  renderTriggers(parentId: string) {
+    for (const trigger of this.el.querySelectorAll<HTMLElement>(`[id^="tabs:${parentId}:trigger-"]`)) {
       const value = trigger.dataset.value;
       if (!value) {
         console.error("Missing `data-value` attribute on trigger.");

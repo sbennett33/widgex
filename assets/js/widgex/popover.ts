@@ -3,6 +3,7 @@ import { normalizeProps, spreadProps, renderPart, getBooleanOption } from "./uti
 import { Component } from "./component";
 import type { ViewHook } from "phoenix_live_view";
 import type { Machine } from "@zag-js/core";
+import type { Part } from "./component";
 
 class Popover extends Component<popover.Context, popover.Api> {
   initService(context: popover.Context): Machine<any, any, any> {
@@ -14,7 +15,14 @@ class Popover extends Component<popover.Context, popover.Api> {
   }
 
   render() {
-    const parts = ["trigger", "arrow", "positioner", "content", "title", "description"];
+    const parts: Part[] = [
+      { name: "trigger", id: `popover:${this.el.id}:trigger` },
+      { name: "arrow", id: `popover:${this.el.id}:arrow` },
+      { name: "positioner", id: `popover:${this.el.id}:popper` },
+      { name: "content", id: `popover:${this.el.id}:content` },
+      { name: "title", id: `popover:${this.el.id}:title` },
+      { name: "description", id: `popover:${this.el.id}:desc` }
+    ];
     for (const part of parts) renderPart(this.el, part, this.api);
   }
 }
