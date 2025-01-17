@@ -44,8 +44,8 @@ defmodule <%= @web_module %>.Components.AlertDialog do
 
   """
 
-  attr :id, :string, default: "alert_dialog"
-  attr :class, :string, default: nil
+  attr :id, :string, default: "dialog"
+  attr :class, :string, default: ""
   attr :rest, :global
 
   slot :inner_block, required: true
@@ -61,25 +61,27 @@ defmodule <%= @web_module %>.Components.AlertDialog do
       class={@class}
       {@rest}
     >
-      {render_slot(@inner_block)}
+      {render_slot(@inner_block, @id)}
     </div>
     """
   end
 
-  attr :class, :string, default: nil
+  attr :parent_id, :string, default: "dialog"
+  attr :class, :string, default: ""
   attr :rest, :global
 
   slot :inner_block, required: true
 
   def alert_dialog_trigger(assigns) do
     ~H"""
-    <div data-part="trigger" class={@class} {@rest}>
+    <div id={"dialog:#{@parent_id}:trigger"} class={@class} {@rest}>
       {render_slot(@inner_block)}
     </div>
     """
   end
 
-  attr :class, :string, default: nil
+  attr :parent_id, :string, default: "dialog"
+  attr :class, :string, default: ""
   attr :rest, :global
 
   slot :inner_block, required: true
@@ -87,24 +89,22 @@ defmodule <%= @web_module %>.Components.AlertDialog do
   def alert_dialog_content(assigns) do
     ~H"""
     <div
-      data-part="backdrop"
-      data-state="closed"
+      id={"dialog:#{@parent_id}:backdrop"}
       class="fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
       hidden
     >
     </div>
-    <div data-part="positioner">
+    <div id={"dialog:#{@parent_id}:popper"}>
       <div
-        data-part="content"
-        data-state="closed"
+        id={"dialog:#{@parent_id}:content"}
         class={
           classes([
             "fixed left-[50%] top-[50%] z-50 data-[state=open]:grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
             @class
           ])
         }
-        hidden
         {@rest}
+        hidden
       >
         {render_slot(@inner_block)}
       </div>
@@ -112,7 +112,7 @@ defmodule <%= @web_module %>.Components.AlertDialog do
     """
   end
 
-  attr :class, :string, default: nil
+  attr :class, :string, default: ""
   attr :rest, :global
 
   slot :inner_block, required: true
@@ -125,33 +125,39 @@ defmodule <%= @web_module %>.Components.AlertDialog do
     """
   end
 
-  attr :class, :string, default: nil
+  attr :parent_id, :string, default: "dialog"
+  attr :class, :string, default: ""
   attr :rest, :global
 
   slot :inner_block, required: true
 
   def alert_dialog_title(assigns) do
     ~H"""
-    <div data-part="title" class={classes(["text-lg font-semibold", @class])} {@rest}>
+    <div id={"dialog:#{@parent_id}:title"} class={classes(["text-lg font-semibold", @class])} {@rest}>
       {render_slot(@inner_block)}
     </div>
     """
   end
 
-  attr :class, :string, default: nil
+  attr :parent_id, :string, default: "dialog"
+  attr :class, :string, default: ""
   attr :rest, :global
 
   slot :inner_block, required: true
 
   def alert_dialog_description(assigns) do
     ~H"""
-    <div data-part="description" class={classes(["text-sm text-muted-foreground", @class])} {@rest}>
+    <div
+      id={"dialog:#{@parent_id}:description"}
+      class={classes(["text-sm text-muted-foreground", @class])}
+      {@rest}
+    >
       {render_slot(@inner_block)}
     </div>
     """
   end
 
-  attr :class, :string, default: nil
+  attr :class, :string, default: ""
   attr :rest, :global
 
   slot :inner_block, required: true
@@ -167,7 +173,8 @@ defmodule <%= @web_module %>.Components.AlertDialog do
     """
   end
 
-  attr :class, :string, default: nil
+  attr :parent_id, :string, default: "dialog"
+  attr :class, :string, default: ""
   attr :rest, :global
 
   slot :inner_block, required: true
@@ -176,7 +183,7 @@ defmodule <%= @web_module %>.Components.AlertDialog do
     ~H"""
     <.button
       variant="outline"
-      data-part="close-trigger"
+      id={"dialog:#{@parent_id}:close"}
       class={classes(["mt-2 sm:mt-0", @class])}
       {@rest}
     >
@@ -185,7 +192,7 @@ defmodule <%= @web_module %>.Components.AlertDialog do
     """
   end
 
-  attr :class, :string, default: nil
+  attr :class, :string, default: ""
   attr :rest, :global
 
   slot :inner_block, required: true
