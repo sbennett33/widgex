@@ -41,12 +41,15 @@ defmodule <%= @web_module %>.Components.Collapsible do
 
   def collapsible(assigns) do
     ~H"""
-    <div id={@id} phx-hook="Collapsible" data-part="root" class={@class} {@rest}>
-      {render_slot(@inner_block)}
+    <div id={@id} phx-hook="Collapsible" class={@class} {@rest}>
+      <div id={"collapsible:#{@id}"}>
+        {render_slot(@inner_block)}
+      </div>
     </div>
     """
   end
 
+  attr :parent_id, :string, default: "collapsible"
   attr :class, :string, default: ""
   attr :rest, :global
 
@@ -54,12 +57,13 @@ defmodule <%= @web_module %>.Components.Collapsible do
 
   def collapsible_trigger(assigns) do
     ~H"""
-    <div data-part="trigger" class={@class} {@rest}>
+    <div id={"collapsible:#{@parent_id}:trigger"} class={@class} {@rest}>
       {render_slot(@inner_block)}
     </div>
     """
   end
 
+  attr :parent_id, :string, default: "collapsible"
   attr :class, :string, default: ""
   attr :rest, :global
 
@@ -67,7 +71,7 @@ defmodule <%= @web_module %>.Components.Collapsible do
 
   def collapsible_content(assigns) do
     ~H"""
-    <div data-part="content" class={@class} {@rest}>
+    <div id={"collapsible:#{@parent_id}:content"} class={@class} {@rest}>
       {render_slot(@inner_block)}
     </div>
     """
