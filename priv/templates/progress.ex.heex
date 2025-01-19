@@ -1,0 +1,33 @@
+defmodule <%= @web_module %>.Components.Progress do
+  use <%= @web_module %>, :component
+
+  attr :id, :string, default: "progress"
+  attr :value, :integer, required: true
+  attr :min, :integer, default: 0
+  attr :max, :integer, default: 100
+  attr :class, :string, default: ""
+  attr :rest, :global
+
+  def progress(assigns) do
+    ~H"""
+    <div
+      id={@id}
+      phx-hook="Progress"
+      data-value={@value}
+      data-min={@min}
+      data-max={@max}
+      class={@class}
+      {@rest}
+    >
+      <div id={"progress-#{@id}"}>
+        <div
+          id={"progress-#{@id}-track"}
+          class="relative h-4 w-full overflow-hidden rounded-full bg-secondary"
+        >
+          <div data-part="range" class="h-full w-full flex-1 bg-primary transition-all"></div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+end
