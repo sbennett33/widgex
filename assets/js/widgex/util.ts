@@ -6,7 +6,7 @@ type Attribute = {
   value: string;
 };
 
-type AttributeCache = {
+export type AttributeCache = {
   part: Part;
   cssText: string;
   hasFocus: boolean;
@@ -130,26 +130,28 @@ export const getOption = (el: HTMLElement, name: string, validOptions: string[])
   return initial;
 };
 
-export const getBooleanOption = (el: HTMLElement, name: string) => {
+export const getBooleanOption = (el: HTMLElement, name: string, defaultValue: boolean) => {
   const kebabName = name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
-  return el.dataset[kebabName] === "true" || el.dataset[kebabName] === "";
+  return el.dataset[kebabName] === "true" || el.dataset[kebabName] === "" || defaultValue;
 };
 
 export const getAttributes = (root: HTMLElement, part: Part) => {
-  const node = root.querySelector<HTMLElement>(`[id='${part.id}']`);
-  if (!node) return;
+  const node = root.querySelector<HTMLElement>(`[id='${part.id}']`)!;
 
-  const attrs = [];
+  const attrs: Attribute[] = [];
+
   for (const attr of node.attributes) {
-    attrs.push({ name: attr.name, value: attr.value });
+    attrs.push(attr);
   }
 
-  return {
+  const cache: AttributeCache = {
     part: part,
     cssText: node.style.cssText,
     hasFocus: node === document.activeElement,
     attrs,
-  };
+  }
+
+  return cache;
 };
 
 export const restoreAttributes = (root: HTMLElement, attributeMaps: AttributeCache[]) => {

@@ -1,13 +1,13 @@
 import * as collapsible from "@zag-js/collapsible";
 import { normalizeProps, renderPart } from "./util";
 import { Component } from "./component";
-import type { ViewHook } from "phoenix_live_view";
+import { Hook, makeHook } from "./hook";
 import type { Machine } from "@zag-js/core";
 import type { Part } from "./component";
 
 type Dir = "ltr" | "rtl" | undefined;
 
-class Collapsible extends Component<collapsible.Context, collapsible.Api> {
+class CollapsibleComponent extends Component<collapsible.Context, collapsible.Api> {
   initService(context: collapsible.Context): Machine<any, any, any> {
     return collapsible.machine(context);
   }
@@ -26,24 +26,21 @@ class Collapsible extends Component<collapsible.Context, collapsible.Api> {
   }
 }
 
-export interface CollapsibleHook extends ViewHook {
-  collapsible: Collapsible;
-  context(): collapsible.Context;
-}
+class Collapsible extends Hook {
+  component: CollapsibleComponent;
 
-export default {
   mounted() {
-    this.collapsible = new Collapsible(this.el, this.context());
-    this.collapsible.init();
-  },
+    this.component = new CollapsibleComponent(this.el, this.context());
+    this.component.init();
+  }
 
   updated() {
-    this.collapsible.render();
-  },
+    this.component.render();
+  }
 
   beforeDestroy() {
-    this.collapsible.destroy();
-  },
+    this.component.destroy();
+  }
 
   context(): collapsible.Context {
     let dir: string | undefined = this.el.dataset.dir;
@@ -65,5 +62,7 @@ export default {
         }
       },
     };
-  },
-} as CollapsibleHook;
+  }
+};
+
+export default makeHook(Collapsible);

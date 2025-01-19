@@ -1,11 +1,11 @@
 import * as accordion from "@zag-js/accordion";
 import { normalizeProps, spreadProps, renderPart, getBooleanOption } from "./util";
 import { Component } from "./component";
-import type { ViewHook } from "phoenix_live_view";
+import { Hook, makeHook } from "./hook";
 import type { Machine } from "@zag-js/core";
 import type { Part } from "./component";
 
-class Accordion extends Component<accordion.Context, accordion.Api> {
+class AccordionComponent extends Component<accordion.Context, accordion.Api> {
   initService(context: accordion.Context): Machine<any, any, any> {
     return accordion.machine(context);
   }
@@ -47,24 +47,21 @@ class Accordion extends Component<accordion.Context, accordion.Api> {
   }
 }
 
-export interface AccordionHook extends ViewHook {
-  accordion: Accordion;
-  context(): accordion.Context;
-}
+class Accordion extends Hook {
+  component: AccordionComponent;
 
-export default {
   mounted() {
-    this.accordion = new Accordion(this.el, this.context());
-    this.accordion.init();
-  },
+    this.component = new AccordionComponent(this.el, this.context());
+    this.component.init();
+  }
 
   updated() {
-    this.accordion.render();
-  },
+    this.component.render();
+  }
 
   beforeDestroy() {
-    this.accordion.destroy();
-  },
+    this.component.destroy();
+  }
 
   context(): accordion.Context {
     return {
@@ -79,5 +76,7 @@ export default {
         }
       },
     };
-  },
-} as AccordionHook;
+  }
+};
+
+export default makeHook(Accordion);

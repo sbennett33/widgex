@@ -1,11 +1,11 @@
 import * as popover from "@zag-js/popover";
-import { normalizeProps, spreadProps, renderPart, getBooleanOption } from "./util";
+import { normalizeProps, renderPart, getBooleanOption } from "./util";
 import { Component } from "./component";
-import type { ViewHook } from "phoenix_live_view";
+import { Hook, makeHook } from "./hook";
 import type { Machine } from "@zag-js/core";
 import type { Part } from "./component";
 
-class Popover extends Component<popover.Context, popover.Api> {
+class PopoverComponent extends Component<popover.Context, popover.Api> {
   initService(context: popover.Context): Machine<any, any, any> {
     return popover.machine(context);
   }
@@ -27,30 +27,31 @@ class Popover extends Component<popover.Context, popover.Api> {
   }
 }
 
-export interface PopoverHook extends ViewHook {
-  popover: Popover;
-  context: { id: string };
-}
+class Popover extends Hook {
+  component: PopoverComponent;
 
-export default {
   mounted() {
-    this.popover = new Popover(this.el, this.context());
-    this.popover.init();
-  },
+    const context = this.context();
+    console.log(context)
+    this.component = new PopoverComponent(this.el, context);
+    this.component.init();
+  }
 
   updated() {
-    this.popover.render();
-  },
+    this.component.render();
+  }
 
   beforeDestroy() {
-    this.popover.destroy();
-  },
+    this.component.destroy();
+  }
 
   context(): popover.Context {
     return {
       id: this.el.id,
-      closeOnBlur: getBooleanOption(this.el, "close-on-blur"),
-      closeOnEsc: getBooleanOption(this.el, "close-on-esc"),
+      closeOnInteractOutside: getBooleanOption(this.el, "close-on-interact-outside", true),
+      closeOnEscape: getBooleanOption(this.el, "close-on-escape", true),
     }
   }
-} as PopoverHook;
+};
+
+export default makeHook(Popover);

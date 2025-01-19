@@ -1,11 +1,11 @@
 import * as menu from "@zag-js/menu";
 import { normalizeProps, spreadProps, renderPart } from "./util";
 import { Component } from "./component";
-import type { ViewHook } from "phoenix_live_view";
+import { Hook, makeHook } from "./hook";
 import type { Machine } from "@zag-js/core";
 import type { Part } from "./component";
 
-class Menu extends Component<menu.Context, menu.Api> {
+class MenuComponent extends Component<menu.Context, menu.Api> {
   initService(context: menu.Context): Machine<any, any, any> {
     return menu.machine(context);
   }
@@ -57,23 +57,21 @@ class Menu extends Component<menu.Context, menu.Api> {
   }
 }
 
-export interface MenuHook extends ViewHook {
-  menu: Menu;
-  context: { id: string };
-}
+class Menu extends Hook {
+  component: MenuComponent;
 
-export default {
   mounted() {
-    this.context = { id: this.el.id };
-    this.menu = new Menu(this.el, this.context);
-    this.menu.init();
-  },
+    this.component = new MenuComponent(this.el, { id: this.el.id });
+    this.component.init();
+  }
 
   updated() {
-    this.menu.render();
-  },
+    this.component.render();
+  }
 
   beforeDestroy() {
-    this.menu.destroy();
-  },
-} as MenuHook;
+    this.component.destroy();
+  }
+};
+
+export default makeHook(Menu);

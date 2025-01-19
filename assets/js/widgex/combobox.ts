@@ -1,17 +1,18 @@
 import * as combobox from "@zag-js/combobox";
-import type { Collection } from "@zag-js/collection";
+// import { ListCollection } from "@zag-js/collection";
 import { getAttributes, restoreAttributes, normalizeProps, renderPart, spreadProps, getBooleanOption, getOption } from "./util";
 import { Component } from "./component";
-import type { ViewHook } from "phoenix_live_view";
+import { Hook, makeHook } from "./hook";
 import type { Machine } from "@zag-js/core";
 import type { Part } from "./component";
+import type { AttributeCache } from "./util";
 
 
 type Item = { value: string; label: string };
 type InputBehavior = "autocomplete" | "autohighlight" | "none" | undefined;
 type SelectionBehavior = "clear" | "replace" | "preserve" | undefined;
 
-class Combobox extends Component<combobox.Context, combobox.Api> {
+class ComboboxComponent extends Component<combobox.Context, combobox.Api> {
   initService(context: combobox.Context): Machine<any, any, any> {
     return combobox.machine(context);
   }
@@ -49,20 +50,14 @@ class Combobox extends Component<combobox.Context, combobox.Api> {
   }
 }
 
-export interface ComboboxHook extends ViewHook {
-  state: any;
-  combobox: Combobox;
-  attributeCache: any;
-  items(): Item[];
-  collection(): Collection<Item>;
-  context(): combobox.Context;
-}
+class Combobox extends Hook {
+  component: ComboboxComponent;
+  attributeCache: AttributeCache[];
 
-export default {
   mounted() {
-    this.combobox = new Combobox(this.el, this.context());
-    this.combobox.init();
-  },
+    this.component = new ComboboxComponent(this.el, this.context());
+    this.component.init();
+  }
 
   beforeUpdate() {
     const parts: Part[] = [
@@ -75,21 +70,20 @@ export default {
     ];
 
     this.attributeCache = parts.map((part) => {
-      const attrs = getAttributes(this.el, part);
-      return attrs
+      return getAttributes(this.el, part);
     })
       .filter(cache => cache !== undefined);
-  },
+  }
 
   updated() {
-    this.combobox.api.setCollection(this.collection());
-    this.combobox.render();
+    this.component.api.setCollection(this.collection());
+    this.component.render();
     restoreAttributes(this.el, this.attributeCache);
-  },
+  }
 
   beforeDestroy() {
-    this.combobox.destroy();
-  },
+    this.component.destroy();
+  }
 
   items(): Item[] {
     return Array.from(this.el.querySelectorAll<HTMLElement>(`[id^='combobox:${this.el.id}:option']`))
@@ -104,15 +98,21 @@ export default {
         return { value, label };
       })
       .filter((value) => value !== undefined) as Item[];
-  },
+  }
 
   collection() {
+    const items = this.items();
+
+    if (items.length == 0) {
+      this.component.api.setOpen(false);
+    }
+
     return combobox.collection({
-      items: this.items(),
+      items: items,
       itemToValue: (item: Item) => item.value,
       itemToString: (item: Item) => item.label,
     });
-  },
+  }
 
   context(): combobox.Context {
     return {
@@ -121,19 +121,21 @@ export default {
       collection: this.collection(),
       inputBehavior: getOption(this.el, "inputBehavior", ["autocomplete", "autohighlight", "none"]) as InputBehavior,
       selectionBehavior: getOption(this.el, "selectionBehavior", ["clear", "replace", "preserve"]) as SelectionBehavior,
-      multiple: getBooleanOption(this.el, "multiple"),
-      disabled: getBooleanOption(this.el, "disabled"),
-      readOnly: getBooleanOption(this.el, "readOnly"),
-      loopFocus: getBooleanOption(this.el, "loopFocus"),
-      allowCustomValue: getBooleanOption(this.el, "allowCustomValue"),
+      multiple: getBooleanOption(this.el, "multiple", false),
+      disabled: getBooleanOption(this.el, "disabled", false),
+      readOnly: getBooleanOption(this.el, "readOnly", false),
+      loopFocus: getBooleanOption(this.el, "loopFocus", false),
+      allowCustomValue: getBooleanOption(this.el, "allowCustomValue", false),
       onOpenChange: (details: combobox.OpenChangeDetails) => {
         if (this.el.dataset.onOpenChange) {
           this.pushEventTo(`#${this.el.id}`, this.el.dataset.onOpenChange, details);
         }
       },
       onInputValueChange: (details: combobox.InputValueChangeDetails) => {
+        console.log(this.el.dataset)
         if (this.el.dataset.onInputValueChange) {
-          this.pushEventTo(`#${this.el.id}`, this.el.dataset.onInputValueChange, details);
+          console.log(details);
+          this.pushEvent(this.el.dataset.onInputValueChange, details);
         }
       },
       onHighlightChange: (details: combobox.HighlightChangeDetails) => {
@@ -147,5 +149,7 @@ export default {
         }
       },
     };
-  },
-} as ComboboxHook;
+  }
+};
+
+export default makeHook(Combobox);

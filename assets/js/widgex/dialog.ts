@@ -1,13 +1,13 @@
 import * as dialog from "@zag-js/dialog";
-import { normalizeProps, renderPart } from "./util";
+import { getBooleanOption, normalizeProps, renderPart } from "./util";
 import { Component } from "./component";
-import type { ViewHook } from "phoenix_live_view";
+import { Hook, makeHook } from "./hook";
 import type { Machine } from "@zag-js/core";
 import type { Part } from "./component";
 
 type Role = "dialog" | "alertdialog" | undefined;
 
-class Dialog extends Component<dialog.Context, dialog.Api> {
+class DialogComponent extends Component<dialog.Context, dialog.Api> {
   initService(context: dialog.Context): Machine<any, any, any> {
     return dialog.machine(context);
   }
@@ -30,24 +30,21 @@ class Dialog extends Component<dialog.Context, dialog.Api> {
   }
 }
 
-export interface DialogHook extends ViewHook {
-  dialog: Dialog;
-  context(): dialog.Context;
-}
+class Dialog extends Hook {
+  component: DialogComponent;
 
-export default {
   mounted() {
-    this.dialog = new Dialog(this.el, this.context());
-    this.dialog.init();
-  },
+    this.component = new DialogComponent(this.el, this.context());
+    this.component.init();
+  }
 
   updated() {
-    this.dialog.render();
-  },
+    this.component.render();
+  }
 
   beforeDestroy() {
-    this.dialog.destroy();
-  },
+    this.component.destroy();
+  }
 
   context(): dialog.Context {
     let role: string | undefined = this.el.dataset.role;
@@ -61,14 +58,16 @@ export default {
     return {
       id: this.el.id,
       role: role as Role,
-      preventScroll: this.el.dataset.preventScroll === "true" || this.el.dataset.preventScroll === "",
-      closeOnInteractOutside: this.el.dataset.closeOnInteractOutside === "true" || this.el.dataset.closeOnInteractOutside === "",
-      closeOnEscape: this.el.dataset.closeOnEscape === "true" || this.el.dataset.closeOnEscape === "",
+      preventScroll: getBooleanOption(this.el, "preventScroll", true),
+      closeOnInteractOutside: getBooleanOption(this.el, "closeOnInteractOutside", true),
+      closeOnEscape: getBooleanOption(this.el, "closeOnEscape", true),
       onOpenChange: (details: dialog.OpenChangeDetails) => {
         if (this.el.dataset.onOpenChange) {
           this.pushEvent(this.el.dataset.onOpenChange, details);
         }
       },
     };
-  },
-} as DialogHook;
+  }
+};
+
+export default makeHook(Dialog);
