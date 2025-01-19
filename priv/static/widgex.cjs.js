@@ -26,22 +26,23 @@ __export(widgex_exports, {
   Hooks: () => Hooks,
   Menu: () => menu_default,
   Popover: () => popover_default,
+  Progress: () => progress_default,
   Tabs: () => tabs_default
 });
 module.exports = __toCommonJS(widgex_exports);
 
 // node_modules/@zag-js/anatomy/dist/index.mjs
-var createAnatomy = (name, parts8 = []) => ({
+var createAnatomy = (name, parts9 = []) => ({
   parts: (...values) => {
-    if (isEmpty(parts8)) {
+    if (isEmpty(parts9)) {
       return createAnatomy(name, values);
     }
     throw new Error("createAnatomy().parts(...) should only be called once. Did you mean to use .extendWith(...) ?");
   },
-  extendWith: (...values) => createAnatomy(name, [...parts8, ...values]),
-  rename: (newName) => createAnatomy(newName, parts8),
-  keys: () => parts8,
-  build: () => [...new Set(parts8)].reduce(
+  extendWith: (...values) => createAnatomy(name, [...parts9, ...values]),
+  rename: (newName) => createAnatomy(newName, parts9),
+  keys: () => parts9,
+  build: () => [...new Set(parts9)].reduce(
     (prev, part) => Object.assign(prev, {
       [part]: {
         selector: [
@@ -114,13 +115,13 @@ function queryAll(root, selector) {
   return Array.from(root?.querySelectorAll(selector) ?? []);
 }
 function createScope(methods) {
-  const dom8 = {
+  const dom9 = {
     getRootNode: (ctx) => ctx.getRootNode?.() ?? document,
-    getDoc: (ctx) => getDocument(dom8.getRootNode(ctx)),
-    getWin: (ctx) => dom8.getDoc(ctx).defaultView ?? window,
-    getActiveElement: (ctx) => getActiveElement(dom8.getRootNode(ctx)),
-    isActiveElement: (ctx, elem) => elem === dom8.getActiveElement(ctx),
-    getById: (ctx, id) => dom8.getRootNode(ctx).getElementById(id),
+    getDoc: (ctx) => getDocument(dom9.getRootNode(ctx)),
+    getWin: (ctx) => dom9.getDoc(ctx).defaultView ?? window,
+    getActiveElement: (ctx) => getActiveElement(dom9.getRootNode(ctx)),
+    isActiveElement: (ctx, elem) => elem === dom9.getActiveElement(ctx),
+    getById: (ctx, id) => dom9.getRootNode(ctx).getElementById(id),
     setValue: (elem, value) => {
       if (elem == null || value == null)
         return;
@@ -130,7 +131,7 @@ function createScope(methods) {
       elem.value = value.toString();
     }
   };
-  return { ...dom8, ...methods };
+  return { ...dom9, ...methods };
 }
 var fps = 1e3 / 60;
 
@@ -243,22 +244,22 @@ var isPlainObject = (v) => {
   const Ctor = hasProp(proto, "constructor") && proto.constructor;
   return typeof Ctor == "function" && Ctor instanceof Ctor && fnToString.call(Ctor) == objectCtorString;
 };
-function splitProps(props7, keys) {
+function splitProps(props8, keys) {
   const rest = {};
   const result = {};
   const keySet = new Set(keys);
-  for (const key in props7) {
+  for (const key in props8) {
     if (keySet.has(key)) {
-      result[key] = props7[key];
+      result[key] = props8[key];
     } else {
-      rest[key] = props7[key];
+      rest[key] = props8[key];
     }
   }
   return [result, rest];
 }
 var createSplitProps = (keys) => {
-  return function split(props7) {
-    return splitProps(props7, keys);
+  return function split(props8) {
+    return splitProps(props8, keys);
   };
 };
 function compact(obj) {
@@ -869,8 +870,8 @@ var Machine = class {
       const cleanup = subscribe(this.state.context, () => {
         const next = snapshot(this.state.context);
         for (const [key, fn] of Object.entries(watch)) {
-          const isEqual6 = this.options.compareFns?.[key] ?? Object.is;
-          if (isEqual6(prev[key], next[key]))
+          const isEqual7 = this.options.compareFns?.[key] ?? Object.is;
+          if (isEqual7(prev[key], next[key]))
             continue;
           this.executeActions(fn, this.state.event);
         }
@@ -1349,7 +1350,7 @@ function createNormalizer(fn) {
     }
   });
 }
-var createProps = () => (props7) => Array.from(new Set(props7));
+var createProps = () => (props8) => Array.from(new Set(props8));
 
 // node_modules/@zag-js/accordion/dist/index.mjs
 var anatomy = createAnatomy("accordion").parts("root", "item", "itemTrigger", "itemContent", "itemIndicator");
@@ -1699,8 +1700,8 @@ var toStyleString = (style) => {
     return `${styleString}${formattedKey}:${value};`;
   }, "");
 };
-var normalizeProps = createNormalizer((props7) => {
-  return Object.entries(props7).reduce((acc, [key, value]) => {
+var normalizeProps = createNormalizer((props8) => {
+  return Object.entries(props8).reduce((acc, [key, value]) => {
     if (value === void 0)
       return acc;
     key = propMap[key] || key;
@@ -1774,24 +1775,23 @@ var getOption = (el, name, validOptions) => {
   }
   return initial;
 };
-var getBooleanOption = (el, name) => {
+var getBooleanOption = (el, name, defaultValue) => {
   const kebabName = name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
-  return el.dataset[kebabName] === "true" || el.dataset[kebabName] === "";
+  return el.dataset[kebabName] === "true" || el.dataset[kebabName] === "" || defaultValue;
 };
 var getAttributes = (root, part) => {
   const node = root.querySelector(`[id='${part.id}']`);
-  if (!node)
-    return;
   const attrs = [];
   for (const attr of node.attributes) {
-    attrs.push({ name: attr.name, value: attr.value });
+    attrs.push(attr);
   }
-  return {
+  const cache = {
     part,
     cssText: node.style.cssText,
     hasFocus: node === document.activeElement,
     attrs
   };
+  return cache;
 };
 var restoreAttributes = (root, attributeMaps) => {
   for (const attributeMap of attributeMaps) {
@@ -1832,8 +1832,102 @@ var Component = class {
   };
 };
 
+// js/widgex/hook.ts
+var Hook = class {
+  /**
+   * Attribute referencing the bound DOM node.
+   * [More information](https://hexdocs.pm/phoenix_live_view/0.18.0/js-interop.html#client-hooks-via-phx-hook)
+   */
+  el;
+  /**
+   * The reference to the underlying `LiveSocket` instance.
+   * [More information](https://hexdocs.pm/phoenix_live_view/0.18.0/js-interop.html#client-hooks-via-phx-hook)
+   */
+  liveSocket;
+  /**
+   * Method to push an event from the client to the LiveView server.
+   * [More information](https://hexdocs.pm/phoenix_live_view/0.18.0/js-interop.html#client-hooks-via-phx-hook)
+   */
+  pushEvent;
+  /**
+   * Method to push targeted events from the client to LiveViews and LiveComponents.
+   * It sends the event to the LiveComponent or LiveView the `selectorOrTarget` is defined
+   * in, where its value can be either a query selector or an actual DOM element. If the
+   * query selector returns more than one element it will send the event to all of them,
+   * even if all the elements are in the same LiveComponent or LiveView.
+   * [More information](https://hexdocs.pm/phoenix_live_view/0.18.0/js-interop.html#client-hooks-via-phx-hook)
+   */
+  pushEventTo;
+  /**
+   * Method to handle an event pushed from the server.
+   * [More information](https://hexdocs.pm/phoenix_live_view/0.18.0/js-interop.html#client-hooks-via-phx-hook)
+   */
+  handleEvent;
+  /**
+   * Method to inject a list of file-like objects into an uploader.
+   * [More information](https://hexdocs.pm/phoenix_live_view/0.18.0/js-interop.html#client-hooks-via-phx-hook)
+   */
+  upload;
+  /**
+   * Method to inject a list of file-like objects into an uploader. The hook will send
+   * the files to the uploader with `name` defined by
+   * [`allow_upload/3`](https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html#allow_upload/3)
+   * on the server-side. Dispatching new uploads triggers an input change event which will be sent
+   * to the LiveComponent or LiveView the selectorOrTarget is defined in, where its value can be
+   * either a query selector or an actual DOM element. If the query selector returns more than one
+   * live file input, an error will be logged.
+   * [More information](https://hexdocs.pm/phoenix_live_view/0.18.0/js-interop.html#client-hooks-via-phx-hook)
+   */
+  uploadTo;
+  /**
+   * The element has been added to the DOM and its server LiveView has finished mounting.
+   * [More information](https://hexdocs.pm/phoenix_live_view/0.18.0/js-interop.html#client-hooks-via-phx-hook)
+   */
+  mounted() {
+  }
+  /**
+   * The element is about to be updated in the DOM. Note: any call here must be synchronous as the operation
+   * cannot be deferred or cancelled.
+   * [More information](https://hexdocs.pm/phoenix_live_view/0.18.0/js-interop.html#client-hooks-via-phx-hook)
+   */
+  beforeUpdate() {
+  }
+  /**
+   * The element has been updated in the DOM by the server.
+   * [More information](https://hexdocs.pm/phoenix_live_view/0.18.0/js-interop.html#client-hooks-via-phx-hook)
+   */
+  updated() {
+  }
+  /**
+   * The element has been removed from the page, either by a parent update, or by the parent being removed
+   * entirely.
+   * [More information](https://hexdocs.pm/phoenix_live_view/0.18.0/js-interop.html#client-hooks-via-phx-hook)
+   */
+  destroyed() {
+  }
+  /**
+   * The element's parent LiveView has disconnected from the server.
+   * [More information](https://hexdocs.pm/phoenix_live_view/0.18.0/js-interop.html#client-hooks-via-phx-hook)
+   */
+  disconnected() {
+  }
+  /**
+   * The element's parent LiveView has reconnected to the server
+   * [More information](https://hexdocs.pm/phoenix_live_view/0.18.0/js-interop.html#client-hooks-via-phx-hook)
+   */
+  reconnected() {
+  }
+};
+function makeHook(hookClass) {
+  const methodNames = Object.getOwnPropertyNames(hookClass.prototype).filter(
+    (name) => name !== "constructor"
+  );
+  const methods = methodNames.map((name) => [name, hookClass.prototype[name]]);
+  return Object.fromEntries(methods);
+}
+
 // js/widgex/accordion.ts
-var Accordion = class extends Component {
+var AccordionComponent = class extends Component {
   initService(context) {
     return machine(context);
   }
@@ -1841,8 +1935,8 @@ var Accordion = class extends Component {
     return connect(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = [{ name: "root", id: `accordion:${this.el.id}` }];
-    for (const part of parts8)
+    const parts9 = [{ name: "root", id: `accordion:${this.el.id}` }];
+    for (const part of parts9)
       renderPart(this.el, part, this.api);
     this.renderItems(this.el.id);
   }
@@ -1871,17 +1965,18 @@ var Accordion = class extends Component {
     spreadProps(itemContent, this.api.getItemContentProps({ value }));
   }
 };
-var accordion_default = {
+var Accordion = class extends Hook {
+  component;
   mounted() {
-    this.accordion = new Accordion(this.el, this.context());
-    this.accordion.init();
-  },
+    this.component = new AccordionComponent(this.el, this.context());
+    this.component.init();
+  }
   updated() {
-    this.accordion.render();
-  },
+    this.component.render();
+  }
   beforeDestroy() {
-    this.accordion.destroy();
-  },
+    this.component.destroy();
+  }
   context() {
     return {
       id: this.el.id,
@@ -1897,19 +1992,20 @@ var accordion_default = {
     };
   }
 };
+var accordion_default = makeHook(Accordion);
 
 // node_modules/@zag-js/collapsible/node_modules/@zag-js/anatomy/dist/index.mjs
-var createAnatomy2 = (name, parts8 = []) => ({
+var createAnatomy2 = (name, parts9 = []) => ({
   parts: (...values) => {
-    if (isEmpty2(parts8)) {
+    if (isEmpty2(parts9)) {
       return createAnatomy2(name, values);
     }
     throw new Error("createAnatomy().parts(...) should only be called once. Did you mean to use .extendWith(...) ?");
   },
-  extendWith: (...values) => createAnatomy2(name, [...parts8, ...values]),
-  rename: (newName) => createAnatomy2(newName, parts8),
-  keys: () => parts8,
-  build: () => [...new Set(parts8)].reduce(
+  extendWith: (...values) => createAnatomy2(name, [...parts9, ...values]),
+  rename: (newName) => createAnatomy2(newName, parts9),
+  keys: () => parts9,
+  build: () => [...new Set(parts9)].reduce(
     (prev, part) => Object.assign(prev, {
       [part]: {
         selector: [
@@ -1984,13 +2080,13 @@ function raf(fn) {
   };
 }
 function createScope2(methods) {
-  const dom8 = {
+  const dom9 = {
     getRootNode: (ctx) => ctx.getRootNode?.() ?? document,
-    getDoc: (ctx) => getDocument2(dom8.getRootNode(ctx)),
-    getWin: (ctx) => dom8.getDoc(ctx).defaultView ?? window,
-    getActiveElement: (ctx) => getActiveElement2(dom8.getRootNode(ctx)),
-    isActiveElement: (ctx, elem) => elem === dom8.getActiveElement(ctx),
-    getById: (ctx, id) => dom8.getRootNode(ctx).getElementById(id),
+    getDoc: (ctx) => getDocument2(dom9.getRootNode(ctx)),
+    getWin: (ctx) => dom9.getDoc(ctx).defaultView ?? window,
+    getActiveElement: (ctx) => getActiveElement2(dom9.getRootNode(ctx)),
+    isActiveElement: (ctx, elem) => elem === dom9.getActiveElement(ctx),
+    getById: (ctx, id) => dom9.getRootNode(ctx).getElementById(id),
     setValue: (elem, value) => {
       if (elem == null || value == null)
         return;
@@ -2000,7 +2096,7 @@ function createScope2(methods) {
       elem.value = value.toString();
     }
   };
-  return { ...dom8, ...methods };
+  return { ...dom9, ...methods };
 }
 var fps2 = 1e3 / 60;
 
@@ -2351,22 +2447,22 @@ var isPlainObject3 = (v) => {
   const Ctor = hasProp2(proto, "constructor") && proto.constructor;
   return typeof Ctor == "function" && Ctor instanceof Ctor && fnToString2.call(Ctor) == objectCtorString2;
 };
-function splitProps3(props7, keys) {
+function splitProps3(props8, keys) {
   const rest = {};
   const result = {};
   const keySet = new Set(keys);
-  for (const key in props7) {
+  for (const key in props8) {
     if (keySet.has(key)) {
-      result[key] = props7[key];
+      result[key] = props8[key];
     } else {
-      rest[key] = props7[key];
+      rest[key] = props8[key];
     }
   }
   return [result, rest];
 }
 var createSplitProps2 = (keys) => {
-  return function split(props7) {
-    return splitProps3(props7, keys);
+  return function split(props8) {
+    return splitProps3(props8, keys);
   };
 };
 function compact2(obj) {
@@ -2622,8 +2718,8 @@ var Machine2 = class {
       const cleanup = subscribe2(this.state.context, () => {
         const next = snapshot2(this.state.context);
         for (const [key, fn] of Object.entries(watch)) {
-          const isEqual6 = this.options.compareFns?.[key] ?? Object.is;
-          if (isEqual6(prev[key], next[key]))
+          const isEqual7 = this.options.compareFns?.[key] ?? Object.is;
+          if (isEqual7(prev[key], next[key]))
             continue;
           this.executeActions(fn, this.state.event);
         }
@@ -3095,7 +3191,7 @@ var Machine2 = class {
 var createMachine2 = (config, options) => new Machine2(config, options);
 
 // node_modules/@zag-js/collapsible/node_modules/@zag-js/types/dist/index.mjs
-var createProps2 = () => (props7) => Array.from(new Set(props7));
+var createProps2 = () => (props8) => Array.from(new Set(props8));
 
 // node_modules/@zag-js/collapsible/dist/index.mjs
 var anatomy2 = createAnatomy2("collapsible").parts("root", "trigger", "content");
@@ -3404,7 +3500,7 @@ var props2 = createProps2()([
 var splitProps4 = createSplitProps2(props2);
 
 // js/widgex/collapsible.ts
-var Collapsible = class extends Component {
+var CollapsibleComponent = class extends Component {
   initService(context) {
     return machine2(context);
   }
@@ -3412,26 +3508,27 @@ var Collapsible = class extends Component {
     return connect2(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = [
+    const parts9 = [
       { name: "root", id: `collapsible:${this.el.id}` },
       { name: "trigger", id: `collapsible:${this.el.id}:trigger` },
       { name: "content", id: `collapsible:${this.el.id}:content` }
     ];
-    for (const part of parts8)
+    for (const part of parts9)
       renderPart(this.el, part, this.api);
   }
 };
-var collapsible_default = {
+var Collapsible = class extends Hook {
+  component;
   mounted() {
-    this.collapsible = new Collapsible(this.el, this.context());
-    this.collapsible.init();
-  },
+    this.component = new CollapsibleComponent(this.el, this.context());
+    this.component.init();
+  }
   updated() {
-    this.collapsible.render();
-  },
+    this.component.render();
+  }
   beforeDestroy() {
-    this.collapsible.destroy();
-  },
+    this.component.destroy();
+  }
   context() {
     let dir = this.el.dataset.dir;
     const validDirs = ["ltr", "rtl"];
@@ -3452,19 +3549,20 @@ var collapsible_default = {
     };
   }
 };
+var collapsible_default = makeHook(Collapsible);
 
 // node_modules/@zag-js/combobox/node_modules/@zag-js/anatomy/dist/index.mjs
-var createAnatomy3 = (name, parts8 = []) => ({
+var createAnatomy3 = (name, parts9 = []) => ({
   parts: (...values) => {
-    if (isEmpty3(parts8)) {
+    if (isEmpty3(parts9)) {
       return createAnatomy3(name, values);
     }
     throw new Error("createAnatomy().parts(...) should only be called once. Did you mean to use .extendWith(...) ?");
   },
-  extendWith: (...values) => createAnatomy3(name, [...parts8, ...values]),
-  rename: (newName) => createAnatomy3(newName, parts8),
-  keys: () => parts8,
-  build: () => [...new Set(parts8)].reduce(
+  extendWith: (...values) => createAnatomy3(name, [...parts9, ...values]),
+  rename: (newName) => createAnatomy3(newName, parts9),
+  keys: () => parts9,
+  build: () => [...new Set(parts9)].reduce(
     (prev, part) => Object.assign(prev, {
       [part]: {
         selector: [
@@ -4489,8 +4587,8 @@ var Machine3 = class {
       const cleanup = subscribe3(this.state.context, () => {
         const next = snapshot3(this.state.context);
         for (const [key, fn] of Object.entries(watch)) {
-          const isEqual6 = this.options.compareFns?.[key] ?? Object.is;
-          if (isEqual6(prev[key], next[key]))
+          const isEqual7 = this.options.compareFns?.[key] ?? Object.is;
+          if (isEqual7(prev[key], next[key]))
             continue;
           this.executeActions(fn, this.state.event);
         }
@@ -5259,13 +5357,13 @@ function query(root, selector) {
   return root?.querySelector(selector) ?? null;
 }
 function createScope3(methods) {
-  const dom8 = {
+  const dom9 = {
     getRootNode: (ctx) => ctx.getRootNode?.() ?? document,
-    getDoc: (ctx) => getDocument3(dom8.getRootNode(ctx)),
-    getWin: (ctx) => dom8.getDoc(ctx).defaultView ?? window,
-    getActiveElement: (ctx) => getActiveElement3(dom8.getRootNode(ctx)),
-    isActiveElement: (ctx, elem) => elem === dom8.getActiveElement(ctx),
-    getById: (ctx, id) => dom8.getRootNode(ctx).getElementById(id),
+    getDoc: (ctx) => getDocument3(dom9.getRootNode(ctx)),
+    getWin: (ctx) => dom9.getDoc(ctx).defaultView ?? window,
+    getActiveElement: (ctx) => getActiveElement3(dom9.getRootNode(ctx)),
+    isActiveElement: (ctx, elem) => elem === dom9.getActiveElement(ctx),
+    getById: (ctx, id) => dom9.getRootNode(ctx).getElementById(id),
     setValue: (elem, value) => {
       if (elem == null || value == null)
         return;
@@ -5275,7 +5373,7 @@ function createScope3(methods) {
       elem.value = value.toString();
     }
   };
-  return { ...dom8, ...methods };
+  return { ...dom9, ...methods };
 }
 var cleanups = /* @__PURE__ */ new WeakMap();
 function set5(element, key, setup) {
@@ -5718,11 +5816,11 @@ var arrow = (options) => ({
     const minPadding = min3(paddingObject[minProp], largestPossiblePadding);
     const maxPadding = min3(paddingObject[maxProp], largestPossiblePadding);
     const min$1 = minPadding;
-    const max6 = clientSize - arrowDimensions[length] - maxPadding;
+    const max7 = clientSize - arrowDimensions[length] - maxPadding;
     const center = clientSize / 2 - arrowDimensions[length] / 2 + centerToReference;
-    const offset3 = clamp(min$1, center, max6);
+    const offset3 = clamp(min$1, center, max7);
     const shouldAddOffset = !middlewareData.arrow && getAlignment(placement) != null && center !== offset3 && rects.reference[length] / 2 - (center < min$1 ? minPadding : maxPadding) - arrowDimensions[length] / 2 < 0;
-    const alignmentOffset = shouldAddOffset ? center < min$1 ? center - min$1 : center - max6 : 0;
+    const alignmentOffset = shouldAddOffset ? center < min$1 ? center - min$1 : center - max7 : 0;
     return {
       [axis]: coords[axis] + alignmentOffset,
       data: {
@@ -6009,16 +6107,16 @@ var shift = function(options) {
       if (checkMainAxis) {
         const minSide = mainAxis === "y" ? "top" : "left";
         const maxSide = mainAxis === "y" ? "bottom" : "right";
-        const min6 = mainAxisCoord + overflow[minSide];
-        const max6 = mainAxisCoord - overflow[maxSide];
-        mainAxisCoord = clamp(min6, mainAxisCoord, max6);
+        const min7 = mainAxisCoord + overflow[minSide];
+        const max7 = mainAxisCoord - overflow[maxSide];
+        mainAxisCoord = clamp(min7, mainAxisCoord, max7);
       }
       if (checkCrossAxis) {
         const minSide = crossAxis === "y" ? "top" : "left";
         const maxSide = crossAxis === "y" ? "bottom" : "right";
-        const min6 = crossAxisCoord + overflow[minSide];
-        const max6 = crossAxisCoord - overflow[maxSide];
-        crossAxisCoord = clamp(min6, crossAxisCoord, max6);
+        const min7 = crossAxisCoord + overflow[minSide];
+        const max7 = crossAxisCoord - overflow[maxSide];
+        crossAxisCoord = clamp(min7, crossAxisCoord, max7);
       }
       const limitedCoords = limiter.fn({
         ...state,
@@ -7260,8 +7358,8 @@ var isIgnoredNode = (node) => {
     return true;
   return node.matches("[data-live-announcer]");
 };
-var walkTreeOutside = (originalTarget, props7) => {
-  const { parentNode, markerName, controlAttribute } = props7;
+var walkTreeOutside = (originalTarget, props8) => {
+  const { parentNode, markerName, controlAttribute } = props8;
   const targets = correctTargets(parentNode, Array.isArray(originalTarget) ? originalTarget : [originalTarget]);
   markerMap[markerName] || (markerMap[markerName] = /* @__PURE__ */ new WeakMap());
   const markerCounter = markerMap[markerName];
@@ -7861,9 +7959,9 @@ function connect3(state, send, normalize) {
     ...state.context.positioning,
     placement: state.context.currentPlacement
   });
-  function getItemState(props7) {
-    const disabled2 = collection2.getItemDisabled(props7.item);
-    const value = collection2.getItemValue(props7.item);
+  function getItemState(props8) {
+    const disabled2 = collection2.getItemDisabled(props8.item);
+    const value = collection2.getItemValue(props8.item);
     return {
       value,
       disabled: Boolean(disabled2 || disabled2),
@@ -8077,25 +8175,25 @@ function connect3(state, send, normalize) {
         }
       });
     },
-    getTriggerProps(props7 = {}) {
+    getTriggerProps(props8 = {}) {
       return normalize.button({
         ...parts3.trigger.attrs,
         dir: state.context.dir,
         id: dom3.getTriggerId(state.context),
         "aria-haspopup": composite ? "listbox" : "dialog",
         type: "button",
-        tabIndex: props7.focusable ? void 0 : -1,
+        tabIndex: props8.focusable ? void 0 : -1,
         "aria-label": translations.triggerLabel,
         "aria-expanded": open,
         "data-state": open ? "open" : "closed",
         "aria-controls": open ? dom3.getContentId(state.context) : void 0,
         disabled,
         "data-invalid": dataAttr3(invalid),
-        "data-focusable": dataAttr3(props7.focusable),
+        "data-focusable": dataAttr3(props8.focusable),
         "data-readonly": dataAttr3(readOnly),
         "data-disabled": dataAttr3(disabled),
         onFocus() {
-          if (!props7.focusable)
+          if (!props8.focusable)
             return;
           send({ type: "INPUT.FOCUS", src: "trigger" });
         },
@@ -8190,8 +8288,8 @@ function connect3(state, send, normalize) {
       });
     },
     getItemState,
-    getItemProps(props7) {
-      const itemState = getItemState(props7);
+    getItemProps(props8) {
+      const itemState = getItemState(props8);
       const value = itemState.value;
       return normalize.element({
         ...parts3.item.attrs,
@@ -8213,7 +8311,7 @@ function connect3(state, send, normalize) {
           send({ type: "ITEM.POINTER_MOVE", value });
         },
         onPointerLeave() {
-          if (props7.persistFocus)
+          if (props8.persistFocus)
             return;
           if (itemState.disabled)
             return;
@@ -8235,8 +8333,8 @@ function connect3(state, send, normalize) {
         }
       });
     },
-    getItemTextProps(props7) {
-      const itemState = getItemState(props7);
+    getItemTextProps(props8) {
+      const itemState = getItemState(props8);
       return normalize.element({
         ...parts3.itemText.attrs,
         dir: state.context.dir,
@@ -8245,8 +8343,8 @@ function connect3(state, send, normalize) {
         "data-highlighted": dataAttr3(itemState.highlighted)
       });
     },
-    getItemIndicatorProps(props7) {
-      const itemState = getItemState(props7);
+    getItemIndicatorProps(props8) {
+      const itemState = getItemState(props8);
       return normalize.element({
         "aria-hidden": true,
         ...parts3.itemIndicator.attrs,
@@ -8255,8 +8353,8 @@ function connect3(state, send, normalize) {
         hidden: !itemState.selected
       });
     },
-    getItemGroupProps(props7) {
-      const { id } = props7;
+    getItemGroupProps(props8) {
+      const { id } = props8;
       return normalize.element({
         ...parts3.itemGroup.attrs,
         dir: state.context.dir,
@@ -8264,8 +8362,8 @@ function connect3(state, send, normalize) {
         "aria-labelledby": dom3.getItemGroupLabelId(state.context, id)
       });
     },
-    getItemGroupLabelProps(props7) {
-      const { htmlFor } = props7;
+    getItemGroupLabelProps(props8) {
+      const { htmlFor } = props8;
       return normalize.element({
         ...parts3.itemGroupLabel.attrs,
         dir: state.context.dir,
@@ -9249,7 +9347,7 @@ var set6 = {
 };
 
 // js/widgex/combobox.ts
-var Combobox = class extends Component {
+var ComboboxComponent = class extends Component {
   initService(context) {
     return machine3(context);
   }
@@ -9257,7 +9355,7 @@ var Combobox = class extends Component {
     return connect3(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = [
+    const parts9 = [
       { name: "root", id: `combobox:${this.el.id}` },
       { name: "control", id: `combobox:${this.el.id}:control` },
       { name: "input", id: `combobox:${this.el.id}:input` },
@@ -9265,7 +9363,7 @@ var Combobox = class extends Component {
       { name: "positioner", id: `combobox:${this.el.id}:popper` },
       { name: "content", id: `combobox:${this.el.id}:content` }
     ];
-    for (const part of parts8)
+    for (const part of parts9)
       renderPart(this.el, part, this.api);
     this.renderItems(this.el.id);
   }
@@ -9281,13 +9379,15 @@ var Combobox = class extends Component {
     }
   }
 };
-var combobox_default = {
+var Combobox = class extends Hook {
+  component;
+  attributeCache;
   mounted() {
-    this.combobox = new Combobox(this.el, this.context());
-    this.combobox.init();
-  },
+    this.component = new ComboboxComponent(this.el, this.context());
+    this.component.init();
+  }
   beforeUpdate() {
-    const parts8 = [
+    const parts9 = [
       { name: "root", id: `combobox:${this.el.id}` },
       { name: "control", id: `combobox:${this.el.id}:control` },
       { name: "input", id: `combobox:${this.el.id}:input` },
@@ -9295,19 +9395,18 @@ var combobox_default = {
       { name: "positioner", id: `combobox:${this.el.id}:popper` },
       { name: "content", id: `combobox:${this.el.id}:content` }
     ];
-    this.attributeCache = parts8.map((part) => {
-      const attrs = getAttributes(this.el, part);
-      return attrs;
+    this.attributeCache = parts9.map((part) => {
+      return getAttributes(this.el, part);
     }).filter((cache) => cache !== void 0);
-  },
+  }
   updated() {
-    this.combobox.api.setCollection(this.collection());
-    this.combobox.render();
+    this.component.api.setCollection(this.collection());
+    this.component.render();
     restoreAttributes(this.el, this.attributeCache);
-  },
+  }
   beforeDestroy() {
-    this.combobox.destroy();
-  },
+    this.component.destroy();
+  }
   items() {
     return Array.from(this.el.querySelectorAll(`[id^='combobox:${this.el.id}:option']`)).map((item) => {
       const value = item.dataset.value;
@@ -9318,14 +9417,18 @@ var combobox_default = {
       }
       return { value, label };
     }).filter((value) => value !== void 0);
-  },
+  }
   collection() {
+    const items = this.items();
+    if (items.length == 0) {
+      this.component.api.setOpen(false);
+    }
     return collection({
-      items: this.items(),
+      items,
       itemToValue: (item) => item.value,
       itemToString: (item) => item.label
     });
-  },
+  }
   context() {
     return {
       id: this.el.id,
@@ -9333,19 +9436,21 @@ var combobox_default = {
       collection: this.collection(),
       inputBehavior: getOption(this.el, "inputBehavior", ["autocomplete", "autohighlight", "none"]),
       selectionBehavior: getOption(this.el, "selectionBehavior", ["clear", "replace", "preserve"]),
-      multiple: getBooleanOption(this.el, "multiple"),
-      disabled: getBooleanOption(this.el, "disabled"),
-      readOnly: getBooleanOption(this.el, "readOnly"),
-      loopFocus: getBooleanOption(this.el, "loopFocus"),
-      allowCustomValue: getBooleanOption(this.el, "allowCustomValue"),
+      multiple: getBooleanOption(this.el, "multiple", false),
+      disabled: getBooleanOption(this.el, "disabled", false),
+      readOnly: getBooleanOption(this.el, "readOnly", false),
+      loopFocus: getBooleanOption(this.el, "loopFocus", false),
+      allowCustomValue: getBooleanOption(this.el, "allowCustomValue", false),
       onOpenChange: (details) => {
         if (this.el.dataset.onOpenChange) {
           this.pushEventTo(`#${this.el.id}`, this.el.dataset.onOpenChange, details);
         }
       },
       onInputValueChange: (details) => {
+        console.log(this.el.dataset);
         if (this.el.dataset.onInputValueChange) {
-          this.pushEventTo(`#${this.el.id}`, this.el.dataset.onInputValueChange, details);
+          console.log(details);
+          this.pushEvent(this.el.dataset.onInputValueChange, details);
         }
       },
       onHighlightChange: (details) => {
@@ -9361,19 +9466,20 @@ var combobox_default = {
     };
   }
 };
+var combobox_default = makeHook(Combobox);
 
 // node_modules/@zag-js/dialog/node_modules/@zag-js/anatomy/dist/index.mjs
-var createAnatomy4 = (name, parts8 = []) => ({
+var createAnatomy4 = (name, parts9 = []) => ({
   parts: (...values) => {
-    if (isEmpty4(parts8)) {
+    if (isEmpty4(parts9)) {
       return createAnatomy4(name, values);
     }
     throw new Error("createAnatomy().parts(...) should only be called once. Did you mean to use .extendWith(...) ?");
   },
-  extendWith: (...values) => createAnatomy4(name, [...parts8, ...values]),
-  rename: (newName) => createAnatomy4(newName, parts8),
-  keys: () => parts8,
-  build: () => [...new Set(parts8)].reduce(
+  extendWith: (...values) => createAnatomy4(name, [...parts9, ...values]),
+  rename: (newName) => createAnatomy4(newName, parts9),
+  keys: () => parts9,
+  build: () => [...new Set(parts9)].reduce(
     (prev, part) => Object.assign(prev, {
       [part]: {
         selector: [
@@ -9506,13 +9612,13 @@ function getNearestOverflowAncestor3(el) {
   return getNearestOverflowAncestor3(parentNode);
 }
 function createScope4(methods) {
-  const dom8 = {
+  const dom9 = {
     getRootNode: (ctx) => ctx.getRootNode?.() ?? document,
-    getDoc: (ctx) => getDocument4(dom8.getRootNode(ctx)),
-    getWin: (ctx) => dom8.getDoc(ctx).defaultView ?? window,
-    getActiveElement: (ctx) => getActiveElement4(dom8.getRootNode(ctx)),
-    isActiveElement: (ctx, elem) => elem === dom8.getActiveElement(ctx),
-    getById: (ctx, id) => dom8.getRootNode(ctx).getElementById(id),
+    getDoc: (ctx) => getDocument4(dom9.getRootNode(ctx)),
+    getWin: (ctx) => dom9.getDoc(ctx).defaultView ?? window,
+    getActiveElement: (ctx) => getActiveElement4(dom9.getRootNode(ctx)),
+    isActiveElement: (ctx, elem) => elem === dom9.getActiveElement(ctx),
+    getById: (ctx, id) => dom9.getRootNode(ctx).getElementById(id),
     setValue: (elem, value) => {
       if (elem == null || value == null)
         return;
@@ -9522,7 +9628,7 @@ function createScope4(methods) {
       elem.value = value.toString();
     }
   };
-  return { ...dom8, ...methods };
+  return { ...dom9, ...methods };
 }
 var cleanups2 = /* @__PURE__ */ new WeakMap();
 function set7(element, key, setup) {
@@ -9619,8 +9725,8 @@ var isIgnoredNode2 = (node) => {
     return true;
   return node.matches("[data-live-announcer]");
 };
-var walkTreeOutside2 = (originalTarget, props7) => {
-  const { parentNode, markerName, controlAttribute } = props7;
+var walkTreeOutside2 = (originalTarget, props8) => {
+  const { parentNode, markerName, controlAttribute } = props8;
   const targets = correctTargets2(parentNode, Array.isArray(originalTarget) ? originalTarget : [originalTarget]);
   markerMap2[markerName] || (markerMap2[markerName] = /* @__PURE__ */ new WeakMap());
   const markerCounter = markerMap2[markerName];
@@ -10082,22 +10188,22 @@ var isPlainObject5 = (v) => {
   const Ctor = hasProp5(proto, "constructor") && proto.constructor;
   return typeof Ctor == "function" && Ctor instanceof Ctor && fnToString5.call(Ctor) == objectCtorString5;
 };
-function splitProps5(props7, keys) {
+function splitProps5(props8, keys) {
   const rest = {};
   const result = {};
   const keySet = new Set(keys);
-  for (const key in props7) {
+  for (const key in props8) {
     if (keySet.has(key)) {
-      result[key] = props7[key];
+      result[key] = props8[key];
     } else {
-      rest[key] = props7[key];
+      rest[key] = props8[key];
     }
   }
   return [result, rest];
 }
 var createSplitProps3 = (keys) => {
-  return function split(props7) {
-    return splitProps5(props7, keys);
+  return function split(props8) {
+    return splitProps5(props8, keys);
   };
 };
 function compact5(obj) {
@@ -10353,8 +10459,8 @@ var Machine4 = class {
       const cleanup = subscribe4(this.state.context, () => {
         const next = snapshot4(this.state.context);
         for (const [key, fn] of Object.entries(watch)) {
-          const isEqual6 = this.options.compareFns?.[key] ?? Object.is;
-          if (isEqual6(prev[key], next[key]))
+          const isEqual7 = this.options.compareFns?.[key] ?? Object.is;
+          if (isEqual7(prev[key], next[key]))
             continue;
           this.executeActions(fn, this.state.event);
         }
@@ -11983,7 +12089,7 @@ function preventBodyScroll(_document) {
 }
 
 // node_modules/@zag-js/dialog/node_modules/@zag-js/types/dist/index.mjs
-var createProps3 = () => (props7) => Array.from(new Set(props7));
+var createProps3 = () => (props8) => Array.from(new Set(props8));
 
 // node_modules/@zag-js/dialog/dist/index.mjs
 var anatomy4 = createAnatomy4("dialog").parts(
@@ -12309,7 +12415,7 @@ var props3 = createProps3()([
 var splitProps6 = createSplitProps3(props3);
 
 // js/widgex/dialog.ts
-var Dialog = class extends Component {
+var DialogComponent = class extends Component {
   initService(context) {
     return machine4(context);
   }
@@ -12317,7 +12423,7 @@ var Dialog = class extends Component {
     return connect4(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = [
+    const parts9 = [
       { name: "trigger", id: `dialog:${this.el.id}:trigger` },
       { name: "backdrop", id: `dialog:${this.el.id}:backdrop` },
       { name: "positioner", id: `dialog:${this.el.id}:positioner` },
@@ -12326,21 +12432,22 @@ var Dialog = class extends Component {
       { name: "description", id: `dialog:${this.el.id}:description` },
       { name: "close-trigger", id: `dialog:${this.el.id}:close` }
     ];
-    for (const part of parts8)
+    for (const part of parts9)
       renderPart(this.el, part, this.api);
   }
 };
-var dialog_default = {
+var Dialog = class extends Hook {
+  component;
   mounted() {
-    this.dialog = new Dialog(this.el, this.context());
-    this.dialog.init();
-  },
+    this.component = new DialogComponent(this.el, this.context());
+    this.component.init();
+  }
   updated() {
-    this.dialog.render();
-  },
+    this.component.render();
+  }
   beforeDestroy() {
-    this.dialog.destroy();
-  },
+    this.component.destroy();
+  }
   context() {
     let role = this.el.dataset.role;
     const validRoles = ["dialog", "alertdialog"];
@@ -12351,9 +12458,9 @@ var dialog_default = {
     return {
       id: this.el.id,
       role,
-      preventScroll: this.el.dataset.preventScroll === "true" || this.el.dataset.preventScroll === "",
-      closeOnInteractOutside: this.el.dataset.closeOnInteractOutside === "true" || this.el.dataset.closeOnInteractOutside === "",
-      closeOnEscape: this.el.dataset.closeOnEscape === "true" || this.el.dataset.closeOnEscape === "",
+      preventScroll: getBooleanOption(this.el, "preventScroll", true),
+      closeOnInteractOutside: getBooleanOption(this.el, "closeOnInteractOutside", true),
+      closeOnEscape: getBooleanOption(this.el, "closeOnEscape", true),
       onOpenChange: (details) => {
         if (this.el.dataset.onOpenChange) {
           this.pushEvent(this.el.dataset.onOpenChange, details);
@@ -12362,19 +12469,20 @@ var dialog_default = {
     };
   }
 };
+var dialog_default = makeHook(Dialog);
 
 // node_modules/@zag-js/menu/node_modules/@zag-js/anatomy/dist/index.mjs
-var createAnatomy5 = (name, parts8 = []) => ({
+var createAnatomy5 = (name, parts9 = []) => ({
   parts: (...values) => {
-    if (isEmpty5(parts8)) {
+    if (isEmpty5(parts9)) {
       return createAnatomy5(name, values);
     }
     throw new Error("createAnatomy().parts(...) should only be called once. Did you mean to use .extendWith(...) ?");
   },
-  extendWith: (...values) => createAnatomy5(name, [...parts8, ...values]),
-  rename: (newName) => createAnatomy5(newName, parts8),
-  keys: () => parts8,
-  build: () => [...new Set(parts8)].reduce(
+  extendWith: (...values) => createAnatomy5(name, [...parts9, ...values]),
+  rename: (newName) => createAnatomy5(newName, parts9),
+  keys: () => parts9,
+  build: () => [...new Set(parts9)].reduce(
     (prev, part) => Object.assign(prev, {
       [part]: {
         selector: [
@@ -12784,22 +12892,22 @@ var isPlainObject6 = (v) => {
   const Ctor = hasProp6(proto, "constructor") && proto.constructor;
   return typeof Ctor == "function" && Ctor instanceof Ctor && fnToString6.call(Ctor) == objectCtorString6;
 };
-function splitProps7(props7, keys) {
+function splitProps7(props8, keys) {
   const rest = {};
   const result = {};
   const keySet = new Set(keys);
-  for (const key in props7) {
+  for (const key in props8) {
     if (keySet.has(key)) {
-      result[key] = props7[key];
+      result[key] = props8[key];
     } else {
-      rest[key] = props7[key];
+      rest[key] = props8[key];
     }
   }
   return [result, rest];
 }
 var createSplitProps4 = (keys) => {
-  return function split(props7) {
-    return splitProps7(props7, keys);
+  return function split(props8) {
+    return splitProps7(props8, keys);
   };
 };
 function compact6(obj) {
@@ -13087,8 +13195,8 @@ var Machine5 = class {
       const cleanup = subscribe5(this.state.context, () => {
         const next = snapshot5(this.state.context);
         for (const [key, fn] of Object.entries(watch)) {
-          const isEqual6 = this.options.compareFns?.[key] ?? Object.is;
-          if (isEqual6(prev[key], next[key]))
+          const isEqual7 = this.options.compareFns?.[key] ?? Object.is;
+          if (isEqual7(prev[key], next[key]))
             continue;
           this.executeActions(fn, this.state.event);
         }
@@ -13580,25 +13688,25 @@ var css = (a, b) => {
 };
 function mergeProps(...args) {
   let result = {};
-  for (let props7 of args) {
+  for (let props8 of args) {
     for (let key in result) {
-      if (key.startsWith("on") && typeof result[key] === "function" && typeof props7[key] === "function") {
-        result[key] = callAll5(props7[key], result[key]);
+      if (key.startsWith("on") && typeof result[key] === "function" && typeof props8[key] === "function") {
+        result[key] = callAll5(props8[key], result[key]);
         continue;
       }
       if (key === "className" || key === "class") {
-        result[key] = clsx(result[key], props7[key]);
+        result[key] = clsx(result[key], props8[key]);
         continue;
       }
       if (key === "style") {
-        result[key] = css(result[key], props7[key]);
+        result[key] = css(result[key], props8[key]);
         continue;
       }
-      result[key] = props7[key] !== void 0 ? props7[key] : result[key];
+      result[key] = props8[key] !== void 0 ? props8[key] : result[key];
     }
-    for (let key in props7) {
+    for (let key in props8) {
       if (result[key] === void 0) {
-        result[key] = props7[key];
+        result[key] = props8[key];
       }
     }
   }
@@ -13907,13 +14015,13 @@ function queryAll2(root, selector) {
   return Array.from(root?.querySelectorAll(selector) ?? []);
 }
 function createScope5(methods) {
-  const dom8 = {
+  const dom9 = {
     getRootNode: (ctx) => ctx.getRootNode?.() ?? document,
-    getDoc: (ctx) => getDocument6(dom8.getRootNode(ctx)),
-    getWin: (ctx) => dom8.getDoc(ctx).defaultView ?? window,
-    getActiveElement: (ctx) => getActiveElement6(dom8.getRootNode(ctx)),
-    isActiveElement: (ctx, elem) => elem === dom8.getActiveElement(ctx),
-    getById: (ctx, id) => dom8.getRootNode(ctx).getElementById(id),
+    getDoc: (ctx) => getDocument6(dom9.getRootNode(ctx)),
+    getWin: (ctx) => dom9.getDoc(ctx).defaultView ?? window,
+    getActiveElement: (ctx) => getActiveElement6(dom9.getRootNode(ctx)),
+    isActiveElement: (ctx, elem) => elem === dom9.getActiveElement(ctx),
+    getById: (ctx, id) => dom9.getRootNode(ctx).getElementById(id),
     setValue: (elem, value) => {
       if (elem == null || value == null)
         return;
@@ -13923,7 +14031,7 @@ function createScope5(methods) {
       elem.value = value.toString();
     }
   };
-  return { ...dom8, ...methods };
+  return { ...dom9, ...methods };
 }
 function isScrollable2(el) {
   return el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth;
@@ -15123,7 +15231,7 @@ function isPointInPolygon(polygon, point) {
 var { sign: sign3, abs: abs3, min: min22 } = Math;
 
 // node_modules/@zag-js/menu/node_modules/@zag-js/types/dist/index.mjs
-var createProps4 = () => (props7) => Array.from(new Set(props7));
+var createProps4 = () => (props8) => Array.from(new Set(props8));
 
 // node_modules/@zag-js/menu/dist/index.mjs
 var anatomy5 = createAnatomy5("menu").parts(
@@ -16335,7 +16443,7 @@ var optionItemProps = createProps4()([
 var splitOptionItemProps = createSplitProps4(optionItemProps);
 
 // js/widgex/menu.ts
-var Menu = class extends Component {
+var MenuComponent = class extends Component {
   initService(context) {
     return machine5(context);
   }
@@ -16343,13 +16451,13 @@ var Menu = class extends Component {
     return connect5(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = [
+    const parts9 = [
       { name: "trigger", id: `menu:${this.el.id}:trigger` },
       { name: "context-trigger", id: `menu:${this.el.id}:ctx-trigger` },
       { name: "positioner", id: `menu:${this.el.id}:popper` },
       { name: "content", id: `menu:${this.el.id}:content` }
     ];
-    for (const part of parts8)
+    for (const part of parts9)
       renderPart(this.el, part, this.api);
     this.renderItemGroups();
     this.renderItems();
@@ -16380,32 +16488,33 @@ var Menu = class extends Component {
       spreadProps(separator, this.api.getSeparatorProps());
   }
 };
-var menu_default = {
+var Menu = class extends Hook {
+  component;
   mounted() {
-    this.context = { id: this.el.id };
-    this.menu = new Menu(this.el, this.context);
-    this.menu.init();
-  },
+    this.component = new MenuComponent(this.el, { id: this.el.id });
+    this.component.init();
+  }
   updated() {
-    this.menu.render();
-  },
+    this.component.render();
+  }
   beforeDestroy() {
-    this.menu.destroy();
+    this.component.destroy();
   }
 };
+var menu_default = makeHook(Menu);
 
 // node_modules/@zag-js/popover/node_modules/@zag-js/anatomy/dist/index.mjs
-var createAnatomy6 = (name, parts8 = []) => ({
+var createAnatomy6 = (name, parts9 = []) => ({
   parts: (...values) => {
-    if (isEmpty6(parts8)) {
+    if (isEmpty6(parts9)) {
       return createAnatomy6(name, values);
     }
     throw new Error("createAnatomy().parts(...) should only be called once. Did you mean to use .extendWith(...) ?");
   },
-  extendWith: (...values) => createAnatomy6(name, [...parts8, ...values]),
-  rename: (newName) => createAnatomy6(newName, parts8),
-  keys: () => parts8,
-  build: () => [...new Set(parts8)].reduce(
+  extendWith: (...values) => createAnatomy6(name, [...parts9, ...values]),
+  rename: (newName) => createAnatomy6(newName, parts9),
+  keys: () => parts9,
+  build: () => [...new Set(parts9)].reduce(
     (prev, part) => Object.assign(prev, {
       [part]: {
         selector: [
@@ -16698,13 +16807,13 @@ function proxyTabFocus(container, options) {
   };
 }
 function createScope6(methods) {
-  const dom8 = {
+  const dom9 = {
     getRootNode: (ctx) => ctx.getRootNode?.() ?? document,
-    getDoc: (ctx) => getDocument9(dom8.getRootNode(ctx)),
-    getWin: (ctx) => dom8.getDoc(ctx).defaultView ?? window,
-    getActiveElement: (ctx) => getActiveElement7(dom8.getRootNode(ctx)),
-    isActiveElement: (ctx, elem) => elem === dom8.getActiveElement(ctx),
-    getById: (ctx, id) => dom8.getRootNode(ctx).getElementById(id),
+    getDoc: (ctx) => getDocument9(dom9.getRootNode(ctx)),
+    getWin: (ctx) => dom9.getDoc(ctx).defaultView ?? window,
+    getActiveElement: (ctx) => getActiveElement7(dom9.getRootNode(ctx)),
+    isActiveElement: (ctx, elem) => elem === dom9.getActiveElement(ctx),
+    getById: (ctx, id) => dom9.getRootNode(ctx).getElementById(id),
     setValue: (elem, value) => {
       if (elem == null || value == null)
         return;
@@ -16714,7 +16823,7 @@ function createScope6(methods) {
       elem.value = value.toString();
     }
   };
-  return { ...dom8, ...methods };
+  return { ...dom9, ...methods };
 }
 var cleanups4 = /* @__PURE__ */ new WeakMap();
 function set12(element, key, setup) {
@@ -16849,22 +16958,22 @@ function compact8(obj) {
 var isPlainObject27 = (v) => {
   return v && typeof v === "object" && v.constructor === Object;
 };
-function splitProps9(props7, keys) {
+function splitProps9(props8, keys) {
   const rest = {};
   const result = {};
   const keySet = new Set(keys);
-  for (const key in props7) {
+  for (const key in props8) {
     if (keySet.has(key)) {
-      result[key] = props7[key];
+      result[key] = props8[key];
     } else {
-      rest[key] = props7[key];
+      rest[key] = props8[key];
     }
   }
   return [result, rest];
 }
 var createSplitProps5 = (keys) => {
-  return function split(props7) {
-    return splitProps9(props7, keys);
+  return function split(props8) {
+    return splitProps9(props8, keys);
   };
 };
 function warn7(...a) {
@@ -17223,8 +17332,8 @@ var isIgnoredNode3 = (node) => {
     return true;
   return node.matches("[data-live-announcer]");
 };
-var walkTreeOutside3 = (originalTarget, props7) => {
-  const { parentNode, markerName, controlAttribute } = props7;
+var walkTreeOutside3 = (originalTarget, props8) => {
+  const { parentNode, markerName, controlAttribute } = props8;
   const targets = correctTargets3(parentNode, Array.isArray(originalTarget) ? originalTarget : [originalTarget]);
   markerMap3[markerName] || (markerMap3[markerName] = /* @__PURE__ */ new WeakMap());
   const markerCounter = markerMap3[markerName];
@@ -17862,8 +17971,8 @@ var Machine6 = class {
       const cleanup = subscribe6(this.state.context, () => {
         const next = snapshot6(this.state.context);
         for (const [key, fn] of Object.entries(watch)) {
-          const isEqual6 = this.options.compareFns?.[key] ?? Object.is;
-          if (isEqual6(prev[key], next[key]))
+          const isEqual7 = this.options.compareFns?.[key] ?? Object.is;
+          if (isEqual7(prev[key], next[key]))
             continue;
           this.executeActions(fn, this.state.event);
         }
@@ -19351,7 +19460,7 @@ function preventBodyScroll2(_document) {
 }
 
 // node_modules/@zag-js/popover/node_modules/@zag-js/types/dist/index.mjs
-var createProps5 = () => (props7) => Array.from(new Set(props7));
+var createProps5 = () => (props8) => Array.from(new Set(props8));
 
 // node_modules/@zag-js/popover/dist/index.mjs
 var anatomy6 = createAnatomy6("popover").parts(
@@ -19776,7 +19885,7 @@ var props5 = createProps5()([
 var splitProps10 = createSplitProps5(props5);
 
 // js/widgex/popover.ts
-var Popover = class extends Component {
+var PopoverComponent = class extends Component {
   initService(context) {
     return machine6(context);
   }
@@ -19784,7 +19893,7 @@ var Popover = class extends Component {
     return connect6(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = [
+    const parts9 = [
       { name: "trigger", id: `popover:${this.el.id}:trigger` },
       { name: "arrow", id: `popover:${this.el.id}:arrow` },
       { name: "positioner", id: `popover:${this.el.id}:popper` },
@@ -19792,42 +19901,46 @@ var Popover = class extends Component {
       { name: "title", id: `popover:${this.el.id}:title` },
       { name: "description", id: `popover:${this.el.id}:desc` }
     ];
-    for (const part of parts8)
+    for (const part of parts9)
       renderPart(this.el, part, this.api);
   }
 };
-var popover_default = {
+var Popover = class extends Hook {
+  component;
   mounted() {
-    this.popover = new Popover(this.el, this.context());
-    this.popover.init();
-  },
+    const context = this.context();
+    console.log(context);
+    this.component = new PopoverComponent(this.el, context);
+    this.component.init();
+  }
   updated() {
-    this.popover.render();
-  },
+    this.component.render();
+  }
   beforeDestroy() {
-    this.popover.destroy();
-  },
+    this.component.destroy();
+  }
   context() {
     return {
       id: this.el.id,
-      closeOnBlur: getBooleanOption(this.el, "close-on-blur"),
-      closeOnEsc: getBooleanOption(this.el, "close-on-esc")
+      closeOnInteractOutside: getBooleanOption(this.el, "close-on-interact-outside", true),
+      closeOnEscape: getBooleanOption(this.el, "close-on-escape", true)
     };
   }
 };
+var popover_default = makeHook(Popover);
 
-// node_modules/@zag-js/tabs/node_modules/@zag-js/anatomy/dist/index.mjs
-var createAnatomy7 = (name, parts8 = []) => ({
+// node_modules/@zag-js/progress/node_modules/@zag-js/anatomy/dist/index.mjs
+var createAnatomy7 = (name, parts9 = []) => ({
   parts: (...values) => {
-    if (isEmpty7(parts8)) {
+    if (isEmpty7(parts9)) {
       return createAnatomy7(name, values);
     }
     throw new Error("createAnatomy().parts(...) should only be called once. Did you mean to use .extendWith(...) ?");
   },
-  extendWith: (...values) => createAnatomy7(name, [...parts8, ...values]),
-  rename: (newName) => createAnatomy7(newName, parts8),
-  keys: () => parts8,
-  build: () => [...new Set(parts8)].reduce(
+  extendWith: (...values) => createAnatomy7(name, [...parts9, ...values]),
+  rename: (newName) => createAnatomy7(newName, parts9),
+  keys: () => parts9,
+  build: () => [...new Set(parts9)].reduce(
     (prev, part) => Object.assign(prev, {
       [part]: {
         selector: [
@@ -19843,27 +19956,31 @@ var createAnatomy7 = (name, parts8 = []) => ({
 var toKebabCase7 = (value) => value.replace(/([A-Z])([A-Z])/g, "$1-$2").replace(/([a-z])([A-Z])/g, "$1-$2").replace(/[\s_]+/g, "-").toLowerCase();
 var isEmpty7 = (v) => v.length === 0;
 
-// node_modules/@zag-js/tabs/node_modules/@zag-js/dom-query/dist/index.mjs
-var dataAttr6 = (guard) => guard ? "" : void 0;
+// node_modules/@zag-js/progress/node_modules/@zag-js/dom-query/dist/index.mjs
+var isObject24 = (v) => typeof v === "object" && v !== null;
 var ELEMENT_NODE9 = 1;
 var DOCUMENT_NODE11 = 9;
-var isObject24 = (v) => typeof v === "object" && v !== null;
+var DOCUMENT_FRAGMENT_NODE8 = 11;
 var isHTMLElement10 = (el) => isObject24(el) && el.nodeType === ELEMENT_NODE9 && typeof el.nodeName === "string";
 var isDocument11 = (el) => isObject24(el) && el.nodeType === DOCUMENT_NODE11;
 var isWindow10 = (el) => isObject24(el) && el === el.window;
-function contains7(parent, child) {
-  if (!parent || !child)
-    return false;
-  if (!isHTMLElement10(parent) || !isHTMLElement10(child))
-    return false;
-  return parent === child || parent.contains(child);
-}
+var isNode9 = (el) => isObject24(el) && el.nodeType !== void 0;
+var isShadowRoot9 = (el) => isNode9(el) && el.nodeType === DOCUMENT_FRAGMENT_NODE8 && "host" in el;
 function getDocument10(el) {
   if (isDocument11(el))
     return el;
   if (isWindow10(el))
     return el.document;
   return el?.ownerDocument ?? document;
+}
+function getWindow9(el) {
+  if (isShadowRoot9(el))
+    return getWindow9(el.host);
+  if (isDocument11(el))
+    return el.defaultView ?? window;
+  if (isHTMLElement10(el))
+    return el.ownerDocument?.defaultView ?? window;
+  return window;
 }
 function getActiveElement8(rootNode) {
   let activeElement = rootNode.activeElement;
@@ -19876,308 +19993,46 @@ function getActiveElement8(rootNode) {
   }
   return activeElement;
 }
-var isDom8 = () => typeof document !== "undefined";
-function getPlatform8() {
-  const agent = navigator.userAgentData;
-  return agent?.platform ?? navigator.platform;
+function getDescriptor(el, options) {
+  const { type = "HTMLInputElement", property = "value" } = options;
+  const proto = getWindow9(el)[type].prototype;
+  return Object.getOwnPropertyDescriptor(proto, property) ?? {};
 }
-var pt8 = (v) => isDom8() && v.test(getPlatform8());
-var ua3 = (v) => isDom8() && v.test(navigator.userAgent);
-var vn3 = (v) => isDom8() && v.test(navigator.vendor);
-var isSafari3 = () => isApple5() && vn3(/apple/i);
-var isFirefox5 = () => ua3(/firefox\//i);
-var isApple5 = () => pt8(/mac|iphone|ipad|ipod/i);
-function getComposedPath9(event) {
-  return event.composedPath?.() ?? event.nativeEvent?.composedPath?.();
+function getElementType(el) {
+  if (el.localName === "input")
+    return "HTMLInputElement";
+  if (el.localName === "textarea")
+    return "HTMLTextAreaElement";
+  if (el.localName === "select")
+    return "HTMLSelectElement";
 }
-function getEventTarget9(event) {
-  const composedPath = getComposedPath9(event);
-  return composedPath?.[0] ?? event.target;
-}
-var isSelfTarget2 = (event) => {
-  return contains7(event.currentTarget, getEventTarget9(event));
-};
-function isComposingEvent2(event) {
-  return event.nativeEvent?.isComposing ?? event.isComposing;
-}
-var defaultItemToId3 = (v) => v.id;
-function itemById3(v, id, itemToId = defaultItemToId3) {
-  return v.find((item) => itemToId(item) === id);
-}
-function indexOfId3(v, id, itemToId = defaultItemToId3) {
-  const item = itemById3(v, id, itemToId);
-  return item ? v.indexOf(item) : -1;
-}
-function nextById3(v, id, loop = true) {
-  let idx = indexOfId3(v, id);
-  idx = loop ? (idx + 1) % v.length : Math.min(idx + 1, v.length - 1);
-  return v[idx];
-}
-function prevById3(v, id, loop = true) {
-  let idx = indexOfId3(v, id);
-  if (idx === -1)
-    return loop ? v[v.length - 1] : null;
-  idx = loop ? (idx - 1 + v.length) % v.length : Math.max(0, idx - 1);
-  return v[idx];
-}
-var isHTMLElement26 = (element) => typeof element === "object" && element !== null && element.nodeType === 1;
-var isFrame4 = (element) => isHTMLElement26(element) && element.tagName === "IFRAME";
-function isVisible5(el) {
-  if (!isHTMLElement26(el))
-    return false;
-  return el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
-}
-var focusableSelector7 = "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], button:not([disabled]), [tabindex], iframe, object, embed, area[href], audio[controls], video[controls], [contenteditable]:not([contenteditable='false']), details > summary:first-of-type";
-var getFocusables3 = (container, includeContainer = false) => {
-  if (!container)
-    return [];
-  const elements = Array.from(container.querySelectorAll(focusableSelector7));
-  const include = includeContainer == true || includeContainer == "if-empty" && elements.length === 0;
-  if (include && isHTMLElement26(container) && isFocusable7(container)) {
-    elements.unshift(container);
+function setElementValue(el, value, property = "value") {
+  const type = getElementType(el);
+  if (type) {
+    const descriptor = getDescriptor(el, { type, property });
+    descriptor.set?.call(el, value);
   }
-  const focusableElements = elements.filter(isFocusable7);
-  focusableElements.forEach((element, i) => {
-    if (isFrame4(element) && element.contentDocument) {
-      const frameBody = element.contentDocument.body;
-      focusableElements.splice(i, 1, ...getFocusables3(frameBody));
-    }
-  });
-  return focusableElements;
-};
-function isFocusable7(element) {
-  if (!element || element.closest("[inert]"))
-    return false;
-  return element.matches(focusableSelector7) && isVisible5(element);
-}
-function nextTick(fn) {
-  const set22 = /* @__PURE__ */ new Set();
-  function raf22(fn2) {
-    const id = globalThis.requestAnimationFrame(fn2);
-    set22.add(() => globalThis.cancelAnimationFrame(id));
-  }
-  raf22(() => raf22(fn));
-  return function cleanup() {
-    set22.forEach((fn2) => fn2());
-  };
-}
-function raf13(fn) {
-  const id = globalThis.requestAnimationFrame(fn);
-  return () => {
-    globalThis.cancelAnimationFrame(id);
-  };
-}
-function queryAll3(root, selector) {
-  return Array.from(root?.querySelectorAll(selector) ?? []);
+  el.setAttribute(property, value);
 }
 function createScope7(methods) {
-  const dom8 = {
+  const dom9 = {
     getRootNode: (ctx) => ctx.getRootNode?.() ?? document,
-    getDoc: (ctx) => getDocument10(dom8.getRootNode(ctx)),
-    getWin: (ctx) => dom8.getDoc(ctx).defaultView ?? window,
-    getActiveElement: (ctx) => getActiveElement8(dom8.getRootNode(ctx)),
-    isActiveElement: (ctx, elem) => elem === dom8.getActiveElement(ctx),
-    getById: (ctx, id) => dom8.getRootNode(ctx).getElementById(id),
+    getDoc: (ctx) => getDocument10(dom9.getRootNode(ctx)),
+    getWin: (ctx) => dom9.getDoc(ctx).defaultView ?? window,
+    getActiveElement: (ctx) => getActiveElement8(dom9.getRootNode(ctx)),
+    isActiveElement: (ctx, elem) => elem === dom9.getActiveElement(ctx),
+    getById: (ctx, id) => dom9.getRootNode(ctx).getElementById(id),
     setValue: (elem, value) => {
       if (elem == null || value == null)
         return;
-      const valueAsString = value.toString();
-      if (elem.value === valueAsString)
-        return;
-      elem.value = value.toString();
+      setElementValue(elem, value.toString());
     }
   };
-  return { ...dom8, ...methods };
+  return { ...dom9, ...methods };
 }
 var fps12 = 1e3 / 60;
 
-// node_modules/@zag-js/tabs/node_modules/@zag-js/dom-event/dist/index.mjs
-function queueBeforeEvent3(element, type, cb) {
-  const createTimer = (callback) => {
-    const timerId = requestAnimationFrame(callback);
-    return () => cancelAnimationFrame(timerId);
-  };
-  const cancelTimer = createTimer(() => {
-    element.removeEventListener(type, callSync, true);
-    cb();
-  });
-  const callSync = () => {
-    cancelTimer();
-    cb();
-  };
-  element.addEventListener(type, callSync, { once: true, capture: true });
-  return cancelTimer;
-}
-function isLinkElement2(element) {
-  return element?.matches("a[href]") ?? false;
-}
-function clickIfLink3(element) {
-  if (!isLinkElement2(element))
-    return;
-  const click = () => element.click();
-  if (isFirefox5()) {
-    queueBeforeEvent3(element, "keyup", click);
-  } else {
-    queueMicrotask(click);
-  }
-}
-var keyMap4 = {
-  Up: "ArrowUp",
-  Down: "ArrowDown",
-  Esc: "Escape",
-  " ": "Space",
-  ",": "Comma",
-  Left: "ArrowLeft",
-  Right: "ArrowRight"
-};
-var rtlKeyMap4 = {
-  ArrowLeft: "ArrowRight",
-  ArrowRight: "ArrowLeft"
-};
-function getEventKey4(event, options = {}) {
-  const { dir = "ltr", orientation = "horizontal" } = options;
-  let { key } = event;
-  key = keyMap4[key] ?? key;
-  const isRtl = dir === "rtl" && orientation === "horizontal";
-  if (isRtl && key in rtlKeyMap4) {
-    key = rtlKeyMap4[key];
-  }
-  return key;
-}
-
-// node_modules/@zag-js/tabs/node_modules/@zag-js/utils/dist/index.mjs
-var first3 = (v) => v[0];
-var last3 = (v) => v[v.length - 1];
-function clear7(v) {
-  while (v.length > 0)
-    v.pop();
-  return v;
-}
-var isArrayLike5 = (value) => value?.constructor.name === "Array";
-var isArrayEqual5 = (a, b) => {
-  if (a.length !== b.length)
-    return false;
-  for (let i = 0; i < a.length; i++) {
-    if (!isEqual5(a[i], b[i]))
-      return false;
-  }
-  return true;
-};
-var isEqual5 = (a, b) => {
-  if (Object.is(a, b))
-    return true;
-  if (a == null && b != null || a != null && b == null)
-    return false;
-  if (typeof a?.isEqual === "function" && typeof b?.isEqual === "function") {
-    return a.isEqual(b);
-  }
-  if (typeof a === "function" && typeof b === "function") {
-    return a.toString() === b.toString();
-  }
-  if (isArrayLike5(a) && isArrayLike5(b)) {
-    return isArrayEqual5(Array.from(a), Array.from(b));
-  }
-  if (!(typeof a === "object") || !(typeof b === "object"))
-    return false;
-  const keys = Object.keys(b ?? /* @__PURE__ */ Object.create(null));
-  const length = keys.length;
-  for (let i = 0; i < length; i++) {
-    const hasKey = Reflect.has(a, keys[i]);
-    if (!hasKey)
-      return false;
-  }
-  for (let i = 0; i < length; i++) {
-    const key = keys[i];
-    if (!isEqual5(a[key], b[key]))
-      return false;
-  }
-  return true;
-};
-var runIfFn8 = (v, ...a) => {
-  const res = typeof v === "function" ? v(...a) : v;
-  return res ?? void 0;
-};
-var cast7 = (v) => v;
-var noop8 = () => {
-};
-var uuid7 = /* @__PURE__ */ (() => {
-  let id = 0;
-  return () => {
-    id++;
-    return id.toString(36);
-  };
-})();
-var isDev13 = () => true;
-var isArray8 = (v) => Array.isArray(v);
-var isObjectLike8 = (v) => v != null && typeof v === "object";
-var isObject25 = (v) => isObjectLike8(v) && !isArray8(v);
-var isNumber7 = (v) => typeof v === "number" && !Number.isNaN(v);
-var isString7 = (v) => typeof v === "string";
-var isFunction8 = (v) => typeof v === "function";
-var hasProp8 = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop);
-var baseGetTag7 = (v) => Object.prototype.toString.call(v);
-var fnToString11 = Function.prototype.toString;
-var objectCtorString11 = fnToString11.call(Object);
-var isPlainObject8 = (v) => {
-  if (!isObjectLike8(v) || baseGetTag7(v) != "[object Object]")
-    return false;
-  const proto = Object.getPrototypeOf(v);
-  if (proto === null)
-    return true;
-  const Ctor = hasProp8(proto, "constructor") && proto.constructor;
-  return typeof Ctor == "function" && Ctor instanceof Ctor && fnToString11.call(Ctor) == objectCtorString11;
-};
-function splitProps11(props7, keys) {
-  const rest = {};
-  const result = {};
-  const keySet = new Set(keys);
-  for (const key in props7) {
-    if (keySet.has(key)) {
-      result[key] = props7[key];
-    } else {
-      rest[key] = props7[key];
-    }
-  }
-  return [result, rest];
-}
-var createSplitProps6 = (keys) => {
-  return function split(props7) {
-    return splitProps11(props7, keys);
-  };
-};
-function compact9(obj) {
-  if (!isPlainObject28(obj) || obj === void 0) {
-    return obj;
-  }
-  const keys = Reflect.ownKeys(obj).filter((key) => typeof key === "string");
-  const filtered = {};
-  for (const key of keys) {
-    const value = obj[key];
-    if (value !== void 0) {
-      filtered[key] = compact9(value);
-    }
-  }
-  return filtered;
-}
-var isPlainObject28 = (value) => {
-  return value && typeof value === "object" && value.constructor === Object;
-};
-function warn8(...a) {
-  const m = a.length === 1 ? a[0] : a[1];
-  const c = a.length === 2 ? a[0] : true;
-  if (c && true) {
-    console.warn(m);
-  }
-}
-function invariant7(...a) {
-  const m = a.length === 1 ? a[0] : a[1];
-  const c = a.length === 2 ? a[0] : true;
-  if (c && true) {
-    throw new Error(m);
-  }
-}
-
-// node_modules/@zag-js/tabs/node_modules/@zag-js/store/dist/index.mjs
+// node_modules/@zag-js/progress/node_modules/@zag-js/store/dist/index.mjs
 function glob7() {
   if (typeof globalThis !== "undefined")
     return globalThis;
@@ -20200,9 +20055,9 @@ var isReactElement7 = (x) => typeof x === "object" && x !== null && "$$typeof" i
 var isVueElement7 = (x) => typeof x === "object" && x !== null && "__v_isVNode" in x;
 var isDOMElement7 = (x) => typeof x === "object" && x !== null && "nodeType" in x && typeof x.nodeName === "string";
 var isElement8 = (x) => isReactElement7(x) || isVueElement7(x) || isDOMElement7(x);
-var isObject26 = (x) => x !== null && typeof x === "object";
-var canProxy7 = (x) => isObject26(x) && !refSet7.has(x) && (Array.isArray(x) || !(Symbol.iterator in x)) && !isElement8(x) && !(x instanceof WeakMap) && !(x instanceof WeakSet) && !(x instanceof Error) && !(x instanceof Number) && !(x instanceof Date) && !(x instanceof String) && !(x instanceof RegExp) && !(x instanceof ArrayBuffer) && !(x instanceof Promise);
-var isDev14 = () => true;
+var isObject25 = (x) => x !== null && typeof x === "object";
+var canProxy7 = (x) => isObject25(x) && !refSet7.has(x) && (Array.isArray(x) || !(Symbol.iterator in x)) && !isElement8(x) && !(x instanceof WeakMap) && !(x instanceof WeakSet) && !(x instanceof Error) && !(x instanceof Number) && !(x instanceof Date) && !(x instanceof String) && !(x instanceof RegExp) && !(x instanceof ArrayBuffer) && !(x instanceof Promise);
+var isDev13 = () => true;
 function set14(obj, key, val) {
   if (typeof val.value === "object" && !canProxy7(val.value))
     val.value = clone7(val.value);
@@ -20276,7 +20131,7 @@ var buildProxyFunction7 = (objectIs = Object.is, newProxy = (target, handler) =>
   });
   return Object.freeze(snap);
 }, proxyCache = /* @__PURE__ */ new WeakMap(), versionHolder = [1, 1], proxyFunction22 = (initialObject) => {
-  if (!isObject26(initialObject)) {
+  if (!isObject25(initialObject)) {
     throw new Error("object required");
   }
   const found = proxyCache.get(initialObject);
@@ -20311,7 +20166,7 @@ var buildProxyFunction7 = (objectIs = Object.is, newProxy = (target, handler) =>
   };
   const propProxyStates = /* @__PURE__ */ new Map();
   const addPropListener = (prop, propProxyState) => {
-    if (isDev14() && propProxyStates.has(prop)) {
+    if (isDev13() && propProxyStates.has(prop)) {
       throw new Error("prop listener already exists");
     }
     if (listeners.size) {
@@ -20332,7 +20187,7 @@ var buildProxyFunction7 = (objectIs = Object.is, newProxy = (target, handler) =>
     listeners.add(listener);
     if (listeners.size === 1) {
       propProxyStates.forEach(([propProxyState, prevRemove], prop) => {
-        if (isDev14() && prevRemove) {
+        if (isDev13() && prevRemove) {
           throw new Error("remove already exists");
         }
         const remove3 = propProxyState[3](createPropListener(prop));
@@ -20370,7 +20225,7 @@ var buildProxyFunction7 = (objectIs = Object.is, newProxy = (target, handler) =>
         return true;
       }
       removePropListener(prop);
-      if (isObject26(value)) {
+      if (isObject25(value)) {
         value = getUntracked(value) || value;
       }
       let nextValue = value;
@@ -20424,7 +20279,7 @@ function proxy7(initialObject = {}) {
 }
 function subscribe7(proxyObject, callback, notifyInSync) {
   const proxyState = proxyStateMap7.get(proxyObject);
-  if (isDev14() && !proxyState) {
+  if (isDev13() && !proxyState) {
     console.warn("Please use proxy object");
   }
   let promise;
@@ -20455,7 +20310,7 @@ function subscribe7(proxyObject, callback, notifyInSync) {
 }
 function snapshot7(proxyObject) {
   const proxyState = proxyStateMap7.get(proxyObject);
-  if (isDev14() && !proxyState) {
+  if (isDev13() && !proxyState) {
     console.warn("Please use proxy object");
   }
   const [target, ensureVersion, createSnapshot] = proxyState;
@@ -20484,7 +20339,137 @@ function proxyWithComputed7(initialObject, computedFns) {
   return proxyObject;
 }
 
-// node_modules/@zag-js/tabs/node_modules/@zag-js/core/dist/index.mjs
+// node_modules/@zag-js/progress/node_modules/@zag-js/utils/dist/index.mjs
+function clear7(v) {
+  while (v.length > 0)
+    v.pop();
+  return v;
+}
+var isArrayLike5 = (value) => value?.constructor.name === "Array";
+var isArrayEqual5 = (a, b) => {
+  if (a.length !== b.length)
+    return false;
+  for (let i = 0; i < a.length; i++) {
+    if (!isEqual5(a[i], b[i]))
+      return false;
+  }
+  return true;
+};
+var isEqual5 = (a, b) => {
+  if (Object.is(a, b))
+    return true;
+  if (a == null && b != null || a != null && b == null)
+    return false;
+  if (typeof a?.isEqual === "function" && typeof b?.isEqual === "function") {
+    return a.isEqual(b);
+  }
+  if (typeof a === "function" && typeof b === "function") {
+    return a.toString() === b.toString();
+  }
+  if (isArrayLike5(a) && isArrayLike5(b)) {
+    return isArrayEqual5(Array.from(a), Array.from(b));
+  }
+  if (!(typeof a === "object") || !(typeof b === "object"))
+    return false;
+  const keys = Object.keys(b ?? /* @__PURE__ */ Object.create(null));
+  const length = keys.length;
+  for (let i = 0; i < length; i++) {
+    const hasKey = Reflect.has(a, keys[i]);
+    if (!hasKey)
+      return false;
+  }
+  for (let i = 0; i < length; i++) {
+    const key = keys[i];
+    if (!isEqual5(a[key], b[key]))
+      return false;
+  }
+  return true;
+};
+var runIfFn8 = (v, ...a) => {
+  const res = typeof v === "function" ? v(...a) : v;
+  return res ?? void 0;
+};
+var cast7 = (v) => v;
+var noop8 = () => {
+};
+var uuid7 = /* @__PURE__ */ (() => {
+  let id = 0;
+  return () => {
+    id++;
+    return id.toString(36);
+  };
+})();
+var isDev14 = () => true;
+var isArray8 = (v) => Array.isArray(v);
+var isObjectLike8 = (v) => v != null && typeof v === "object";
+var isObject26 = (v) => isObjectLike8(v) && !isArray8(v);
+var isNumber7 = (v) => typeof v === "number" && !Number.isNaN(v);
+var isString7 = (v) => typeof v === "string";
+var isFunction8 = (v) => typeof v === "function";
+var hasProp8 = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop);
+var baseGetTag7 = (v) => Object.prototype.toString.call(v);
+var fnToString11 = Function.prototype.toString;
+var objectCtorString11 = fnToString11.call(Object);
+var isPlainObject8 = (v) => {
+  if (!isObjectLike8(v) || baseGetTag7(v) != "[object Object]")
+    return false;
+  const proto = Object.getPrototypeOf(v);
+  if (proto === null)
+    return true;
+  const Ctor = hasProp8(proto, "constructor") && proto.constructor;
+  return typeof Ctor == "function" && Ctor instanceof Ctor && fnToString11.call(Ctor) == objectCtorString11;
+};
+var { floor: floor5, abs: abs5, round: round5, min: min6, max: max6, pow: pow4, sign: sign5 } = Math;
+function compact9(obj) {
+  if (!isPlainObject28(obj) || obj === void 0)
+    return obj;
+  const keys = Reflect.ownKeys(obj).filter((key) => typeof key === "string");
+  const filtered = {};
+  for (const key of keys) {
+    const value = obj[key];
+    if (value !== void 0) {
+      filtered[key] = compact9(value);
+    }
+  }
+  return filtered;
+}
+var isPlainObject28 = (v) => {
+  return v && typeof v === "object" && v.constructor === Object;
+};
+function splitProps11(props8, keys) {
+  const rest = {};
+  const result = {};
+  const keySet = new Set(keys);
+  for (const key in props8) {
+    if (keySet.has(key)) {
+      result[key] = props8[key];
+    } else {
+      rest[key] = props8[key];
+    }
+  }
+  return [result, rest];
+}
+var createSplitProps6 = (keys) => {
+  return function split(props8) {
+    return splitProps11(props8, keys);
+  };
+};
+function warn8(...a) {
+  const m = a.length === 1 ? a[0] : a[1];
+  const c = a.length === 2 ? a[0] : true;
+  if (c && true) {
+    console.warn(m);
+  }
+}
+function invariant7(...a) {
+  const m = a.length === 1 ? a[0] : a[1];
+  const c = a.length === 2 ? a[0] : true;
+  if (c && true) {
+    throw new Error(m);
+  }
+}
+
+// node_modules/@zag-js/progress/node_modules/@zag-js/core/dist/index.mjs
 var __defProp11 = Object.defineProperty;
 var __defNormalProp10 = (obj, key, value) => key in obj ? __defProp11(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField10 = (obj, key, value) => __defNormalProp10(obj, typeof key !== "symbol" ? key + "" : key, value);
@@ -20514,41 +20499,9 @@ function toArray7(value) {
   return isArray8(value) ? value.slice() : [value];
 }
 function isGuardHelper7(value) {
-  return isObject25(value) && value.predicate != null;
+  return isObject26(value) && value.predicate != null;
 }
 var Truthy7 = () => true;
-function exec4(guardMap, ctx, event, meta) {
-  return (guard) => {
-    if (isString7(guard)) {
-      return !!guardMap[guard]?.(ctx, event, meta);
-    }
-    if (isFunction8(guard)) {
-      return guard(ctx, event, meta);
-    }
-    return guard.predicate(guardMap)(ctx, event, meta);
-  };
-}
-function or5(...conditions) {
-  return {
-    predicate: (guardMap) => (ctx, event, meta) => conditions.map(exec4(guardMap, ctx, event, meta)).some(Boolean)
-  };
-}
-function and7(...conditions) {
-  return {
-    predicate: (guardMap) => (ctx, event, meta) => conditions.map(exec4(guardMap, ctx, event, meta)).every(Boolean)
-  };
-}
-function not7(condition) {
-  return {
-    predicate: (guardMap) => (ctx, event, meta) => {
-      return !exec4(guardMap, ctx, event, meta)(condition);
-    }
-  };
-}
-function stateIn4(...values) {
-  return (_ctx, _evt, meta) => meta.state.matches(...values);
-}
-var guards4 = { or: or5, and: and7, not: not7, stateIn: stateIn4 };
 function determineGuardFn7(guard, guardMap) {
   guard = guard ?? Truthy7;
   return (context, event, meta) => {
@@ -20716,8 +20669,8 @@ var Machine7 = class {
         "machine.init"
         /* Init */
       );
-      const target = isObject25(init) ? init.value : init;
-      const context = isObject25(init) ? init.context : void 0;
+      const target = isObject26(init) ? init.value : init;
+      const context = isObject26(init) ? init.context : void 0;
       if (context) {
         this.setContext(context);
       }
@@ -20737,8 +20690,8 @@ var Machine7 = class {
       const cleanup = subscribe7(this.state.context, () => {
         const next = snapshot7(this.state.context);
         for (const [key, fn] of Object.entries(watch)) {
-          const isEqual6 = this.options.compareFns?.[key] ?? Object.is;
-          if (isEqual6(prev[key], next[key]))
+          const isEqual7 = this.options.compareFns?.[key] ?? Object.is;
+          if (isEqual7(prev[key], next[key]))
             continue;
           this.executeActions(fn, this.state.event);
         }
@@ -20931,7 +20884,7 @@ var Machine7 = class {
         exits.push(actions.exit);
         return { entries, exits };
       }
-      if (isObject25(stateNode.after)) {
+      if (isObject26(stateNode.after)) {
         for (const delay3 in stateNode.after) {
           const transition = stateNode.after[delay3];
           const determineDelay = determineDelayFn7(delay3, this.delayMap);
@@ -21086,7 +21039,7 @@ var Machine7 = class {
       this.parent?.send(event);
     });
     __publicField10(this, "log", (...args) => {
-      if (isDev13() && this.options.debug) {
+      if (isDev14() && this.options.debug) {
         console.log(...args);
       }
     });
@@ -21209,6 +21162,1726 @@ var Machine7 = class {
 };
 var createMachine7 = (config, options) => new Machine7(config, options);
 
+// node_modules/@zag-js/progress/node_modules/@zag-js/types/dist/index.mjs
+var createProps6 = () => (props8) => Array.from(new Set(props8));
+
+// node_modules/@zag-js/progress/dist/index.mjs
+var anatomy7 = createAnatomy7("progress").parts(
+  "root",
+  "label",
+  "track",
+  "range",
+  "valueText",
+  "view",
+  "circle",
+  "circleTrack",
+  "circleRange"
+);
+var parts7 = anatomy7.build();
+var dom7 = createScope7({
+  getRootId: (ctx) => ctx.ids?.root ?? `progress-${ctx.id}`,
+  getTrackId: (ctx) => ctx.ids?.track ?? `progress-${ctx.id}-track`,
+  getLabelId: (ctx) => ctx.ids?.label ?? `progress-${ctx.id}-label`,
+  getCircleId: (ctx) => ctx.ids?.circle ?? `progress-${ctx.id}-circle`
+});
+function connect7(state, send, normalize) {
+  const percent = state.context.percent;
+  const percentAsString = state.context.isIndeterminate ? "" : `${percent}%`;
+  const max7 = state.context.max;
+  const min7 = state.context.min;
+  const orientation = state.context.orientation;
+  const translations = state.context.translations;
+  const indeterminate = state.context.isIndeterminate;
+  const value = state.context.value;
+  const valueAsString = translations.value({ value, max: max7, percent, min: min7 });
+  const progressState = getProgressState(value, max7);
+  const progressbarProps = {
+    role: "progressbar",
+    "aria-label": valueAsString,
+    "data-max": max7,
+    "aria-valuemin": min7,
+    "aria-valuemax": max7,
+    "aria-valuenow": value ?? void 0,
+    "data-orientation": orientation,
+    "data-state": progressState
+  };
+  const circleProps = getCircleProps(state.context);
+  return {
+    value,
+    valueAsString,
+    min: min7,
+    max: max7,
+    percent,
+    percentAsString,
+    indeterminate,
+    setValue(value2) {
+      send({ type: "VALUE.SET", value: value2 });
+    },
+    setToMax() {
+      send({ type: "VALUE.SET", value: max7 });
+    },
+    setToMin() {
+      send({ type: "VALUE.SET", value: min7 });
+    },
+    getRootProps() {
+      return normalize.element({
+        dir: state.context.dir,
+        ...parts7.root.attrs,
+        id: dom7.getRootId(state.context),
+        "data-max": max7,
+        "data-value": value ?? void 0,
+        "data-state": progressState,
+        "data-orientation": orientation,
+        style: {
+          "--percent": indeterminate ? void 0 : percent
+        }
+      });
+    },
+    getLabelProps() {
+      return normalize.element({
+        dir: state.context.dir,
+        id: dom7.getLabelId(state.context),
+        ...parts7.label.attrs,
+        "data-orientation": orientation
+      });
+    },
+    getValueTextProps() {
+      return normalize.element({
+        dir: state.context.dir,
+        "aria-live": "polite",
+        ...parts7.valueText.attrs
+      });
+    },
+    getTrackProps() {
+      return normalize.element({
+        dir: state.context.dir,
+        id: dom7.getTrackId(state.context),
+        ...parts7.track.attrs,
+        ...progressbarProps
+      });
+    },
+    getRangeProps() {
+      return normalize.element({
+        dir: state.context.dir,
+        ...parts7.range.attrs,
+        "data-orientation": orientation,
+        "data-state": progressState,
+        style: {
+          [state.context.isHorizontal ? "width" : "height"]: indeterminate ? void 0 : `${percent}%`
+        }
+      });
+    },
+    getCircleProps() {
+      return normalize.element({
+        dir: state.context.dir,
+        id: dom7.getCircleId(state.context),
+        ...parts7.circle.attrs,
+        ...progressbarProps,
+        ...circleProps.root
+      });
+    },
+    getCircleTrackProps() {
+      return normalize.element({
+        dir: state.context.dir,
+        "data-orientation": orientation,
+        ...parts7.circleTrack.attrs,
+        ...circleProps.track
+      });
+    },
+    getCircleRangeProps() {
+      return normalize.element({
+        dir: state.context.dir,
+        ...parts7.circleRange.attrs,
+        ...circleProps.range,
+        "data-state": progressState
+      });
+    },
+    getViewProps(props22) {
+      return normalize.element({
+        dir: state.context.dir,
+        ...parts7.view.attrs,
+        "data-state": props22.state,
+        hidden: props22.state !== progressState
+      });
+    }
+  };
+}
+function getProgressState(value, maxValue) {
+  return value == null ? "indeterminate" : value === maxValue ? "complete" : "loading";
+}
+function getCircleProps(ctx) {
+  const circleProps = {
+    style: {
+      "--radius": "calc(var(--size) / 2 - var(--thickness) / 2)",
+      cx: "calc(var(--size) / 2)",
+      cy: "calc(var(--size) / 2)",
+      r: "var(--radius)",
+      fill: "transparent",
+      strokeWidth: "var(--thickness)"
+    }
+  };
+  return {
+    root: {
+      style: {
+        width: "var(--size)",
+        height: "var(--size)"
+      }
+    },
+    track: circleProps,
+    range: {
+      opacity: ctx.value === 0 ? 0 : void 0,
+      style: {
+        ...circleProps.style,
+        "--percent": ctx.percent,
+        "--circumference": `calc(2 * 3.14159 * var(--radius))`,
+        "--offset": `calc(var(--circumference) * (100 - var(--percent)) / 100)`,
+        strokeDashoffset: `calc(var(--circumference) * ((100 - var(--percent)) / 100))`,
+        strokeDasharray: ctx.isIndeterminate ? void 0 : `var(--circumference)`,
+        transformOrigin: "center",
+        transform: "rotate(-90deg)"
+      }
+    }
+  };
+}
+function midValue(min7, max7) {
+  return min7 + (max7 - min7) / 2;
+}
+function machine7(userContext) {
+  const ctx = compact9(userContext);
+  return createMachine7(
+    {
+      id: "progress",
+      initial: "idle",
+      context: {
+        max: ctx.max ?? 100,
+        min: ctx.min ?? 0,
+        value: midValue(ctx.min ?? 0, ctx.max ?? 100),
+        orientation: "horizontal",
+        translations: {
+          value: ({ percent }) => percent === -1 ? "loading..." : `${percent} percent`,
+          ...ctx.translations
+        },
+        ...ctx
+      },
+      created: ["validateContext"],
+      computed: {
+        isIndeterminate: (ctx2) => ctx2.value === null,
+        percent(ctx2) {
+          if (!isNumber7(ctx2.value))
+            return -1;
+          return Math.round((ctx2.value - ctx2.min) / (ctx2.max - ctx2.min) * 100);
+        },
+        isAtMax: (ctx2) => ctx2.value === ctx2.max,
+        isHorizontal: (ctx2) => ctx2.orientation === "horizontal",
+        isRtl: (ctx2) => ctx2.dir === "rtl"
+      },
+      states: {
+        idle: {
+          on: {
+            "VALUE.SET": {
+              actions: ["setValue"]
+            }
+          }
+        }
+      }
+    },
+    {
+      actions: {
+        setValue: (ctx2, evt) => {
+          set15.value(ctx2, evt.value);
+        },
+        validateContext: (ctx2) => {
+          if (ctx2.value == null)
+            return;
+          if (!isValidNumber(ctx2.max)) {
+            throw new Error(`[progress] The max value passed \`${ctx2.max}\` is not a valid number`);
+          }
+          if (!isValidMax(ctx2.value, ctx2.max)) {
+            throw new Error(`[progress] The value passed \`${ctx2.value}\` exceeds the max value \`${ctx2.max}\``);
+          }
+          if (!isValidMin(ctx2.value, ctx2.min)) {
+            throw new Error(`[progress] The value passed \`${ctx2.value}\` exceeds the min value \`${ctx2.min}\``);
+          }
+        }
+      }
+    }
+  );
+}
+function isValidNumber(max7) {
+  return isNumber7(max7) && !isNaN(max7);
+}
+function isValidMax(value, max7) {
+  return isValidNumber(value) && value <= max7;
+}
+function isValidMin(value, min7) {
+  return isValidNumber(value) && value >= min7;
+}
+var set15 = {
+  value(ctx, value) {
+    if (isEqual5(ctx.value, value))
+      return;
+    ctx.value = value === null ? null : Math.max(0, Math.min(value, ctx.max));
+    ctx.onValueChange?.({ value });
+  }
+};
+var props6 = createProps6()([
+  "dir",
+  "getRootNode",
+  "id",
+  "ids",
+  "max",
+  "min",
+  "orientation",
+  "translations",
+  "value",
+  "onValueChange"
+]);
+var splitProps12 = createSplitProps6(props6);
+
+// js/widgex/progress.ts
+var ProgressComponent = class extends Component {
+  initService(context) {
+    return machine7(context);
+  }
+  initApi() {
+    return connect7(this.service.state, this.service.send, normalizeProps);
+  }
+  render() {
+    const parts9 = [
+      { name: "root", id: `progress-${this.el.id}` },
+      { name: "track", id: `progress-${this.el.id}-track` }
+    ];
+    for (const part of parts9)
+      renderPart(this.el, part, this.api);
+    this.renderRange();
+  }
+  renderRange() {
+    const track = this.el.querySelector(`[id='progress-${this.el.id}-track']`);
+    if (!track)
+      return;
+    const range = track.querySelector(`[data-part='range']`);
+    if (!range)
+      return;
+    spreadProps(range, this.api.getRangeProps());
+  }
+};
+var Progress = class extends Hook {
+  component;
+  mounted() {
+    this.component = new ProgressComponent(this.el, this.context());
+    this.component.init();
+  }
+  updated() {
+    this.component.api.setValue(this.el.dataset.value);
+    this.component.render();
+  }
+  beforeDestroy() {
+    this.component.destroy();
+  }
+  context() {
+    return {
+      id: this.el.id,
+      value: Number(this.el.dataset.value) || 0,
+      min: Number(this.el.dataset.min) || 0,
+      max: Number(this.el.dataset.max) || 100
+    };
+  }
+};
+var progress_default = makeHook(Progress);
+
+// node_modules/@zag-js/tabs/node_modules/@zag-js/anatomy/dist/index.mjs
+var createAnatomy8 = (name, parts9 = []) => ({
+  parts: (...values) => {
+    if (isEmpty8(parts9)) {
+      return createAnatomy8(name, values);
+    }
+    throw new Error("createAnatomy().parts(...) should only be called once. Did you mean to use .extendWith(...) ?");
+  },
+  extendWith: (...values) => createAnatomy8(name, [...parts9, ...values]),
+  rename: (newName) => createAnatomy8(newName, parts9),
+  keys: () => parts9,
+  build: () => [...new Set(parts9)].reduce(
+    (prev, part) => Object.assign(prev, {
+      [part]: {
+        selector: [
+          `&[data-scope="${toKebabCase8(name)}"][data-part="${toKebabCase8(part)}"]`,
+          `& [data-scope="${toKebabCase8(name)}"][data-part="${toKebabCase8(part)}"]`
+        ].join(", "),
+        attrs: { "data-scope": toKebabCase8(name), "data-part": toKebabCase8(part) }
+      }
+    }),
+    {}
+  )
+});
+var toKebabCase8 = (value) => value.replace(/([A-Z])([A-Z])/g, "$1-$2").replace(/([a-z])([A-Z])/g, "$1-$2").replace(/[\s_]+/g, "-").toLowerCase();
+var isEmpty8 = (v) => v.length === 0;
+
+// node_modules/@zag-js/tabs/node_modules/@zag-js/dom-query/dist/index.mjs
+var dataAttr6 = (guard) => guard ? "" : void 0;
+var ELEMENT_NODE10 = 1;
+var DOCUMENT_NODE12 = 9;
+var isObject27 = (v) => typeof v === "object" && v !== null;
+var isHTMLElement11 = (el) => isObject27(el) && el.nodeType === ELEMENT_NODE10 && typeof el.nodeName === "string";
+var isDocument12 = (el) => isObject27(el) && el.nodeType === DOCUMENT_NODE12;
+var isWindow11 = (el) => isObject27(el) && el === el.window;
+function contains7(parent, child) {
+  if (!parent || !child)
+    return false;
+  if (!isHTMLElement11(parent) || !isHTMLElement11(child))
+    return false;
+  return parent === child || parent.contains(child);
+}
+function getDocument11(el) {
+  if (isDocument12(el))
+    return el;
+  if (isWindow11(el))
+    return el.document;
+  return el?.ownerDocument ?? document;
+}
+function getActiveElement9(rootNode) {
+  let activeElement = rootNode.activeElement;
+  while (activeElement?.shadowRoot) {
+    const el = activeElement.shadowRoot.activeElement;
+    if (el === activeElement)
+      break;
+    else
+      activeElement = el;
+  }
+  return activeElement;
+}
+var isDom8 = () => typeof document !== "undefined";
+function getPlatform8() {
+  const agent = navigator.userAgentData;
+  return agent?.platform ?? navigator.platform;
+}
+var pt8 = (v) => isDom8() && v.test(getPlatform8());
+var ua3 = (v) => isDom8() && v.test(navigator.userAgent);
+var vn3 = (v) => isDom8() && v.test(navigator.vendor);
+var isSafari3 = () => isApple5() && vn3(/apple/i);
+var isFirefox5 = () => ua3(/firefox\//i);
+var isApple5 = () => pt8(/mac|iphone|ipad|ipod/i);
+function getComposedPath9(event) {
+  return event.composedPath?.() ?? event.nativeEvent?.composedPath?.();
+}
+function getEventTarget9(event) {
+  const composedPath = getComposedPath9(event);
+  return composedPath?.[0] ?? event.target;
+}
+var isSelfTarget2 = (event) => {
+  return contains7(event.currentTarget, getEventTarget9(event));
+};
+function isComposingEvent2(event) {
+  return event.nativeEvent?.isComposing ?? event.isComposing;
+}
+var defaultItemToId3 = (v) => v.id;
+function itemById3(v, id, itemToId = defaultItemToId3) {
+  return v.find((item) => itemToId(item) === id);
+}
+function indexOfId3(v, id, itemToId = defaultItemToId3) {
+  const item = itemById3(v, id, itemToId);
+  return item ? v.indexOf(item) : -1;
+}
+function nextById3(v, id, loop = true) {
+  let idx = indexOfId3(v, id);
+  idx = loop ? (idx + 1) % v.length : Math.min(idx + 1, v.length - 1);
+  return v[idx];
+}
+function prevById3(v, id, loop = true) {
+  let idx = indexOfId3(v, id);
+  if (idx === -1)
+    return loop ? v[v.length - 1] : null;
+  idx = loop ? (idx - 1 + v.length) % v.length : Math.max(0, idx - 1);
+  return v[idx];
+}
+var isHTMLElement26 = (element) => typeof element === "object" && element !== null && element.nodeType === 1;
+var isFrame4 = (element) => isHTMLElement26(element) && element.tagName === "IFRAME";
+function isVisible5(el) {
+  if (!isHTMLElement26(el))
+    return false;
+  return el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
+}
+var focusableSelector7 = "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], button:not([disabled]), [tabindex], iframe, object, embed, area[href], audio[controls], video[controls], [contenteditable]:not([contenteditable='false']), details > summary:first-of-type";
+var getFocusables3 = (container, includeContainer = false) => {
+  if (!container)
+    return [];
+  const elements = Array.from(container.querySelectorAll(focusableSelector7));
+  const include = includeContainer == true || includeContainer == "if-empty" && elements.length === 0;
+  if (include && isHTMLElement26(container) && isFocusable7(container)) {
+    elements.unshift(container);
+  }
+  const focusableElements = elements.filter(isFocusable7);
+  focusableElements.forEach((element, i) => {
+    if (isFrame4(element) && element.contentDocument) {
+      const frameBody = element.contentDocument.body;
+      focusableElements.splice(i, 1, ...getFocusables3(frameBody));
+    }
+  });
+  return focusableElements;
+};
+function isFocusable7(element) {
+  if (!element || element.closest("[inert]"))
+    return false;
+  return element.matches(focusableSelector7) && isVisible5(element);
+}
+function nextTick(fn) {
+  const set22 = /* @__PURE__ */ new Set();
+  function raf22(fn2) {
+    const id = globalThis.requestAnimationFrame(fn2);
+    set22.add(() => globalThis.cancelAnimationFrame(id));
+  }
+  raf22(() => raf22(fn));
+  return function cleanup() {
+    set22.forEach((fn2) => fn2());
+  };
+}
+function raf13(fn) {
+  const id = globalThis.requestAnimationFrame(fn);
+  return () => {
+    globalThis.cancelAnimationFrame(id);
+  };
+}
+function queryAll3(root, selector) {
+  return Array.from(root?.querySelectorAll(selector) ?? []);
+}
+function createScope8(methods) {
+  const dom9 = {
+    getRootNode: (ctx) => ctx.getRootNode?.() ?? document,
+    getDoc: (ctx) => getDocument11(dom9.getRootNode(ctx)),
+    getWin: (ctx) => dom9.getDoc(ctx).defaultView ?? window,
+    getActiveElement: (ctx) => getActiveElement9(dom9.getRootNode(ctx)),
+    isActiveElement: (ctx, elem) => elem === dom9.getActiveElement(ctx),
+    getById: (ctx, id) => dom9.getRootNode(ctx).getElementById(id),
+    setValue: (elem, value) => {
+      if (elem == null || value == null)
+        return;
+      const valueAsString = value.toString();
+      if (elem.value === valueAsString)
+        return;
+      elem.value = value.toString();
+    }
+  };
+  return { ...dom9, ...methods };
+}
+var fps13 = 1e3 / 60;
+
+// node_modules/@zag-js/tabs/node_modules/@zag-js/dom-event/dist/index.mjs
+function queueBeforeEvent3(element, type, cb) {
+  const createTimer = (callback) => {
+    const timerId = requestAnimationFrame(callback);
+    return () => cancelAnimationFrame(timerId);
+  };
+  const cancelTimer = createTimer(() => {
+    element.removeEventListener(type, callSync, true);
+    cb();
+  });
+  const callSync = () => {
+    cancelTimer();
+    cb();
+  };
+  element.addEventListener(type, callSync, { once: true, capture: true });
+  return cancelTimer;
+}
+function isLinkElement2(element) {
+  return element?.matches("a[href]") ?? false;
+}
+function clickIfLink3(element) {
+  if (!isLinkElement2(element))
+    return;
+  const click = () => element.click();
+  if (isFirefox5()) {
+    queueBeforeEvent3(element, "keyup", click);
+  } else {
+    queueMicrotask(click);
+  }
+}
+var keyMap4 = {
+  Up: "ArrowUp",
+  Down: "ArrowDown",
+  Esc: "Escape",
+  " ": "Space",
+  ",": "Comma",
+  Left: "ArrowLeft",
+  Right: "ArrowRight"
+};
+var rtlKeyMap4 = {
+  ArrowLeft: "ArrowRight",
+  ArrowRight: "ArrowLeft"
+};
+function getEventKey4(event, options = {}) {
+  const { dir = "ltr", orientation = "horizontal" } = options;
+  let { key } = event;
+  key = keyMap4[key] ?? key;
+  const isRtl = dir === "rtl" && orientation === "horizontal";
+  if (isRtl && key in rtlKeyMap4) {
+    key = rtlKeyMap4[key];
+  }
+  return key;
+}
+
+// node_modules/@zag-js/tabs/node_modules/@zag-js/utils/dist/index.mjs
+var first3 = (v) => v[0];
+var last3 = (v) => v[v.length - 1];
+function clear8(v) {
+  while (v.length > 0)
+    v.pop();
+  return v;
+}
+var isArrayLike6 = (value) => value?.constructor.name === "Array";
+var isArrayEqual6 = (a, b) => {
+  if (a.length !== b.length)
+    return false;
+  for (let i = 0; i < a.length; i++) {
+    if (!isEqual6(a[i], b[i]))
+      return false;
+  }
+  return true;
+};
+var isEqual6 = (a, b) => {
+  if (Object.is(a, b))
+    return true;
+  if (a == null && b != null || a != null && b == null)
+    return false;
+  if (typeof a?.isEqual === "function" && typeof b?.isEqual === "function") {
+    return a.isEqual(b);
+  }
+  if (typeof a === "function" && typeof b === "function") {
+    return a.toString() === b.toString();
+  }
+  if (isArrayLike6(a) && isArrayLike6(b)) {
+    return isArrayEqual6(Array.from(a), Array.from(b));
+  }
+  if (!(typeof a === "object") || !(typeof b === "object"))
+    return false;
+  const keys = Object.keys(b ?? /* @__PURE__ */ Object.create(null));
+  const length = keys.length;
+  for (let i = 0; i < length; i++) {
+    const hasKey = Reflect.has(a, keys[i]);
+    if (!hasKey)
+      return false;
+  }
+  for (let i = 0; i < length; i++) {
+    const key = keys[i];
+    if (!isEqual6(a[key], b[key]))
+      return false;
+  }
+  return true;
+};
+var runIfFn9 = (v, ...a) => {
+  const res = typeof v === "function" ? v(...a) : v;
+  return res ?? void 0;
+};
+var cast8 = (v) => v;
+var noop9 = () => {
+};
+var uuid8 = /* @__PURE__ */ (() => {
+  let id = 0;
+  return () => {
+    id++;
+    return id.toString(36);
+  };
+})();
+var isDev15 = () => true;
+var isArray9 = (v) => Array.isArray(v);
+var isObjectLike9 = (v) => v != null && typeof v === "object";
+var isObject28 = (v) => isObjectLike9(v) && !isArray9(v);
+var isNumber8 = (v) => typeof v === "number" && !Number.isNaN(v);
+var isString8 = (v) => typeof v === "string";
+var isFunction9 = (v) => typeof v === "function";
+var hasProp9 = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop);
+var baseGetTag8 = (v) => Object.prototype.toString.call(v);
+var fnToString12 = Function.prototype.toString;
+var objectCtorString12 = fnToString12.call(Object);
+var isPlainObject9 = (v) => {
+  if (!isObjectLike9(v) || baseGetTag8(v) != "[object Object]")
+    return false;
+  const proto = Object.getPrototypeOf(v);
+  if (proto === null)
+    return true;
+  const Ctor = hasProp9(proto, "constructor") && proto.constructor;
+  return typeof Ctor == "function" && Ctor instanceof Ctor && fnToString12.call(Ctor) == objectCtorString12;
+};
+function splitProps13(props8, keys) {
+  const rest = {};
+  const result = {};
+  const keySet = new Set(keys);
+  for (const key in props8) {
+    if (keySet.has(key)) {
+      result[key] = props8[key];
+    } else {
+      rest[key] = props8[key];
+    }
+  }
+  return [result, rest];
+}
+var createSplitProps7 = (keys) => {
+  return function split(props8) {
+    return splitProps13(props8, keys);
+  };
+};
+function compact10(obj) {
+  if (!isPlainObject29(obj) || obj === void 0) {
+    return obj;
+  }
+  const keys = Reflect.ownKeys(obj).filter((key) => typeof key === "string");
+  const filtered = {};
+  for (const key of keys) {
+    const value = obj[key];
+    if (value !== void 0) {
+      filtered[key] = compact10(value);
+    }
+  }
+  return filtered;
+}
+var isPlainObject29 = (value) => {
+  return value && typeof value === "object" && value.constructor === Object;
+};
+function warn9(...a) {
+  const m = a.length === 1 ? a[0] : a[1];
+  const c = a.length === 2 ? a[0] : true;
+  if (c && true) {
+    console.warn(m);
+  }
+}
+function invariant8(...a) {
+  const m = a.length === 1 ? a[0] : a[1];
+  const c = a.length === 2 ? a[0] : true;
+  if (c && true) {
+    throw new Error(m);
+  }
+}
+
+// node_modules/@zag-js/tabs/node_modules/@zag-js/store/dist/index.mjs
+function glob8() {
+  if (typeof globalThis !== "undefined")
+    return globalThis;
+  if (typeof self !== "undefined")
+    return self;
+  if (typeof window !== "undefined")
+    return window;
+  if (typeof global !== "undefined")
+    return global;
+}
+function globalRef8(key, value) {
+  const g = glob8();
+  if (!g)
+    return value();
+  g[key] || (g[key] = value());
+  return g[key];
+}
+var refSet8 = globalRef8("__zag__refSet", () => /* @__PURE__ */ new WeakSet());
+var isReactElement8 = (x) => typeof x === "object" && x !== null && "$$typeof" in x && "props" in x;
+var isVueElement8 = (x) => typeof x === "object" && x !== null && "__v_isVNode" in x;
+var isDOMElement8 = (x) => typeof x === "object" && x !== null && "nodeType" in x && typeof x.nodeName === "string";
+var isElement9 = (x) => isReactElement8(x) || isVueElement8(x) || isDOMElement8(x);
+var isObject29 = (x) => x !== null && typeof x === "object";
+var canProxy8 = (x) => isObject29(x) && !refSet8.has(x) && (Array.isArray(x) || !(Symbol.iterator in x)) && !isElement9(x) && !(x instanceof WeakMap) && !(x instanceof WeakSet) && !(x instanceof Error) && !(x instanceof Number) && !(x instanceof Date) && !(x instanceof String) && !(x instanceof RegExp) && !(x instanceof ArrayBuffer) && !(x instanceof Promise);
+var isDev16 = () => true;
+function set16(obj, key, val) {
+  if (typeof val.value === "object" && !canProxy8(val.value))
+    val.value = clone8(val.value);
+  if (!val.enumerable || val.get || val.set || !val.configurable || !val.writable || key === "__proto__") {
+    Object.defineProperty(obj, key, val);
+  } else
+    obj[key] = val.value;
+}
+function clone8(x) {
+  if (typeof x !== "object")
+    return x;
+  var i = 0, k, list, tmp, str = Object.prototype.toString.call(x);
+  if (str === "[object Object]") {
+    tmp = Object.create(Object.getPrototypeOf(x) || null);
+  } else if (str === "[object Array]") {
+    tmp = Array(x.length);
+  } else if (str === "[object Set]") {
+    tmp = /* @__PURE__ */ new Set();
+    x.forEach(function(val) {
+      tmp.add(clone8(val));
+    });
+  } else if (str === "[object Map]") {
+    tmp = /* @__PURE__ */ new Map();
+    x.forEach(function(val, key) {
+      tmp.set(clone8(key), clone8(val));
+    });
+  } else if (str === "[object Date]") {
+    tmp = /* @__PURE__ */ new Date(+x);
+  } else if (str === "[object RegExp]") {
+    tmp = new RegExp(x.source, x.flags);
+  } else if (str === "[object DataView]") {
+    tmp = new x.constructor(clone8(x.buffer));
+  } else if (str === "[object ArrayBuffer]") {
+    tmp = x.slice(0);
+  } else if (str === "[object Blob]") {
+    tmp = x.slice();
+  } else if (str.slice(-6) === "Array]") {
+    tmp = new x.constructor(x);
+  }
+  if (tmp) {
+    for (list = Object.getOwnPropertySymbols(x); i < list.length; i++) {
+      set16(tmp, list[i], Object.getOwnPropertyDescriptor(x, list[i]));
+    }
+    for (i = 0, list = Object.getOwnPropertyNames(x); i < list.length; i++) {
+      if (Object.hasOwnProperty.call(tmp, k = list[i]) && tmp[k] === x[k])
+        continue;
+      set16(tmp, k, Object.getOwnPropertyDescriptor(x, k));
+    }
+  }
+  return tmp || x;
+}
+var proxyStateMap8 = globalRef8("__zag__proxyStateMap", () => /* @__PURE__ */ new WeakMap());
+var buildProxyFunction8 = (objectIs = Object.is, newProxy = (target, handler) => new Proxy(target, handler), snapCache = /* @__PURE__ */ new WeakMap(), createSnapshot = (target, version) => {
+  const cache = snapCache.get(target);
+  if (cache?.[0] === version) {
+    return cache[1];
+  }
+  const snap = Array.isArray(target) ? [] : Object.create(Object.getPrototypeOf(target));
+  markToTrack(snap, true);
+  snapCache.set(target, [version, snap]);
+  Reflect.ownKeys(target).forEach((key) => {
+    const value = Reflect.get(target, key);
+    if (refSet8.has(value)) {
+      markToTrack(value, false);
+      snap[key] = value;
+    } else if (proxyStateMap8.has(value)) {
+      snap[key] = snapshot8(value);
+    } else {
+      snap[key] = value;
+    }
+  });
+  return Object.freeze(snap);
+}, proxyCache = /* @__PURE__ */ new WeakMap(), versionHolder = [1, 1], proxyFunction22 = (initialObject) => {
+  if (!isObject29(initialObject)) {
+    throw new Error("object required");
+  }
+  const found = proxyCache.get(initialObject);
+  if (found) {
+    return found;
+  }
+  let version = versionHolder[0];
+  const listeners = /* @__PURE__ */ new Set();
+  const notifyUpdate = (op, nextVersion = ++versionHolder[0]) => {
+    if (version !== nextVersion) {
+      version = nextVersion;
+      listeners.forEach((listener) => listener(op, nextVersion));
+    }
+  };
+  let checkVersion = versionHolder[1];
+  const ensureVersion = (nextCheckVersion = ++versionHolder[1]) => {
+    if (checkVersion !== nextCheckVersion && !listeners.size) {
+      checkVersion = nextCheckVersion;
+      propProxyStates.forEach(([propProxyState]) => {
+        const propVersion = propProxyState[1](nextCheckVersion);
+        if (propVersion > version) {
+          version = propVersion;
+        }
+      });
+    }
+    return version;
+  };
+  const createPropListener = (prop) => (op, nextVersion) => {
+    const newOp = [...op];
+    newOp[1] = [prop, ...newOp[1]];
+    notifyUpdate(newOp, nextVersion);
+  };
+  const propProxyStates = /* @__PURE__ */ new Map();
+  const addPropListener = (prop, propProxyState) => {
+    if (isDev16() && propProxyStates.has(prop)) {
+      throw new Error("prop listener already exists");
+    }
+    if (listeners.size) {
+      const remove3 = propProxyState[3](createPropListener(prop));
+      propProxyStates.set(prop, [propProxyState, remove3]);
+    } else {
+      propProxyStates.set(prop, [propProxyState]);
+    }
+  };
+  const removePropListener = (prop) => {
+    const entry = propProxyStates.get(prop);
+    if (entry) {
+      propProxyStates.delete(prop);
+      entry[1]?.();
+    }
+  };
+  const addListener = (listener) => {
+    listeners.add(listener);
+    if (listeners.size === 1) {
+      propProxyStates.forEach(([propProxyState, prevRemove], prop) => {
+        if (isDev16() && prevRemove) {
+          throw new Error("remove already exists");
+        }
+        const remove3 = propProxyState[3](createPropListener(prop));
+        propProxyStates.set(prop, [propProxyState, remove3]);
+      });
+    }
+    const removeListener = () => {
+      listeners.delete(listener);
+      if (listeners.size === 0) {
+        propProxyStates.forEach(([propProxyState, remove3], prop) => {
+          if (remove3) {
+            remove3();
+            propProxyStates.set(prop, [propProxyState]);
+          }
+        });
+      }
+    };
+    return removeListener;
+  };
+  const baseObject = Array.isArray(initialObject) ? [] : Object.create(Object.getPrototypeOf(initialObject));
+  const handler = {
+    deleteProperty(target, prop) {
+      const prevValue = Reflect.get(target, prop);
+      removePropListener(prop);
+      const deleted = Reflect.deleteProperty(target, prop);
+      if (deleted) {
+        notifyUpdate(["delete", [prop], prevValue]);
+      }
+      return deleted;
+    },
+    set(target, prop, value, receiver) {
+      const hasPrevValue = Reflect.has(target, prop);
+      const prevValue = Reflect.get(target, prop, receiver);
+      if (hasPrevValue && (objectIs(prevValue, value) || proxyCache.has(value) && objectIs(prevValue, proxyCache.get(value)))) {
+        return true;
+      }
+      removePropListener(prop);
+      if (isObject29(value)) {
+        value = getUntracked(value) || value;
+      }
+      let nextValue = value;
+      if (Object.getOwnPropertyDescriptor(target, prop)?.set)
+        ;
+      else {
+        if (!proxyStateMap8.has(value) && canProxy8(value)) {
+          nextValue = proxy8(value);
+        }
+        const childProxyState = !refSet8.has(nextValue) && proxyStateMap8.get(nextValue);
+        if (childProxyState) {
+          addPropListener(prop, childProxyState);
+        }
+      }
+      Reflect.set(target, prop, nextValue, receiver);
+      notifyUpdate(["set", [prop], value, prevValue]);
+      return true;
+    }
+  };
+  const proxyObject = newProxy(baseObject, handler);
+  proxyCache.set(initialObject, proxyObject);
+  const proxyState = [baseObject, ensureVersion, createSnapshot, addListener];
+  proxyStateMap8.set(proxyObject, proxyState);
+  Reflect.ownKeys(initialObject).forEach((key) => {
+    const desc = Object.getOwnPropertyDescriptor(initialObject, key);
+    if (desc.get || desc.set) {
+      Object.defineProperty(baseObject, key, desc);
+    } else {
+      proxyObject[key] = initialObject[key];
+    }
+  });
+  return proxyObject;
+}) => [
+  // public functions
+  proxyFunction22,
+  // shared state
+  proxyStateMap8,
+  refSet8,
+  // internal things
+  objectIs,
+  newProxy,
+  canProxy8,
+  snapCache,
+  createSnapshot,
+  proxyCache,
+  versionHolder
+];
+var [proxyFunction8] = buildProxyFunction8();
+function proxy8(initialObject = {}) {
+  return proxyFunction8(initialObject);
+}
+function subscribe8(proxyObject, callback, notifyInSync) {
+  const proxyState = proxyStateMap8.get(proxyObject);
+  if (isDev16() && !proxyState) {
+    console.warn("Please use proxy object");
+  }
+  let promise;
+  const ops = [];
+  const addListener = proxyState[3];
+  let isListenerActive = false;
+  const listener = (op) => {
+    ops.push(op);
+    if (notifyInSync) {
+      callback(ops.splice(0));
+      return;
+    }
+    if (!promise) {
+      promise = Promise.resolve().then(() => {
+        promise = void 0;
+        if (isListenerActive) {
+          callback(ops.splice(0));
+        }
+      });
+    }
+  };
+  const removeListener = addListener(listener);
+  isListenerActive = true;
+  return () => {
+    isListenerActive = false;
+    removeListener();
+  };
+}
+function snapshot8(proxyObject) {
+  const proxyState = proxyStateMap8.get(proxyObject);
+  if (isDev16() && !proxyState) {
+    console.warn("Please use proxy object");
+  }
+  const [target, ensureVersion, createSnapshot] = proxyState;
+  return createSnapshot(target, ensureVersion());
+}
+function ref8(obj) {
+  refSet8.add(obj);
+  return obj;
+}
+function proxyWithComputed8(initialObject, computedFns) {
+  const keys = Object.keys(computedFns);
+  keys.forEach((key) => {
+    if (Object.getOwnPropertyDescriptor(initialObject, key)) {
+      throw new Error("object property already defined");
+    }
+    const computedFn = computedFns[key];
+    const { get, set: set22 } = typeof computedFn === "function" ? { get: computedFn } : computedFn;
+    const desc = {};
+    desc.get = () => get(snapshot8(proxyObject));
+    if (set22) {
+      desc.set = (newValue) => set22(proxyObject, newValue);
+    }
+    Object.defineProperty(initialObject, key, desc);
+  });
+  const proxyObject = proxy8(initialObject);
+  return proxyObject;
+}
+
+// node_modules/@zag-js/tabs/node_modules/@zag-js/core/dist/index.mjs
+var __defProp12 = Object.defineProperty;
+var __defNormalProp11 = (obj, key, value) => key in obj ? __defProp12(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField11 = (obj, key, value) => __defNormalProp11(obj, typeof key !== "symbol" ? key + "" : key, value);
+function deepMerge8(source, ...objects) {
+  for (const obj of objects) {
+    const target = compact10(obj);
+    for (const key in target) {
+      if (isPlainObject9(obj[key])) {
+        if (!source[key]) {
+          source[key] = {};
+        }
+        deepMerge8(source[key], obj[key]);
+      } else {
+        source[key] = obj[key];
+      }
+    }
+  }
+  return source;
+}
+function toEvent8(event) {
+  const obj = isString8(event) ? { type: event } : event;
+  return obj;
+}
+function toArray8(value) {
+  if (!value)
+    return [];
+  return isArray9(value) ? value.slice() : [value];
+}
+function isGuardHelper8(value) {
+  return isObject28(value) && value.predicate != null;
+}
+var Truthy8 = () => true;
+function exec4(guardMap, ctx, event, meta) {
+  return (guard) => {
+    if (isString8(guard)) {
+      return !!guardMap[guard]?.(ctx, event, meta);
+    }
+    if (isFunction9(guard)) {
+      return guard(ctx, event, meta);
+    }
+    return guard.predicate(guardMap)(ctx, event, meta);
+  };
+}
+function or5(...conditions) {
+  return {
+    predicate: (guardMap) => (ctx, event, meta) => conditions.map(exec4(guardMap, ctx, event, meta)).some(Boolean)
+  };
+}
+function and7(...conditions) {
+  return {
+    predicate: (guardMap) => (ctx, event, meta) => conditions.map(exec4(guardMap, ctx, event, meta)).every(Boolean)
+  };
+}
+function not7(condition) {
+  return {
+    predicate: (guardMap) => (ctx, event, meta) => {
+      return !exec4(guardMap, ctx, event, meta)(condition);
+    }
+  };
+}
+function stateIn4(...values) {
+  return (_ctx, _evt, meta) => meta.state.matches(...values);
+}
+var guards4 = { or: or5, and: and7, not: not7, stateIn: stateIn4 };
+function determineGuardFn8(guard, guardMap) {
+  guard = guard ?? Truthy8;
+  return (context, event, meta) => {
+    if (isString8(guard)) {
+      const value = guardMap[guard];
+      return isFunction9(value) ? value(context, event, meta) : value;
+    }
+    if (isGuardHelper8(guard)) {
+      return guard.predicate(guardMap)(context, event, meta);
+    }
+    return guard?.(context, event, meta);
+  };
+}
+function determineActionsFn8(values, guardMap) {
+  return (context, event, meta) => {
+    if (isGuardHelper8(values)) {
+      return values.predicate(guardMap)(context, event, meta);
+    }
+    return values;
+  };
+}
+function createProxy8(config) {
+  const computedContext = config.computed ?? cast8({});
+  const initialContext = config.context ?? cast8({});
+  const initialTags = config.initial ? config.states?.[config.initial]?.tags : [];
+  const state = proxy8({
+    value: config.initial ?? "",
+    previousValue: "",
+    event: cast8({}),
+    previousEvent: cast8({}),
+    context: proxyWithComputed8(initialContext, computedContext),
+    done: false,
+    tags: initialTags ?? [],
+    hasTag(tag) {
+      return this.tags.includes(tag);
+    },
+    matches(...value) {
+      return value.includes(this.value);
+    },
+    can(event) {
+      return cast8(this).nextEvents.includes(event);
+    },
+    get nextEvents() {
+      const stateEvents = config.states?.[this.value]?.["on"] ?? {};
+      const globalEvents = config?.on ?? {};
+      return Object.keys({ ...stateEvents, ...globalEvents });
+    },
+    get changed() {
+      if (this.event.value === "machine.init" || !this.previousValue)
+        return false;
+      return this.value !== this.previousValue;
+    }
+  });
+  return cast8(state);
+}
+function determineDelayFn8(delay3, delaysMap) {
+  return (context, event) => {
+    if (isNumber8(delay3))
+      return delay3;
+    if (isFunction9(delay3)) {
+      return delay3(context, event);
+    }
+    if (isString8(delay3)) {
+      const value = Number.parseFloat(delay3);
+      if (!Number.isNaN(value)) {
+        return value;
+      }
+      if (delaysMap) {
+        const valueOrFn = delaysMap?.[delay3];
+        invariant8(
+          valueOrFn == null,
+          `[@zag-js/core > determine-delay] Cannot determine delay for \`${delay3}\`. It doesn't exist in \`options.delays\``
+        );
+        return isFunction9(valueOrFn) ? valueOrFn(context, event) : valueOrFn;
+      }
+    }
+  };
+}
+function toTarget8(target) {
+  return isString8(target) ? { target } : target;
+}
+function determineTransitionFn8(transitions, guardMap) {
+  return (context, event, meta) => {
+    return toArray8(transitions).map(toTarget8).find((transition) => {
+      const determineGuard = determineGuardFn8(transition.guard, guardMap);
+      const guard = determineGuard(context, event, meta);
+      return guard ?? transition.target ?? transition.actions;
+    });
+  };
+}
+var Machine8 = class {
+  // Let's get started!
+  constructor(config, options) {
+    __publicField11(
+      this,
+      "status",
+      "Not Started"
+      /* NotStarted */
+    );
+    __publicField11(this, "state");
+    __publicField11(this, "initialState");
+    __publicField11(this, "initialContext");
+    __publicField11(this, "id");
+    __publicField11(
+      this,
+      "type",
+      "machine"
+      /* Machine */
+    );
+    __publicField11(this, "activityEvents", /* @__PURE__ */ new Map());
+    __publicField11(this, "delayedEvents", /* @__PURE__ */ new Map());
+    __publicField11(this, "stateListeners", /* @__PURE__ */ new Set());
+    __publicField11(this, "doneListeners", /* @__PURE__ */ new Set());
+    __publicField11(this, "contextWatchers", /* @__PURE__ */ new Set());
+    __publicField11(this, "removeStateListener", noop9);
+    __publicField11(this, "parent");
+    __publicField11(this, "children", /* @__PURE__ */ new Map());
+    __publicField11(this, "guardMap");
+    __publicField11(this, "actionMap");
+    __publicField11(this, "delayMap");
+    __publicField11(this, "activityMap");
+    __publicField11(this, "sync");
+    __publicField11(this, "options");
+    __publicField11(this, "config");
+    __publicField11(this, "_created", () => {
+      if (!this.config.created)
+        return;
+      const event = toEvent8(
+        "machine.created"
+        /* Created */
+      );
+      this.executeActions(this.config.created, event);
+    });
+    __publicField11(this, "start", (init) => {
+      this.state.value = "";
+      this.state.tags = [];
+      if (this.status === "Running") {
+        return this;
+      }
+      this.status = "Running";
+      this.removeStateListener = subscribe8(
+        this.state,
+        () => {
+          this.stateListeners.forEach((listener) => {
+            listener(this.stateSnapshot);
+          });
+        },
+        this.sync
+      );
+      this.setupContextWatchers();
+      this.executeActivities(
+        toEvent8(
+          "machine.start"
+          /* Start */
+        ),
+        toArray8(this.config.activities),
+        "machine.start"
+        /* Start */
+      );
+      this.executeActions(this.config.entry, toEvent8(
+        "machine.start"
+        /* Start */
+      ));
+      const event = toEvent8(
+        "machine.init"
+        /* Init */
+      );
+      const target = isObject28(init) ? init.value : init;
+      const context = isObject28(init) ? init.context : void 0;
+      if (context) {
+        this.setContext(context);
+      }
+      const transition = {
+        target: target ?? this.config.initial
+      };
+      const next = this.getNextStateInfo(transition, event);
+      this.initialState = next;
+      this.performStateChangeEffects(this.state.value, next, event);
+      return this;
+    });
+    __publicField11(this, "setupContextWatchers", () => {
+      const { watch } = this.config;
+      if (!watch)
+        return;
+      let prev = snapshot8(this.state.context);
+      const cleanup = subscribe8(this.state.context, () => {
+        const next = snapshot8(this.state.context);
+        for (const [key, fn] of Object.entries(watch)) {
+          const isEqual7 = this.options.compareFns?.[key] ?? Object.is;
+          if (isEqual7(prev[key], next[key]))
+            continue;
+          this.executeActions(fn, this.state.event);
+        }
+        prev = next;
+      });
+      this.contextWatchers.add(cleanup);
+    });
+    __publicField11(this, "stop", () => {
+      if (this.status === "Stopped")
+        return;
+      this.performExitEffects(this.state.value, toEvent8(
+        "machine.stop"
+        /* Stop */
+      ));
+      this.executeActions(this.config.exit, toEvent8(
+        "machine.stop"
+        /* Stop */
+      ));
+      this.setState("");
+      this.setEvent(
+        "machine.stop"
+        /* Stop */
+      );
+      this.stopStateListeners();
+      this.stopChildren();
+      this.stopActivities();
+      this.stopDelayedEvents();
+      this.stopContextWatchers();
+      this.status = "Stopped";
+      return this;
+    });
+    __publicField11(this, "stopStateListeners", () => {
+      this.removeStateListener();
+      this.stateListeners.clear();
+    });
+    __publicField11(this, "stopContextWatchers", () => {
+      this.contextWatchers.forEach((fn) => fn());
+      this.contextWatchers.clear();
+    });
+    __publicField11(this, "stopDelayedEvents", () => {
+      this.delayedEvents.forEach((state) => {
+        state.forEach((stop) => stop());
+      });
+      this.delayedEvents.clear();
+    });
+    __publicField11(this, "stopActivities", (state) => {
+      if (state) {
+        this.activityEvents.get(state)?.forEach((stop) => stop());
+        this.activityEvents.get(state)?.clear();
+        this.activityEvents.delete(state);
+      } else {
+        this.activityEvents.forEach((state2) => {
+          state2.forEach((stop) => stop());
+          state2.clear();
+        });
+        this.activityEvents.clear();
+      }
+    });
+    __publicField11(this, "sendChild", (evt, to) => {
+      const event = toEvent8(evt);
+      const id = runIfFn9(to, this.contextSnapshot);
+      const child = this.children.get(id);
+      if (!child) {
+        invariant8(`[@zag-js/core] Cannot send '${event.type}' event to unknown child`);
+      }
+      child.send(event);
+    });
+    __publicField11(this, "stopChild", (id) => {
+      if (!this.children.has(id)) {
+        invariant8(`[@zag-js/core > stop-child] Cannot stop unknown child ${id}`);
+      }
+      this.children.get(id).stop();
+      this.children.delete(id);
+    });
+    __publicField11(this, "removeChild", (id) => {
+      this.children.delete(id);
+    });
+    __publicField11(this, "stopChildren", () => {
+      this.children.forEach((child) => child.stop());
+      this.children.clear();
+    });
+    __publicField11(this, "setParent", (parent) => {
+      this.parent = parent;
+    });
+    __publicField11(this, "spawn", (src, id) => {
+      const actor = runIfFn9(src);
+      if (id)
+        actor.id = id;
+      actor.type = "machine.actor";
+      actor.setParent(this);
+      this.children.set(actor.id, cast8(actor));
+      actor.onDone(() => {
+        this.removeChild(actor.id);
+      }).start();
+      return cast8(ref8(actor));
+    });
+    __publicField11(this, "stopActivity", (key) => {
+      if (!this.state.value)
+        return;
+      const cleanups5 = this.activityEvents.get(this.state.value);
+      cleanups5?.get(key)?.();
+      cleanups5?.delete(key);
+    });
+    __publicField11(this, "addActivityCleanup", (state, key, cleanup) => {
+      if (!state)
+        return;
+      if (!this.activityEvents.has(state)) {
+        this.activityEvents.set(state, /* @__PURE__ */ new Map([[key, cleanup]]));
+      } else {
+        this.activityEvents.get(state)?.set(key, cleanup);
+      }
+    });
+    __publicField11(this, "setState", (target) => {
+      this.state.previousValue = this.state.value;
+      this.state.value = target;
+      const stateNode = this.getStateNode(target);
+      if (target == null) {
+        clear8(this.state.tags);
+      } else {
+        this.state.tags = toArray8(stateNode?.tags);
+      }
+    });
+    __publicField11(this, "setContext", (context) => {
+      if (!context)
+        return;
+      deepMerge8(this.state.context, compact10(context));
+    });
+    __publicField11(this, "setOptions", (options2) => {
+      const opts = compact10(options2);
+      this.actionMap = { ...this.actionMap, ...opts.actions };
+      this.delayMap = { ...this.delayMap, ...opts.delays };
+      this.activityMap = { ...this.activityMap, ...opts.activities };
+      this.guardMap = { ...this.guardMap, ...opts.guards };
+    });
+    __publicField11(this, "getStateNode", (state) => {
+      if (!state)
+        return;
+      return this.config.states?.[state];
+    });
+    __publicField11(this, "getNextStateInfo", (transitions, event) => {
+      const transition = this.determineTransition(transitions, event);
+      const isTargetless = !transition?.target;
+      const target = transition?.target ?? this.state.value;
+      const changed = this.state.value !== target;
+      const stateNode = this.getStateNode(target);
+      const reenter = !isTargetless && !changed && !transition?.internal;
+      const info = {
+        reenter,
+        transition,
+        stateNode,
+        target,
+        changed
+      };
+      this.log("NextState:", `[${event.type}]`, this.state.value, "---->", info.target);
+      return info;
+    });
+    __publicField11(this, "getAfterActions", (transition, delay3) => {
+      let id;
+      const current = this.state.value;
+      return {
+        entry: () => {
+          id = globalThis.setTimeout(() => {
+            const next = this.getNextStateInfo(transition, this.state.event);
+            this.performStateChangeEffects(current, next, this.state.event);
+          }, delay3);
+        },
+        exit: () => {
+          globalThis.clearTimeout(id);
+        }
+      };
+    });
+    __publicField11(this, "getDelayedEventActions", (state) => {
+      const stateNode = this.getStateNode(state);
+      const event = this.state.event;
+      if (!stateNode || !stateNode.after)
+        return;
+      const entries = [];
+      const exits = [];
+      if (isArray9(stateNode.after)) {
+        const transition = this.determineTransition(stateNode.after, event);
+        if (!transition)
+          return;
+        if (!hasProp9(transition, "delay")) {
+          throw new Error(`[@zag-js/core > after] Delay is required for after transition: ${JSON.stringify(transition)}`);
+        }
+        const determineDelay = determineDelayFn8(transition.delay, this.delayMap);
+        const __delay = determineDelay(this.contextSnapshot, event);
+        const actions = this.getAfterActions(transition, __delay);
+        entries.push(actions.entry);
+        exits.push(actions.exit);
+        return { entries, exits };
+      }
+      if (isObject28(stateNode.after)) {
+        for (const delay3 in stateNode.after) {
+          const transition = stateNode.after[delay3];
+          const determineDelay = determineDelayFn8(delay3, this.delayMap);
+          const __delay = determineDelay(this.contextSnapshot, event);
+          const actions = this.getAfterActions(transition, __delay);
+          entries.push(actions.entry);
+          exits.push(actions.exit);
+        }
+      }
+      return { entries, exits };
+    });
+    __publicField11(this, "executeActions", (actions, event) => {
+      const pickedActions = determineActionsFn8(actions, this.guardMap)(this.contextSnapshot, event, this.guardMeta);
+      for (const action of toArray8(pickedActions)) {
+        const fn = isString8(action) ? this.actionMap?.[action] : action;
+        warn9(
+          isString8(action) && !fn,
+          `[@zag-js/core > execute-actions] No implementation found for action: \`${action}\``
+        );
+        fn?.(this.state.context, event, this.meta);
+      }
+    });
+    __publicField11(this, "executeActivities", (event, activities, state) => {
+      for (const activity of activities) {
+        const fn = isString8(activity) ? this.activityMap?.[activity] : activity;
+        if (!fn) {
+          warn9(`[@zag-js/core > execute-activity] No implementation found for activity: \`${activity}\``);
+          continue;
+        }
+        const cleanup = fn(this.state.context, event, this.meta);
+        if (cleanup) {
+          const key = isString8(activity) ? activity : activity.name || uuid8();
+          this.addActivityCleanup(state ?? this.state.value, key, cleanup);
+        }
+      }
+    });
+    __publicField11(this, "createEveryActivities", (every, callbackfn) => {
+      if (!every)
+        return;
+      if (isArray9(every)) {
+        const picked = toArray8(every).find((transition) => {
+          const delayOrFn = transition.delay;
+          const determineDelay2 = determineDelayFn8(delayOrFn, this.delayMap);
+          const delay22 = determineDelay2(this.contextSnapshot, this.state.event);
+          const determineGuard = determineGuardFn8(transition.guard, this.guardMap);
+          const guard = determineGuard(this.contextSnapshot, this.state.event, this.guardMeta);
+          return guard ?? delay22 != null;
+        });
+        if (!picked)
+          return;
+        const determineDelay = determineDelayFn8(picked.delay, this.delayMap);
+        const delay3 = determineDelay(this.contextSnapshot, this.state.event);
+        const activity = () => {
+          const id = globalThis.setInterval(() => {
+            this.executeActions(picked.actions, this.state.event);
+          }, delay3);
+          return () => {
+            globalThis.clearInterval(id);
+          };
+        };
+        callbackfn(activity);
+      } else {
+        for (const interval in every) {
+          const actions = every?.[interval];
+          const determineDelay = determineDelayFn8(interval, this.delayMap);
+          const delay3 = determineDelay(this.contextSnapshot, this.state.event);
+          const activity = () => {
+            const id = globalThis.setInterval(() => {
+              this.executeActions(actions, this.state.event);
+            }, delay3);
+            return () => {
+              globalThis.clearInterval(id);
+            };
+          };
+          callbackfn(activity);
+        }
+      }
+    });
+    __publicField11(this, "setEvent", (event) => {
+      this.state.previousEvent = this.state.event;
+      this.state.event = ref8(toEvent8(event));
+    });
+    __publicField11(this, "performExitEffects", (current, event) => {
+      const currentState = this.state.value;
+      if (currentState === "")
+        return;
+      const stateNode = current ? this.getStateNode(current) : void 0;
+      this.stopActivities(currentState);
+      const _exit = determineActionsFn8(stateNode?.exit, this.guardMap)(this.contextSnapshot, event, this.guardMeta);
+      const exitActions = toArray8(_exit);
+      const afterExitActions = this.delayedEvents.get(currentState);
+      if (afterExitActions) {
+        exitActions.push(...afterExitActions);
+      }
+      this.executeActions(exitActions, event);
+      this.delayedEvents.delete(currentState);
+    });
+    __publicField11(this, "performEntryEffects", (next, event) => {
+      const stateNode = this.getStateNode(next);
+      const activities = toArray8(stateNode?.activities);
+      this.createEveryActivities(stateNode?.every, (activity) => {
+        activities.unshift(activity);
+      });
+      if (activities.length > 0) {
+        this.executeActivities(event, activities);
+      }
+      const pickedActions = determineActionsFn8(stateNode?.entry, this.guardMap)(
+        this.contextSnapshot,
+        event,
+        this.guardMeta
+      );
+      const entryActions = toArray8(pickedActions);
+      const afterActions = this.getDelayedEventActions(next);
+      if (stateNode?.after && afterActions) {
+        this.delayedEvents.set(next, afterActions?.exits);
+        entryActions.push(...afterActions.entries);
+      }
+      this.executeActions(entryActions, event);
+      if (stateNode?.type === "final") {
+        this.state.done = true;
+        this.doneListeners.forEach((listener) => {
+          listener(this.stateSnapshot);
+        });
+        this.stop();
+      }
+    });
+    __publicField11(this, "performTransitionEffects", (transitions, event) => {
+      const transition = this.determineTransition(transitions, event);
+      this.executeActions(transition?.actions, event);
+    });
+    __publicField11(this, "performStateChangeEffects", (current, next, event) => {
+      this.setEvent(event);
+      const changed = next.changed || next.reenter;
+      if (changed) {
+        this.performExitEffects(current, event);
+      }
+      this.performTransitionEffects(next.transition, event);
+      this.setState(next.target);
+      if (changed) {
+        this.performEntryEffects(next.target, event);
+      }
+    });
+    __publicField11(this, "determineTransition", (transition, event) => {
+      const fn = determineTransitionFn8(transition, this.guardMap);
+      return fn?.(this.contextSnapshot, event, this.guardMeta);
+    });
+    __publicField11(this, "sendParent", (evt) => {
+      if (!this.parent) {
+        invariant8("[@zag-js/core > send-parent] Cannot send event to an unknown parent");
+      }
+      const event = toEvent8(evt);
+      this.parent?.send(event);
+    });
+    __publicField11(this, "log", (...args) => {
+      if (isDev15() && this.options.debug) {
+        console.log(...args);
+      }
+    });
+    __publicField11(this, "send", (evt) => {
+      const event = toEvent8(evt);
+      this.transition(this.state.value, event);
+    });
+    __publicField11(this, "transition", (state, evt) => {
+      const stateNode = isString8(state) ? this.getStateNode(state) : state?.stateNode;
+      const event = toEvent8(evt);
+      if (!stateNode && !this.config.on) {
+        const msg = this.status === "Stopped" ? "[@zag-js/core > transition] Cannot transition a stopped machine" : `[@zag-js/core > transition] State does not have a definition for \`state\`: ${state}, \`event\`: ${event.type}`;
+        warn9(msg);
+        return;
+      }
+      const transitions = (
+        // @ts-expect-error - Fix this
+        stateNode?.on?.[event.type] ?? this.config.on?.[event.type]
+      );
+      const next = this.getNextStateInfo(transitions, event);
+      this.performStateChangeEffects(this.state.value, next, event);
+      return next.stateNode;
+    });
+    __publicField11(this, "subscribe", (listener) => {
+      this.stateListeners.add(listener);
+      if (this.status === "Running") {
+        listener(this.stateSnapshot);
+      }
+      return () => {
+        this.stateListeners.delete(listener);
+      };
+    });
+    __publicField11(this, "onDone", (listener) => {
+      this.doneListeners.add(listener);
+      return this;
+    });
+    __publicField11(this, "onTransition", (listener) => {
+      this.stateListeners.add(listener);
+      if (this.status === "Running") {
+        listener(this.stateSnapshot);
+      }
+      return this;
+    });
+    this.config = clone8(config);
+    this.options = clone8(options ?? {});
+    this.id = this.config.id ?? `machine-${uuid8()}`;
+    this.guardMap = this.options?.guards ?? {};
+    this.actionMap = this.options?.actions ?? {};
+    this.delayMap = this.options?.delays ?? {};
+    this.activityMap = this.options?.activities ?? {};
+    this.sync = this.options?.sync ?? false;
+    this.state = createProxy8(this.config);
+    this.initialContext = snapshot8(this.state.context);
+  }
+  // immutable state value
+  get stateSnapshot() {
+    return cast8(snapshot8(this.state));
+  }
+  getState() {
+    return this.stateSnapshot;
+  }
+  // immutable context value
+  get contextSnapshot() {
+    return this.stateSnapshot.context;
+  }
+  /**
+   * A reference to the instance methods of the machine.
+   * Useful when spawning child machines and managing the communication between them.
+   */
+  get self() {
+    const self2 = this;
+    return {
+      id: this.id,
+      send: this.send.bind(this),
+      sendParent: this.sendParent.bind(this),
+      sendChild: this.sendChild.bind(this),
+      stop: this.stop.bind(this),
+      stopChild: this.stopChild.bind(this),
+      spawn: this.spawn.bind(this),
+      stopActivity: this.stopActivity.bind(this),
+      get state() {
+        return self2.stateSnapshot;
+      },
+      get initialContext() {
+        return self2.initialContext;
+      },
+      get initialState() {
+        return self2.initialState?.target ?? "";
+      }
+    };
+  }
+  get meta() {
+    return {
+      state: this.stateSnapshot,
+      guards: this.guardMap,
+      send: this.send.bind(this),
+      self: this.self,
+      initialContext: this.initialContext,
+      initialState: this.initialState?.target ?? "",
+      getState: () => this.stateSnapshot,
+      getAction: (key) => this.actionMap[key],
+      getGuard: (key) => this.guardMap[key]
+    };
+  }
+  get guardMeta() {
+    return {
+      state: this.stateSnapshot
+    };
+  }
+  get [Symbol.toStringTag]() {
+    return "Machine";
+  }
+  getHydrationState() {
+    const state = this.getState();
+    return {
+      value: state.value,
+      tags: state.tags
+    };
+  }
+};
+var createMachine8 = (config, options) => new Machine8(config, options);
+
 // node_modules/@zag-js/element-rect/dist/index.mjs
 var rafId;
 var observedElements = /* @__PURE__ */ new Map();
@@ -21247,12 +22920,12 @@ function trackElementRect(el, options) {
 }
 function getLoopFn(options) {
   const { scope, getRect } = options;
-  const isEqual6 = getEqualityFn(scope);
+  const isEqual7 = getEqualityFn(scope);
   return function loop() {
     const changedRectsData = [];
     observedElements.forEach((data, element) => {
       const newRect = getRect(element);
-      if (!isEqual6(data.rect, newRect)) {
+      if (!isEqual7(data.rect, newRect)) {
         data.rect = newRect;
         changedRectsData.push(data);
       }
@@ -21275,39 +22948,39 @@ function getEqualityFn(scope) {
 }
 
 // node_modules/@zag-js/tabs/node_modules/@zag-js/types/dist/index.mjs
-var createProps6 = () => (props7) => Array.from(new Set(props7));
+var createProps7 = () => (props8) => Array.from(new Set(props8));
 
 // node_modules/@zag-js/tabs/dist/index.mjs
-var anatomy7 = createAnatomy7("tabs").parts("root", "list", "trigger", "content", "indicator");
-var parts7 = anatomy7.build();
-var dom7 = createScope7({
+var anatomy8 = createAnatomy8("tabs").parts("root", "list", "trigger", "content", "indicator");
+var parts8 = anatomy8.build();
+var dom8 = createScope8({
   getRootId: (ctx) => ctx.ids?.root ?? `tabs:${ctx.id}`,
   getListId: (ctx) => ctx.ids?.list ?? `tabs:${ctx.id}:list`,
   getContentId: (ctx, id) => ctx.ids?.content ?? `tabs:${ctx.id}:content-${id}`,
   getTriggerId: (ctx, id) => ctx.ids?.trigger ?? `tabs:${ctx.id}:trigger-${id}`,
   getIndicatorId: (ctx) => ctx.ids?.indicator ?? `tabs:${ctx.id}:indicator`,
-  getListEl: (ctx) => dom7.getById(ctx, dom7.getListId(ctx)),
-  getContentEl: (ctx, id) => dom7.getById(ctx, dom7.getContentId(ctx, id)),
-  getTriggerEl: (ctx, id) => dom7.getById(ctx, dom7.getTriggerId(ctx, id)),
-  getIndicatorEl: (ctx) => dom7.getById(ctx, dom7.getIndicatorId(ctx)),
+  getListEl: (ctx) => dom8.getById(ctx, dom8.getListId(ctx)),
+  getContentEl: (ctx, id) => dom8.getById(ctx, dom8.getContentId(ctx, id)),
+  getTriggerEl: (ctx, id) => dom8.getById(ctx, dom8.getTriggerId(ctx, id)),
+  getIndicatorEl: (ctx) => dom8.getById(ctx, dom8.getIndicatorId(ctx)),
   getElements: (ctx) => {
-    const ownerId = CSS.escape(dom7.getListId(ctx));
+    const ownerId = CSS.escape(dom8.getListId(ctx));
     const selector = `[role=tab][data-ownedby='${ownerId}']:not([disabled])`;
-    return queryAll3(dom7.getListEl(ctx), selector);
+    return queryAll3(dom8.getListEl(ctx), selector);
   },
-  getFirstTriggerEl: (ctx) => first3(dom7.getElements(ctx)),
-  getLastTriggerEl: (ctx) => last3(dom7.getElements(ctx)),
-  getNextTriggerEl: (ctx, id) => nextById3(dom7.getElements(ctx), dom7.getTriggerId(ctx, id), ctx.loopFocus),
-  getPrevTriggerEl: (ctx, id) => prevById3(dom7.getElements(ctx), dom7.getTriggerId(ctx, id), ctx.loopFocus),
+  getFirstTriggerEl: (ctx) => first3(dom8.getElements(ctx)),
+  getLastTriggerEl: (ctx) => last3(dom8.getElements(ctx)),
+  getNextTriggerEl: (ctx, id) => nextById3(dom8.getElements(ctx), dom8.getTriggerId(ctx, id), ctx.loopFocus),
+  getPrevTriggerEl: (ctx, id) => prevById3(dom8.getElements(ctx), dom8.getTriggerId(ctx, id), ctx.loopFocus),
   getSelectedContentEl: (ctx) => {
     if (!ctx.value)
       return;
-    return dom7.getContentEl(ctx, ctx.value);
+    return dom8.getContentEl(ctx, ctx.value);
   },
   getSelectedTriggerEl: (ctx) => {
     if (!ctx.value)
       return;
-    return dom7.getTriggerEl(ctx, ctx.value);
+    return dom8.getTriggerEl(ctx, ctx.value);
   },
   getOffsetRect: (el) => {
     return {
@@ -21318,8 +22991,8 @@ var dom7 = createScope7({
     };
   },
   getRectById: (ctx, id) => {
-    const tab = itemById3(dom7.getElements(ctx), dom7.getTriggerId(ctx, id));
-    return dom7.resolveRect(dom7.getOffsetRect(tab));
+    const tab = itemById3(dom8.getElements(ctx), dom8.getTriggerId(ctx, id));
+    return dom8.resolveRect(dom8.getOffsetRect(tab));
   },
   resolveRect: (rect) => ({
     width: `${rect.width}px`,
@@ -21328,7 +23001,7 @@ var dom7 = createScope7({
     top: `${rect.top}px`
   })
 });
-function connect7(state, send, normalize) {
+function connect8(state, send, normalize) {
   const translations = state.context.translations;
   const focused = state.matches("focused");
   const isVertical = state.context.orientation === "vertical";
@@ -21352,7 +23025,7 @@ function connect7(state, send, normalize) {
       send({ type: "CLEAR_VALUE" });
     },
     setIndicatorRect(value) {
-      const id = dom7.getTriggerId(state.context, value);
+      const id = dom8.getTriggerId(state.context, value);
       send({ type: "SET_INDICATOR_RECT", id });
     },
     syncTabIndex() {
@@ -21367,12 +23040,12 @@ function connect7(state, send, normalize) {
       send({ type: "ARROW_PREV", src: "selectPrev" });
     },
     focus() {
-      dom7.getSelectedTriggerEl(state.context)?.focus();
+      dom8.getSelectedTriggerEl(state.context)?.focus();
     },
     getRootProps() {
       return normalize.element({
-        ...parts7.root.attrs,
-        id: dom7.getRootId(state.context),
+        ...parts8.root.attrs,
+        id: dom8.getRootId(state.context),
         "data-orientation": state.context.orientation,
         "data-focus": dataAttr6(focused),
         dir: state.context.dir
@@ -21380,8 +23053,8 @@ function connect7(state, send, normalize) {
     },
     getListProps() {
       return normalize.element({
-        ...parts7.list.attrs,
-        id: dom7.getListId(state.context),
+        ...parts8.list.attrs,
+        id: dom8.getListId(state.context),
         role: "tablist",
         dir: state.context.dir,
         "data-focus": dataAttr6(focused),
@@ -21440,7 +23113,7 @@ function connect7(state, send, normalize) {
       const { value, disabled } = props22;
       const triggerState = getTriggerState(props22);
       return normalize.button({
-        ...parts7.trigger.attrs,
+        ...parts8.trigger.attrs,
         role: "tab",
         type: "button",
         disabled,
@@ -21452,10 +23125,10 @@ function connect7(state, send, normalize) {
         "aria-selected": triggerState.selected,
         "data-selected": dataAttr6(triggerState.selected),
         "data-focus": dataAttr6(triggerState.focused),
-        "aria-controls": triggerState.selected ? dom7.getContentId(state.context, value) : void 0,
-        "data-ownedby": dom7.getListId(state.context),
+        "aria-controls": triggerState.selected ? dom8.getContentId(state.context, value) : void 0,
+        "data-ownedby": dom8.getListId(state.context),
         "data-ssr": dataAttr6(state.context.ssr),
-        id: dom7.getTriggerId(state.context, value),
+        id: dom8.getTriggerId(state.context, value),
         tabIndex: triggerState.selected && composite ? 0 : -1,
         onFocus() {
           send({ type: "TAB_FOCUS", value });
@@ -21482,13 +23155,13 @@ function connect7(state, send, normalize) {
       const { value } = props22;
       const selected = state.context.value === value;
       return normalize.element({
-        ...parts7.content.attrs,
+        ...parts8.content.attrs,
         dir: state.context.dir,
-        id: dom7.getContentId(state.context, value),
+        id: dom8.getContentId(state.context, value),
         tabIndex: composite ? 0 : -1,
-        "aria-labelledby": dom7.getTriggerId(state.context, value),
+        "aria-labelledby": dom8.getTriggerId(state.context, value),
         role: "tabpanel",
-        "data-ownedby": dom7.getListId(state.context),
+        "data-ownedby": dom8.getListId(state.context),
         "data-selected": dataAttr6(selected),
         "data-orientation": state.context.orientation,
         hidden: !selected
@@ -21496,8 +23169,8 @@ function connect7(state, send, normalize) {
     },
     getIndicatorProps() {
       return normalize.element({
-        id: dom7.getIndicatorId(state.context),
-        ...parts7.indicator.attrs,
+        id: dom8.getIndicatorId(state.context),
+        ...parts8.indicator.attrs,
         dir: state.context.dir,
         "data-orientation": state.context.orientation,
         style: {
@@ -21518,9 +23191,9 @@ function connect7(state, send, normalize) {
   };
 }
 var { not: not8 } = guards4;
-function machine7(userContext) {
-  const ctx = compact9(userContext);
-  return createMachine7(
+function machine8(userContext) {
+  const ctx = compact10(userContext);
+  return createMachine8(
     {
       initial: "idle",
       context: {
@@ -21645,65 +23318,65 @@ function machine7(userContext) {
           raf13(() => {
             const nullable = ctx2.deselectable && ctx2.value === ctx2.focusedValue;
             const value = nullable ? null : ctx2.focusedValue;
-            set15.value(ctx2, value);
+            set17.value(ctx2, value);
           });
         },
         setFocusedValue(ctx2, evt) {
           if (evt.value == null)
             return;
-          set15.focusedValue(ctx2, evt.value);
+          set17.focusedValue(ctx2, evt.value);
         },
         clearFocusedValue(ctx2) {
-          set15.focusedValue(ctx2, null);
+          set17.focusedValue(ctx2, null);
         },
         setValue(ctx2, evt) {
           const nullable = ctx2.deselectable && ctx2.value === ctx2.focusedValue;
           const value = nullable ? null : evt.value;
-          set15.value(ctx2, value);
+          set17.value(ctx2, value);
         },
         clearValue(ctx2) {
-          set15.value(ctx2, null);
+          set17.value(ctx2, null);
         },
         focusFirstTab(ctx2) {
           raf13(() => {
-            dom7.getFirstTriggerEl(ctx2)?.focus();
+            dom8.getFirstTriggerEl(ctx2)?.focus();
           });
         },
         focusLastTab(ctx2) {
           raf13(() => {
-            dom7.getLastTriggerEl(ctx2)?.focus();
+            dom8.getLastTriggerEl(ctx2)?.focus();
           });
         },
         focusNextTab(ctx2) {
           if (!ctx2.focusedValue)
             return;
-          const triggerEl = dom7.getNextTriggerEl(ctx2, ctx2.focusedValue);
+          const triggerEl = dom8.getNextTriggerEl(ctx2, ctx2.focusedValue);
           raf13(() => {
             if (ctx2.composite) {
               triggerEl?.focus();
             } else if (triggerEl?.dataset.value != null) {
-              set15.focusedValue(ctx2, triggerEl.dataset.value);
+              set17.focusedValue(ctx2, triggerEl.dataset.value);
             }
           });
         },
         focusPrevTab(ctx2) {
           if (!ctx2.focusedValue)
             return;
-          const triggerEl = dom7.getPrevTriggerEl(ctx2, ctx2.focusedValue);
+          const triggerEl = dom8.getPrevTriggerEl(ctx2, ctx2.focusedValue);
           raf13(() => {
             if (ctx2.composite) {
               triggerEl?.focus();
             } else if (triggerEl?.dataset.value != null) {
-              set15.focusedValue(ctx2, triggerEl.dataset.value);
+              set17.focusedValue(ctx2, triggerEl.dataset.value);
             }
           });
         },
         checkRenderedElements(ctx2) {
-          ctx2.indicatorState.rendered = !!dom7.getIndicatorEl(ctx2);
+          ctx2.indicatorState.rendered = !!dom8.getIndicatorEl(ctx2);
         },
         syncTabIndex(ctx2) {
           raf13(() => {
-            const contentEl = dom7.getSelectedContentEl(ctx2);
+            const contentEl = dom8.getSelectedContentEl(ctx2);
             if (!contentEl)
               return;
             const focusables = getFocusables3(contentEl);
@@ -21724,10 +23397,10 @@ function machine7(userContext) {
           const value = evt.id ?? ctx2.value;
           if (!ctx2.indicatorState.rendered || !value)
             return;
-          const triggerEl = dom7.getTriggerEl(ctx2, value);
+          const triggerEl = dom8.getTriggerEl(ctx2, value);
           if (!triggerEl)
             return;
-          ctx2.indicatorState.rect = dom7.getRectById(ctx2, value);
+          ctx2.indicatorState.rect = dom8.getRectById(ctx2, value);
           nextTick(() => {
             ctx2.indicatorState.transition = false;
           });
@@ -21740,15 +23413,15 @@ function machine7(userContext) {
           const value = ctx2.value;
           if (!ctx2.indicatorState.rendered || !value)
             return;
-          const triggerEl = dom7.getSelectedTriggerEl(ctx2);
+          const triggerEl = dom8.getSelectedTriggerEl(ctx2);
           if (!triggerEl)
             return;
           ctx2.indicatorCleanup = trackElementRect(triggerEl, {
             getRect(el) {
-              return dom7.getOffsetRect(el);
+              return dom8.getOffsetRect(el);
             },
             onChange(rect) {
-              ctx2.indicatorState.rect = dom7.resolveRect(rect);
+              ctx2.indicatorState.rect = dom8.resolveRect(rect);
               nextTick(() => {
                 ctx2.indicatorState.transition = false;
               });
@@ -21756,7 +23429,7 @@ function machine7(userContext) {
           });
         },
         clickIfLink(ctx2) {
-          clickIfLink3(dom7.getSelectedTriggerEl(ctx2));
+          clickIfLink3(dom8.getSelectedTriggerEl(ctx2));
         }
       }
     }
@@ -21774,21 +23447,21 @@ var invoke3 = {
     ctx.onFocusChange?.({ focusedValue: ctx.focusedValue });
   }
 };
-var set15 = {
+var set17 = {
   value: (ctx, value) => {
-    if (isEqual5(value, ctx.value))
+    if (isEqual6(value, ctx.value))
       return;
     ctx.value = value;
     invoke3.change(ctx);
   },
   focusedValue: (ctx, value) => {
-    if (isEqual5(value, ctx.focusedValue))
+    if (isEqual6(value, ctx.focusedValue))
       return;
     ctx.focusedValue = value;
     invoke3.focusChange(ctx);
   }
 };
-var props6 = createProps6()([
+var props7 = createProps7()([
   "activationMode",
   "composite",
   "dir",
@@ -21803,36 +23476,36 @@ var props6 = createProps6()([
   "deselectable",
   "value"
 ]);
-var splitProps12 = createSplitProps6(props6);
-var triggerProps = createProps6()(["disabled", "value"]);
-var splitTriggerProps = createSplitProps6(triggerProps);
-var contentProps = createProps6()(["value"]);
-var splitContentProps = createSplitProps6(contentProps);
+var splitProps14 = createSplitProps7(props7);
+var triggerProps = createProps7()(["disabled", "value"]);
+var splitTriggerProps = createSplitProps7(triggerProps);
+var contentProps = createProps7()(["value"]);
+var splitContentProps = createSplitProps7(contentProps);
 
 // js/widgex/tabs.ts
-var Tabs = class extends Component {
+var TabsComponent = class extends Component {
   initService(context) {
-    return machine7(context);
+    return machine8(context);
   }
   initApi() {
-    return connect7(this.service.state, this.service.send, normalizeProps);
+    return connect8(this.service.state, this.service.send, normalizeProps);
   }
   render() {
-    const parts8 = [{ name: "root", id: `tabs:${this.el.id}` }];
-    for (const part of parts8)
+    const parts9 = [{ name: "root", id: `tabs:${this.el.id}` }];
+    for (const part of parts9)
       renderPart(this.el, part, this.api);
-    this.renderTabList(this.el.id);
-    this.renderTabContent(this.el.id);
+    this.renderTabList();
+    this.renderTabContent();
   }
-  renderTabList(parentId) {
-    const tabList = this.el.querySelector(`[id='tabs:${parentId}:list']`);
+  renderTabList() {
+    const tabList = this.el.querySelector(`[id='tabs:${this.el.id}:list']`);
     if (!tabList)
       return;
     spreadProps(tabList, this.api.getListProps());
-    this.renderTriggers(parentId);
+    this.renderTriggers(tabList);
   }
-  renderTabContent(parentId) {
-    for (const content of this.el.querySelectorAll(`[id^='tabs:${parentId}:content-']`)) {
+  renderTabContent() {
+    for (const content of this.el.querySelectorAll(`[id^='tabs:${this.el.id}:content-']`)) {
       const value = content.dataset.value;
       if (!value) {
         console.error("Missing `data-value` attribute on content.");
@@ -21841,8 +23514,8 @@ var Tabs = class extends Component {
       spreadProps(content, this.api.getContentProps({ value }));
     }
   }
-  renderTriggers(parentId) {
-    for (const trigger of this.el.querySelectorAll(`[id^="tabs:${parentId}:trigger-"]`)) {
+  renderTriggers(tabList) {
+    for (const trigger of tabList.querySelectorAll(`[id^="tabs:${this.el.id}:trigger-"]`)) {
       const value = trigger.dataset.value;
       if (!value) {
         console.error("Missing `data-value` attribute on trigger.");
@@ -21852,23 +23525,24 @@ var Tabs = class extends Component {
     }
   }
 };
-var tabs_default = {
+var Tabs = class extends Hook {
+  component;
   mounted() {
-    this.tabs = new Tabs(this.el, this.context());
-    this.tabs.init();
-  },
+    this.component = new TabsComponent(this.el, this.context());
+    this.component.init();
+  }
   updated() {
-    this.tabs.render();
-  },
+    this.component.render();
+  }
   beforeDestroy() {
-    this.tabs.destroy();
-  },
+    this.component.destroy();
+  }
   context() {
     return {
       id: this.el.id,
-      value: getOption(this.el, "value"),
+      value: this.el.dataset.value,
       loopFocus: getBooleanOption(this.el, "loop-focus"),
-      activationMode: getBooleanOption(this.el, "activation-mode"),
+      activationMode: getOption(this.el, "activation-mode", ["manual", "automatic"]),
       onValueChange: (details) => {
         if (this.el.dataset.onValueChange) {
           this.pushEvent(this.el.dataset.onValueChange, details);
@@ -21877,6 +23551,7 @@ var tabs_default = {
     };
   }
 };
+var tabs_default = makeHook(Tabs);
 
 // js/widgex/index.ts
 var Hooks = {
@@ -21886,6 +23561,7 @@ var Hooks = {
   Dialog: dialog_default,
   Menu: menu_default,
   Popover: popover_default,
+  Progress: progress_default,
   Tabs: tabs_default
 };
 //# sourceMappingURL=widgex.cjs.js.map
