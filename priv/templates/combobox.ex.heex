@@ -1,39 +1,31 @@
 defmodule <%= @web_module %>.Components.Combobox do
-  @moduledoc """
-  Autocomplete input with a list of suggestions.
-  """
-  use <%= @web_module %>, :live_component
+  @moduledoc false
+  use <%= @web_module %>, :component
+
+  import <%= @web_module %>.Components.Icon
+
+  attr :id, :string, default: "combobox"
+  attr :items, :list, required: true
+  attr :"on-input-change", :string, required: true
+  attr :"on-value-change", :string, required: true
+  attr :disabled, :boolean, default: false
+  attr :class, :string, default: ""
+  attr :rest, :global
+
+  slot :inner_block, required: true
 
   def combobox(assigns) do
-    ~H"""
-    <.live_component id={@id} module={__MODULE__} {assigns} />
-    """
-  end
-
-  def update(assigns, socket) do
-    socket =
-      socket
-      |> assign(assigns)
-      |> assign_new(:id, fn -> "combobox" end)
-      |> assign_new(:class, fn -> "" end)
-      |> assign_new(:disabled, fn -> false end)
-      |> assign(:filtered_items, assigns.items)
-
-    {:ok, socket}
-  end
-
-  def render(assigns) do
     ~H"""
     <div
       id={@id}
       phx-hook="Combobox"
-      data-on-input-value-change="search"
-      data-on-value-change="save"
+      data-on-input-value-change={assigns[:"on-input-change"]}
+      data-on-value-change={assigns[:"on-value-change"]}
       data-disabled={@disabled}
       class={@class}
     >
       <div id={"combobox:#{@id}"}>
-        {render_slot(@inner_block, %{id: @id, items: @filtered_items})}
+        {render_slot(@inner_block, %{id: @id, items: @items})}
       </div>
     </div>
     """
@@ -125,24 +117,5 @@ defmodule <%= @web_module %>.Components.Combobox do
       {render_slot(@inner_block)}
     </div>
     """
-  end
-
-  def handle_event("search", %{"inputValue" => query}, socket) do
-    filtered_items =
-      if String.trim(query) == "",
-        do: socket.assigns.items,
-        else:
-          Enum.filter(
-            socket.assigns.items,
-            &String.starts_with?(String.downcase(&1.label), String.downcase(query))
-          )
-
-    {:noreply, assign(socket, :filtered_items, filtered_items)}
-  end
-
-  def handle_event("save", %{"value" => _value}, socket) do
-    # Do something with value...
-
-    {:noreply, socket}
   end
 end
