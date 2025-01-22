@@ -50,6 +50,10 @@ export const normalizeProps = createNormalizer((props: any) => {
   }, {});
 });
 
+export const clearProps = (node: HTMLElement) => {
+  prevAttrsMap.delete(node);
+}
+
 export const spreadProps = (node: HTMLElement, attrs: Record<string, any>) => {
   const oldAttrs = prevAttrsMap.get(node) || {};
   const attrKeys = Object.keys(attrs);

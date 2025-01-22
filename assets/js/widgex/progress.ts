@@ -1,5 +1,5 @@
 import * as progress from "@zag-js/progress";
-import { normalizeProps, spreadProps, renderPart } from "./util";
+import { normalizeProps, spreadProps, renderPart, clearProps } from "./util";
 import { Component } from "./component";
 import { Hook, makeHook } from "./hook";
 import type { Machine } from "@zag-js/core";
@@ -52,6 +52,16 @@ class Progress extends Hook {
 
   beforeDestroy() {
     this.component.destroy();
+  }
+
+  disconnected(): void {
+    const root = this.el.querySelector<HTMLElement>(`[id='progress-${this.el.id}']`)!;
+    const track = this.el.querySelector<HTMLElement>(`[id='progress-${this.el.id}-track']`)!;
+    const range = track.querySelector<HTMLElement>(`[data-part='range']`)!;
+
+    clearProps(root);
+    clearProps(track);
+    clearProps(range);
   }
 
   context(): progress.Context {

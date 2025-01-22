@@ -1713,6 +1713,9 @@ var normalizeProps = createNormalizer((props8) => {
     return acc;
   }, {});
 });
+var clearProps = (node) => {
+  prevAttrsMap.delete(node);
+};
 var spreadProps = (node, attrs) => {
   const oldAttrs = prevAttrsMap.get(node) || {};
   const attrKeys = Object.keys(attrs);
@@ -9420,7 +9423,7 @@ var Combobox = class extends Hook {
   }
   collection() {
     const items = this.items();
-    if (items.length == 0) {
+    if (this.component.api && items.length == 0) {
       this.component.api.setOpen(false);
     }
     return collection({
@@ -21477,6 +21480,14 @@ var Progress = class extends Hook {
   }
   beforeDestroy() {
     this.component.destroy();
+  }
+  disconnected() {
+    const root = this.el.querySelector(`[id='progress-${this.el.id}']`);
+    const track = this.el.querySelector(`[id='progress-${this.el.id}-track']`);
+    const range = track.querySelector(`[data-part='range']`);
+    clearProps(root);
+    clearProps(track);
+    clearProps(range);
   }
   context() {
     return {
