@@ -103,7 +103,7 @@ class Combobox extends Hook {
   collection() {
     const items = this.items();
 
-    if (this.component.api && items.length == 0) {
+    if (items.length == 0 && this.component) {
       this.component.api.setOpen(false);
     }
 
