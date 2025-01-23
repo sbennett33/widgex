@@ -31,9 +31,7 @@ class Popover extends Hook {
   component: PopoverComponent;
 
   mounted() {
-    const context = this.context();
-    console.log(context)
-    this.component = new PopoverComponent(this.el, context);
+    this.component = new PopoverComponent(this.el, this.context());
     this.component.init();
   }
 

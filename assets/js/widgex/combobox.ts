@@ -1,6 +1,6 @@
 import * as combobox from "@zag-js/combobox";
 // import { ListCollection } from "@zag-js/collection";
-import { getAttributes, restoreAttributes, normalizeProps, renderPart, spreadProps, getBooleanOption, getOption } from "./util";
+import { getAttributes, restoreAttributes, normalizeProps, renderPart, clearPart, clearProps, spreadProps, getBooleanOption, getOption } from "./util";
 import { Component } from "./component";
 import { Hook, makeHook } from "./hook";
 import type { Machine } from "@zag-js/core";
@@ -57,28 +57,20 @@ class Combobox extends Hook {
   mounted() {
     this.component = new ComboboxComponent(this.el, this.context());
     this.component.init();
+
+    this.handleEvent("wgx:update", () => {
+      this.updated()
+    });
   }
 
   beforeUpdate() {
-    const parts: Part[] = [
-      { name: "root", id: `combobox:${this.el.id}` },
-      { name: "control", id: `combobox:${this.el.id}:control` },
-      { name: "input", id: `combobox:${this.el.id}:input` },
-      { name: "trigger", id: `combobox:${this.el.id}:toggle-btn` },
-      { name: "positioner", id: `combobox:${this.el.id}:popper` },
-      { name: "content", id: `combobox:${this.el.id}:content` }
-    ];
-
-    this.attributeCache = parts.map((part) => {
-      return getAttributes(this.el, part);
-    })
-      .filter(cache => cache !== undefined);
+    this.cacheAttributes()
   }
 
   updated() {
     this.component.api.setCollection(this.collection());
     this.component.render();
-    restoreAttributes(this.el, this.attributeCache);
+    if (this.attributeCache) restoreAttributes(this.el, this.attributeCache);
   }
 
   beforeDestroy() {
@@ -114,6 +106,22 @@ class Combobox extends Hook {
     });
   }
 
+  cacheAttributes() {
+    const parts: Part[] = [
+      { name: "root", id: `combobox:${this.el.id}` },
+      { name: "control", id: `combobox:${this.el.id}:control` },
+      { name: "input", id: `combobox:${this.el.id}:input` },
+      { name: "trigger", id: `combobox:${this.el.id}:toggle-btn` },
+      { name: "positioner", id: `combobox:${this.el.id}:popper` },
+      { name: "content", id: `combobox:${this.el.id}:content` }
+    ];
+
+    this.attributeCache = parts.map((part) => {
+      return getAttributes(this.el, part);
+    })
+      .filter(cache => cache !== undefined);
+  }
+
   context(): combobox.Context {
     return {
       id: this.el.id,
@@ -128,24 +136,22 @@ class Combobox extends Hook {
       allowCustomValue: getBooleanOption(this.el, "allowCustomValue", false),
       onOpenChange: (details: combobox.OpenChangeDetails) => {
         if (this.el.dataset.onOpenChange) {
-          this.pushEventTo(`#${this.el.id}`, this.el.dataset.onOpenChange, details);
+          this.pushEvent(this.el.dataset.onOpenChange, details);
         }
       },
       onInputValueChange: (details: combobox.InputValueChangeDetails) => {
-        console.log(this.el.dataset)
         if (this.el.dataset.onInputValueChange) {
-          console.log(details);
           this.pushEvent(this.el.dataset.onInputValueChange, details);
         }
       },
       onHighlightChange: (details: combobox.HighlightChangeDetails) => {
         if (this.el.dataset.onHighlightChange) {
-          this.pushEventTo(`#${this.el.id}`, this.el.dataset.onHighlightChange, details);
+          this.pushEvent(this.el.dataset.onHighlightChange, details);
         }
       },
       onValueChange: (details: combobox.ValueChangeDetails) => {
         if (this.el.dataset.onValueChange) {
-          this.pushEventTo(`#${this.el.id}`, this.el.dataset.onValueChange, details);
+          this.pushEvent(this.el.dataset.onValueChange, details);
         }
       },
     };
