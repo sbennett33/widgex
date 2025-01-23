@@ -50,7 +50,7 @@ class ComboboxComponent extends Component<combobox.Context, combobox.Api> {
   }
 }
 
-class Combobox extends Hook {
+class WidgexCombobox extends Hook {
   component: ComboboxComponent;
   attributeCache: AttributeCache[];
 
@@ -59,7 +59,8 @@ class Combobox extends Hook {
     this.component.init();
 
     this.handleEvent("wgx:update", () => {
-      this.updated()
+      this.component.api.setCollection(this.collection());
+      this.component.render();
     });
   }
 
@@ -158,4 +159,4 @@ class Combobox extends Hook {
   }
 };
 
-export default makeHook(Combobox);
+export default makeHook(WidgexCombobox);
