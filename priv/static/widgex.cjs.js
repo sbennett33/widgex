@@ -21,13 +21,13 @@ var widgex_exports = {};
 __export(widgex_exports, {
   Accordion: () => accordion_default,
   Collapsible: () => collapsible_default,
-  Combobox: () => combobox_default,
   Dialog: () => dialog_default,
   Hooks: () => Hooks,
   Menu: () => menu_default,
   Popover: () => popover_default,
   Progress: () => progress_default,
-  Tabs: () => tabs_default
+  Tabs: () => tabs_default,
+  WidgexCombobox: () => combobox_default
 });
 module.exports = __toCommonJS(widgex_exports);
 
@@ -9382,14 +9382,15 @@ var ComboboxComponent = class extends Component {
     }
   }
 };
-var Combobox = class extends Hook {
+var WidgexCombobox = class extends Hook {
   component;
   attributeCache;
   mounted() {
     this.component = new ComboboxComponent(this.el, this.context());
     this.component.init();
     this.handleEvent("wgx:update", () => {
-      this.updated();
+      this.component.api.setCollection(this.collection());
+      this.component.render();
     });
   }
   beforeUpdate() {
@@ -9474,7 +9475,7 @@ var Combobox = class extends Hook {
     };
   }
 };
-var combobox_default = makeHook(Combobox);
+var combobox_default = makeHook(WidgexCombobox);
 
 // node_modules/@zag-js/dialog/node_modules/@zag-js/anatomy/dist/index.mjs
 var createAnatomy4 = (name, parts9 = []) => ({
@@ -23571,7 +23572,7 @@ var tabs_default = makeHook(Tabs);
 var Hooks = {
   Accordion: accordion_default,
   Collapsible: collapsible_default,
-  Combobox: combobox_default,
+  WidgexCombobox: combobox_default,
   Dialog: dialog_default,
   Menu: menu_default,
   Popover: popover_default,
