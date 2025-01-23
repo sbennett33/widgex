@@ -9388,24 +9388,18 @@ var Combobox = class extends Hook {
   mounted() {
     this.component = new ComboboxComponent(this.el, this.context());
     this.component.init();
+    this.handleEvent("wgx:update", () => {
+      this.updated();
+    });
   }
   beforeUpdate() {
-    const parts9 = [
-      { name: "root", id: `combobox:${this.el.id}` },
-      { name: "control", id: `combobox:${this.el.id}:control` },
-      { name: "input", id: `combobox:${this.el.id}:input` },
-      { name: "trigger", id: `combobox:${this.el.id}:toggle-btn` },
-      { name: "positioner", id: `combobox:${this.el.id}:popper` },
-      { name: "content", id: `combobox:${this.el.id}:content` }
-    ];
-    this.attributeCache = parts9.map((part) => {
-      return getAttributes(this.el, part);
-    }).filter((cache) => cache !== void 0);
+    this.cacheAttributes();
   }
   updated() {
     this.component.api.setCollection(this.collection());
     this.component.render();
-    restoreAttributes(this.el, this.attributeCache);
+    if (this.attributeCache)
+      restoreAttributes(this.el, this.attributeCache);
   }
   beforeDestroy() {
     this.component.destroy();
@@ -9432,6 +9426,19 @@ var Combobox = class extends Hook {
       itemToString: (item) => item.label
     });
   }
+  cacheAttributes() {
+    const parts9 = [
+      { name: "root", id: `combobox:${this.el.id}` },
+      { name: "control", id: `combobox:${this.el.id}:control` },
+      { name: "input", id: `combobox:${this.el.id}:input` },
+      { name: "trigger", id: `combobox:${this.el.id}:toggle-btn` },
+      { name: "positioner", id: `combobox:${this.el.id}:popper` },
+      { name: "content", id: `combobox:${this.el.id}:content` }
+    ];
+    this.attributeCache = parts9.map((part) => {
+      return getAttributes(this.el, part);
+    }).filter((cache) => cache !== void 0);
+  }
   context() {
     return {
       id: this.el.id,
@@ -9446,24 +9453,22 @@ var Combobox = class extends Hook {
       allowCustomValue: getBooleanOption(this.el, "allowCustomValue", false),
       onOpenChange: (details) => {
         if (this.el.dataset.onOpenChange) {
-          this.pushEventTo(`#${this.el.id}`, this.el.dataset.onOpenChange, details);
+          this.pushEvent(this.el.dataset.onOpenChange, details);
         }
       },
       onInputValueChange: (details) => {
-        console.log(this.el.dataset);
         if (this.el.dataset.onInputValueChange) {
-          console.log(details);
           this.pushEvent(this.el.dataset.onInputValueChange, details);
         }
       },
       onHighlightChange: (details) => {
         if (this.el.dataset.onHighlightChange) {
-          this.pushEventTo(`#${this.el.id}`, this.el.dataset.onHighlightChange, details);
+          this.pushEvent(this.el.dataset.onHighlightChange, details);
         }
       },
       onValueChange: (details) => {
         if (this.el.dataset.onValueChange) {
-          this.pushEventTo(`#${this.el.id}`, this.el.dataset.onValueChange, details);
+          this.pushEvent(this.el.dataset.onValueChange, details);
         }
       }
     };
@@ -19911,9 +19916,7 @@ var PopoverComponent = class extends Component {
 var Popover = class extends Hook {
   component;
   mounted() {
-    const context = this.context();
-    console.log(context);
-    this.component = new PopoverComponent(this.el, context);
+    this.component = new PopoverComponent(this.el, this.context());
     this.component.init();
   }
   updated() {
