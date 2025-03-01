@@ -1,13 +1,109 @@
 import * as collapsible from "@zag-js/collapsible";
-import { normalizeProps, renderPart } from "./util";
-import { Component } from "./component";
+import { getAttributes, restoreAttributes, spreadProps, normalizeProps, renderPart } from "./util";
+import { Component, Part } from "./component";
 import { Hook, makeHook } from "./hook";
 import type { Machine } from "@zag-js/core";
-import type { Part } from "./component";
 
 type Dir = "ltr" | "rtl" | undefined;
 
+class RootPart extends Part<collapsible.Api> {
+  constructor(root: HTMLElement) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+
+  getPart(): HTMLElement {
+    return this.parent.querySelector<HTMLElement>(`[id='collapsible:${this.root.id}']`)!;
+  }
+
+  refreshPart(root: HTMLElement) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+
+  render(api: collapsible.Api): void {
+    spreadProps(this.part, api.getRootProps());
+  }
+
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  }
+
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache)
+  }
+};
+
+class TriggerPart extends Part<collapsible.Api> {
+  constructor(root: HTMLElement) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+
+  getPart(): HTMLElement {
+    return this.parent.querySelector<HTMLElement>(`[id='collapsible:${this.root.id}:trigger']`)!;
+  }
+
+  refreshPart(root: HTMLElement) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+
+  render(api: collapsible.Api): void {
+    spreadProps(this.part, api.getTriggerProps());
+  }
+
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  }
+
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache)
+  }
+};
+
+class ContentPart extends Part<collapsible.Api> {
+  constructor(root: HTMLElement) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+
+  getPart(): HTMLElement {
+    return this.parent.querySelector<HTMLElement>(`[id='collapsible:${this.root.id}:content']`)!;
+  }
+
+  refreshPart(root: HTMLElement) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+
+  render(api: collapsible.Api): void {
+    spreadProps(this.part, api.getContentProps());
+  }
+
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  }
+
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache)
+  }
+};
+
 class CollapsibleComponent extends Component<collapsible.Context, collapsible.Api> {
+  rootPart: RootPart;
+  triggerPart: TriggerPart;
+  contentPart: ContentPart;
+
   initService(context: collapsible.Context): Machine<any, any, any> {
     return collapsible.machine(context);
   }
@@ -16,13 +112,34 @@ class CollapsibleComponent extends Component<collapsible.Context, collapsible.Ap
     return collapsible.connect(this.service.state, this.service.send, normalizeProps);
   }
 
+  initParts() {
+    this.rootPart = new RootPart(this.el);
+    this.triggerPart = new TriggerPart(this.el);
+    this.contentPart = new ContentPart(this.el);
+  }
+
   render() {
-    const parts: Part[] = [
-      { name: "root", id: `collapsible:${this.el.id}` },
-      { name: "trigger", id: `collapsible:${this.el.id}:trigger` },
-      { name: "content", id: `collapsible:${this.el.id}:content` }
-    ];
-    for (const part of parts) renderPart(this.el, part, this.api);
+    this.rootPart.render(this.api);
+    this.triggerPart.render(this.api);
+    this.contentPart.render(this.api);
+  }
+
+  cacheAttributes(): void {
+    this.rootPart.cacheAttributes();
+    this.triggerPart.cacheAttributes();
+    this.contentPart.cacheAttributes();
+  }
+
+  restoreAttributes(): void {
+    this.rootPart.restoreAttributes();
+    this.triggerPart.restoreAttributes();
+    this.contentPart.restoreAttributes();
+  }
+
+  refreshParts() {
+    this.rootPart.refreshPart(this.el)
+    this.triggerPart.refreshPart(this.el)
+    this.contentPart.refreshPart(this.el)
   }
 }
 

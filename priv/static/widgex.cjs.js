@@ -21,13 +21,13 @@ var widgex_exports = {};
 __export(widgex_exports, {
   Accordion: () => accordion_default,
   Collapsible: () => collapsible_default,
+  Combobox: () => combobox_default,
   Dialog: () => dialog_default,
   Hooks: () => Hooks,
   Menu: () => menu_default,
   Popover: () => popover_default,
   Progress: () => progress_default,
-  Tabs: () => tabs_default,
-  WidgexCombobox: () => combobox_default
+  Tabs: () => tabs_default
 });
 module.exports = __toCommonJS(widgex_exports);
 
@@ -1782,32 +1782,26 @@ var getBooleanOption = (el, name, defaultValue) => {
   const kebabName = name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
   return el.dataset[kebabName] === "true" || el.dataset[kebabName] === "" || defaultValue;
 };
-var getAttributes = (root, part) => {
-  const node = root.querySelector(`[id='${part.id}']`);
+var getAttributes = (node) => {
   const attrs = [];
   for (const attr of node.attributes) {
     attrs.push(attr);
   }
   const cache = {
-    part,
+    id: node.id,
     cssText: node.style.cssText,
     hasFocus: node === document.activeElement,
     attrs
   };
   return cache;
 };
-var restoreAttributes = (root, attributeMaps) => {
-  for (const attributeMap of attributeMaps) {
-    if (!attributeMap)
-      return;
-    const node = root.querySelector(`[id='${attributeMap.part.id}']`);
-    if (!node)
-      return;
-    for (const attr of attributeMap.attrs) {
+var restoreAttributes = (node, attributeCache) => {
+  if (node) {
+    for (const attr of attributeCache.attrs) {
       node.setAttribute(attr.name, attr.value);
     }
-    node.style.cssText = attributeMap.cssText;
-    if (attributeMap.hasFocus)
+    node.style.cssText = attributeCache.cssText;
+    if (attributeCache.hasFocus)
       node.focus();
   }
 };
@@ -1821,11 +1815,13 @@ var Component = class {
     this.el = el;
     this.service = this.initService(context);
     this.api = this.initApi();
+    this.initParts();
   }
   init = () => {
     this.render();
     this.service.subscribe(() => {
       this.api = this.initApi();
+      this.api;
       this.render();
     });
     this.service.start();
@@ -1833,6 +1829,12 @@ var Component = class {
   destroy = () => {
     this.service.stop();
   };
+};
+var Part = class {
+  root;
+  parent;
+  part;
+  attributeCache;
 };
 
 // js/widgex/hook.ts
@@ -1930,42 +1932,160 @@ function makeHook(hookClass) {
 }
 
 // js/widgex/accordion.ts
+var RootPart = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(`[id='accordion:${this.root.id}']`);
+  }
+  render(api) {
+    spreadProps(this.part, api.getRootProps());
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var ItemParts = class extends Part {
+  itemParts;
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.itemParts = this.getItemParts();
+  }
+  getItemParts() {
+    const itemParts = [];
+    for (const el of this.getParts()) {
+      itemParts.push(new ItemPart(this.root, el));
+    }
+    return itemParts;
+  }
+  getParts() {
+    return this.parent.querySelectorAll(`[id^='accordion:${this.root.id}:item']`);
+  }
+  render(api) {
+    for (const itemPart of this.itemParts) {
+      itemPart.render(api);
+    }
+  }
+  cacheAttributes = () => {
+    for (const part of this.itemParts) {
+      part.cacheAttributes();
+    }
+  };
+  restoreAttributes = () => {
+    for (const part of this.itemParts) {
+      part.restoreAttributes();
+    }
+  };
+};
+var ItemPart = class extends Part {
+  attributeCaches;
+  triggerPart;
+  contentPart;
+  constructor(root, part) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = part;
+    this.triggerPart = new TriggerPart(root, part, part.dataset.value);
+    this.contentPart = new ContentPart(root, part, part.dataset.value);
+  }
+  getPart(_parent) {
+    return this.part;
+  }
+  render(api) {
+    this.triggerPart.render(api);
+    this.contentPart.render(api);
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+    this.triggerPart.cacheAttributes();
+    this.contentPart.cacheAttributes();
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+    this.triggerPart.restoreAttributes();
+    this.contentPart.restoreAttributes();
+  };
+};
+var TriggerPart = class extends Part {
+  value;
+  constructor(root, parent, value) {
+    super();
+    this.root = root;
+    this.parent = parent;
+    this.value = value;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(`[id='accordion:${this.root.id}:trigger:${this.value}']`);
+  }
+  render(api) {
+    const value = this.value;
+    spreadProps(this.part, api.getItemTriggerProps({ value }));
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var ContentPart = class extends Part {
+  value;
+  constructor(root, parent, value) {
+    super();
+    this.root = root;
+    this.parent = parent;
+    this.value = value;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(`[id='accordion:${this.root.id}:content:${this.value}']`);
+  }
+  render(api) {
+    const value = this.value;
+    spreadProps(this.part, api.getItemContentProps({ value }));
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
 var AccordionComponent = class extends Component {
+  rootPart;
+  itemParts;
   initService(context) {
     return machine(context);
   }
   initApi() {
     return connect(this.service.state, this.service.send, normalizeProps);
   }
+  initParts() {
+    this.rootPart = new RootPart(this.el);
+    this.itemParts = new ItemParts(this.el);
+  }
   render() {
-    const parts9 = [{ name: "root", id: `accordion:${this.el.id}` }];
-    for (const part of parts9)
-      renderPart(this.el, part, this.api);
-    this.renderItems(this.el.id);
+    this.rootPart.render(this.api);
+    this.itemParts.render(this.api);
   }
-  renderItems(parent_id) {
-    for (const item of this.el.querySelectorAll(`[id^='accordion:${parent_id}:item']`)) {
-      const value = item.dataset.value;
-      if (!value) {
-        console.error("Missing `data-value` attribute on item.");
-        return;
-      }
-      spreadProps(item, this.api.getItemProps({ value }));
-      this.renderItemTrigger(item, parent_id, value);
-      this.renderItemContent(item, parent_id, value);
-    }
+  cacheAttributes() {
+    this.rootPart.cacheAttributes();
+    this.itemParts.cacheAttributes();
   }
-  renderItemTrigger(item, parent_id, value) {
-    const itemTrigger = item.querySelector(`[id='accordion:${parent_id}:trigger:${value}']`);
-    if (!itemTrigger)
-      return;
-    spreadProps(itemTrigger, this.api.getItemTriggerProps({ value }));
-  }
-  renderItemContent(item, parent_id, value) {
-    const itemContent = item.querySelector(`[id='accordion:${parent_id}:content:${value}']`);
-    if (!itemContent)
-      return;
-    spreadProps(itemContent, this.api.getItemContentProps({ value }));
+  restoreAttributes() {
+    this.rootPart.restoreAttributes();
+    this.itemParts.restoreAttributes();
   }
 };
 var Accordion = class extends Hook {
@@ -1984,9 +2104,9 @@ var Accordion = class extends Hook {
     return {
       id: this.el.id,
       value: [""],
-      disabled: getBooleanOption(this.el, "disabled"),
-      multiple: getBooleanOption(this.el, "multiple"),
-      collapsible: getBooleanOption(this.el, "collapsible"),
+      disabled: getBooleanOption(this.el, "disabled", false),
+      multiple: getBooleanOption(this.el, "multiple", false),
+      collapsible: getBooleanOption(this.el, "collapsible", false),
       onValueChange: (details) => {
         if (this.el.dataset.onValueChange) {
           this.pushEvent(this.el.dataset.onValueChange, details);
@@ -3503,21 +3623,115 @@ var props2 = createProps2()([
 var splitProps4 = createSplitProps2(props2);
 
 // js/widgex/collapsible.ts
+var RootPart2 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(`[id='collapsible:${this.root.id}']`);
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    spreadProps(this.part, api.getRootProps());
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var TriggerPart2 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(`[id='collapsible:${this.root.id}:trigger']`);
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    spreadProps(this.part, api.getTriggerProps());
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var ContentPart2 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(`[id='collapsible:${this.root.id}:content']`);
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    spreadProps(this.part, api.getContentProps());
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
 var CollapsibleComponent = class extends Component {
+  rootPart;
+  triggerPart;
+  contentPart;
   initService(context) {
     return machine2(context);
   }
   initApi() {
     return connect2(this.service.state, this.service.send, normalizeProps);
   }
+  initParts() {
+    this.rootPart = new RootPart2(this.el);
+    this.triggerPart = new TriggerPart2(this.el);
+    this.contentPart = new ContentPart2(this.el);
+  }
   render() {
-    const parts9 = [
-      { name: "root", id: `collapsible:${this.el.id}` },
-      { name: "trigger", id: `collapsible:${this.el.id}:trigger` },
-      { name: "content", id: `collapsible:${this.el.id}:content` }
-    ];
-    for (const part of parts9)
-      renderPart(this.el, part, this.api);
+    this.rootPart.render(this.api);
+    this.triggerPart.render(this.api);
+    this.contentPart.render(this.api);
+  }
+  cacheAttributes() {
+    this.rootPart.cacheAttributes();
+    this.triggerPart.cacheAttributes();
+    this.contentPart.cacheAttributes();
+  }
+  restoreAttributes() {
+    this.rootPart.restoreAttributes();
+    this.triggerPart.restoreAttributes();
+    this.contentPart.restoreAttributes();
+  }
+  refreshParts() {
+    this.rootPart.refreshPart(this.el);
+    this.triggerPart.refreshPart(this.el);
+    this.contentPart.refreshPart(this.el);
   }
 };
 var Collapsible = class extends Hook {
@@ -9350,36 +9564,308 @@ var set6 = {
 };
 
 // js/widgex/combobox.ts
+var RootPart3 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='combobox:${this.root.id}']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getRootProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var ControlPart = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='combobox:${this.root.id}:control']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getControlProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var InputPart = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='combobox:${this.root.id}:input']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getInputProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var TriggerPart3 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='combobox:${this.root.id}:toggle-btn']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getTriggerProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var PositionerPart = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='combobox:${this.root.id}:popper']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getPositionerProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var ContentPart3 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='combobox:${this.root.id}:content']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getContentProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var ItemParts2 = class extends Part {
+  itemParts;
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.itemParts = this.getItemParts();
+  }
+  getItemParts() {
+    const itemParts = [];
+    for (const el of this.getParts()) {
+      itemParts.push(new ItemPart2(this.root, el));
+    }
+    return itemParts;
+  }
+  getPart(parent) {
+    return parent;
+  }
+  refreshPart(_root) {
+    this.itemParts = this.getItemParts();
+  }
+  getParts() {
+    return this.parent.querySelectorAll(
+      `[id^='combobox:${this.root.id}:option:']`
+    );
+  }
+  render(api) {
+    for (const itemPart of this.itemParts) {
+      itemPart.render(api);
+    }
+  }
+  cacheAttributes() {
+    for (const part of this.itemParts) {
+      part.cacheAttributes();
+    }
+  }
+  restoreAttributes = () => {
+    for (const part of this.itemParts) {
+      part.restoreAttributes();
+    }
+  };
+};
+var ItemPart2 = class extends Part {
+  constructor(root, part) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = part;
+  }
+  refreshPart(root) {
+    this.root = root;
+  }
+  render(api) {
+    if (this.part) {
+      const value = this.part.dataset.value;
+      const label = this.part.dataset.label;
+      spreadProps(this.part, api.getItemProps({ item: { value, label } }));
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
 var ComboboxComponent = class extends Component {
+  rootPart;
+  controlPart;
+  inputPart;
+  triggerPart;
+  positionerPart;
+  contentPart;
+  itemParts;
   initService(context) {
     return machine3(context);
   }
   initApi() {
-    return connect3(this.service.state, this.service.send, normalizeProps);
+    return connect3(
+      this.service.state,
+      this.service.send,
+      normalizeProps
+    );
+  }
+  initParts() {
+    this.rootPart = new RootPart3(this.el);
+    this.controlPart = new ControlPart(this.el);
+    this.inputPart = new InputPart(this.el);
+    this.triggerPart = new TriggerPart3(this.el);
+    this.positionerPart = new PositionerPart(this.el);
+    this.contentPart = new ContentPart3(this.el);
+    this.itemParts = new ItemParts2(this.el);
   }
   render() {
-    const parts9 = [
-      { name: "root", id: `combobox:${this.el.id}` },
-      { name: "control", id: `combobox:${this.el.id}:control` },
-      { name: "input", id: `combobox:${this.el.id}:input` },
-      { name: "trigger", id: `combobox:${this.el.id}:toggle-btn` },
-      { name: "positioner", id: `combobox:${this.el.id}:popper` },
-      { name: "content", id: `combobox:${this.el.id}:content` }
-    ];
-    for (const part of parts9)
-      renderPart(this.el, part, this.api);
-    this.renderItems(this.el.id);
+    this.rootPart.render(this.api);
+    this.controlPart.render(this.api);
+    this.inputPart.render(this.api);
+    this.triggerPart.render(this.api);
+    this.positionerPart.render(this.api);
+    this.contentPart.render(this.api);
+    this.itemParts.render(this.api);
   }
-  renderItems(parentId) {
-    for (const item of this.el.querySelectorAll(`[id^='combobox:${parentId}:option:']`)) {
-      const value = item.dataset.value;
-      const label = item.dataset.label;
-      if (!value || !label) {
-        console.error("Missing `data-value` or `data-label` attribute on item.");
-        return;
-      }
-      spreadProps(item, this.api.getItemProps({ item: { value, label } }));
-    }
+  cacheAttributes() {
+    this.rootPart.cacheAttributes();
+    this.controlPart.cacheAttributes();
+    this.inputPart.cacheAttributes();
+    this.triggerPart.cacheAttributes();
+    this.positionerPart.cacheAttributes();
+    this.contentPart.cacheAttributes();
+    this.itemParts.cacheAttributes();
+  }
+  restoreAttributes() {
+    this.rootPart.restoreAttributes();
+    this.controlPart.restoreAttributes();
+    this.inputPart.restoreAttributes();
+    this.triggerPart.restoreAttributes();
+    this.positionerPart.restoreAttributes();
+    this.contentPart.restoreAttributes();
+    this.itemParts.restoreAttributes();
+  }
+  refreshParts() {
+    this.rootPart.refreshPart(this.el);
+    this.controlPart.refreshPart(this.el);
+    this.inputPart.refreshPart(this.el);
+    this.triggerPart.refreshPart(this.el);
+    this.positionerPart.refreshPart(this.el);
+    this.contentPart.refreshPart(this.el);
+    this.itemParts.refreshPart(this.el);
   }
 };
 var WidgexCombobox = class extends Hook {
@@ -9389,28 +9875,34 @@ var WidgexCombobox = class extends Hook {
     this.component = new ComboboxComponent(this.el, this.context());
     this.component.init();
     this.handleEvent("wgx:update", () => {
+      this.component.refreshParts();
       this.component.api.setCollection(this.collection());
       this.component.render();
     });
   }
   beforeUpdate() {
-    this.cacheAttributes();
+    this.component.cacheAttributes();
   }
   updated() {
     this.component.api.setCollection(this.collection());
     this.component.render();
-    if (this.attributeCache)
-      restoreAttributes(this.el, this.attributeCache);
+    this.component.restoreAttributes();
   }
   beforeDestroy() {
     this.component.destroy();
   }
   items() {
-    return Array.from(this.el.querySelectorAll(`[id^='combobox:${this.el.id}:option']`)).map((item) => {
+    return Array.from(
+      this.el.querySelectorAll(
+        `[id^='combobox:${this.el.id}:option']`
+      )
+    ).map((item) => {
       const value = item.dataset.value;
       const label = item.dataset.label;
       if (!value || !label) {
-        console.error("Missing `data-value` or `data-label` attribute on item.");
+        console.error(
+          "Missing `data-value` or `data-label` attribute on item."
+        );
         return;
       }
       return { value, label };
@@ -9427,26 +9919,21 @@ var WidgexCombobox = class extends Hook {
       itemToString: (item) => item.label
     });
   }
-  cacheAttributes() {
-    const parts9 = [
-      { name: "root", id: `combobox:${this.el.id}` },
-      { name: "control", id: `combobox:${this.el.id}:control` },
-      { name: "input", id: `combobox:${this.el.id}:input` },
-      { name: "trigger", id: `combobox:${this.el.id}:toggle-btn` },
-      { name: "positioner", id: `combobox:${this.el.id}:popper` },
-      { name: "content", id: `combobox:${this.el.id}:content` }
-    ];
-    this.attributeCache = parts9.map((part) => {
-      return getAttributes(this.el, part);
-    }).filter((cache) => cache !== void 0);
-  }
   context() {
     return {
       id: this.el.id,
       name: this.el.dataset.name,
       collection: this.collection(),
-      inputBehavior: getOption(this.el, "inputBehavior", ["autocomplete", "autohighlight", "none"]),
-      selectionBehavior: getOption(this.el, "selectionBehavior", ["clear", "replace", "preserve"]),
+      inputBehavior: getOption(this.el, "inputBehavior", [
+        "autocomplete",
+        "autohighlight",
+        "none"
+      ]),
+      selectionBehavior: getOption(this.el, "selectionBehavior", [
+        "clear",
+        "replace",
+        "preserve"
+      ]),
       multiple: getBooleanOption(this.el, "multiple", false),
       disabled: getBooleanOption(this.el, "disabled", false),
       readOnly: getBooleanOption(this.el, "readOnly", false),
@@ -12424,25 +12911,271 @@ var props3 = createProps3()([
 var splitProps6 = createSplitProps3(props3);
 
 // js/widgex/dialog.ts
+var TriggerPart4 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='dialog:${this.root.id}:trigger']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getTriggerProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var BackdropPart = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='dialog:${this.root.id}:backdrop']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getBackdropProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var PositionerPart2 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='dialog:${this.root.id}:positioner']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getPositionerProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var ContentPart4 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='dialog:${this.root.id}:content']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getContentProps());
+    }
+  }
+  cacheAttributes() {
+    this.attributeCache = getAttributes(this.part);
+  }
+  restoreAttributes() {
+    restoreAttributes(this.part, this.attributeCache);
+  }
+};
+var TitlePart = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='dialog:${this.root.id}:title']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getTitleProps());
+    }
+  }
+  cacheAttributes() {
+    this.attributeCache = getAttributes(this.part);
+  }
+  restoreAttributes() {
+    restoreAttributes(this.part, this.attributeCache);
+  }
+};
+var DescriptionPart = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='dialog:${this.root.id}:description']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getDescriptionProps());
+    }
+  }
+  cacheAttributes() {
+    this.attributeCache = getAttributes(this.part);
+  }
+  restoreAttributes() {
+    restoreAttributes(this.part, this.attributeCache);
+  }
+};
+var CloseTriggerPart = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='dialog:${this.root.id}:close']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getCloseTriggerProps());
+    }
+  }
+  cacheAttributes() {
+    this.attributeCache = getAttributes(this.part);
+  }
+  restoreAttributes() {
+    restoreAttributes(this.part, this.attributeCache);
+  }
+};
 var DialogComponent = class extends Component {
+  triggerPart;
+  backdropPart;
+  positionerPart;
+  contentPart;
+  titlePart;
+  descriptionPart;
+  closeTriggerPart;
   initService(context) {
     return machine4(context);
   }
   initApi() {
-    return connect4(this.service.state, this.service.send, normalizeProps);
+    return connect4(
+      this.service.state,
+      this.service.send,
+      normalizeProps
+    );
+  }
+  initParts() {
+    this.triggerPart = new TriggerPart4(this.el);
+    this.backdropPart = new BackdropPart(this.el);
+    this.positionerPart = new PositionerPart2(this.el);
+    this.contentPart = new ContentPart4(this.el);
+    this.titlePart = new TitlePart(this.el);
+    this.descriptionPart = new DescriptionPart(this.el);
+    this.closeTriggerPart = new CloseTriggerPart(this.el);
   }
   render() {
-    const parts9 = [
-      { name: "trigger", id: `dialog:${this.el.id}:trigger` },
-      { name: "backdrop", id: `dialog:${this.el.id}:backdrop` },
-      { name: "positioner", id: `dialog:${this.el.id}:positioner` },
-      { name: "content", id: `dialog:${this.el.id}:content` },
-      { name: "title", id: `dialog:${this.el.id}:title` },
-      { name: "description", id: `dialog:${this.el.id}:description` },
-      { name: "close-trigger", id: `dialog:${this.el.id}:close` }
-    ];
-    for (const part of parts9)
-      renderPart(this.el, part, this.api);
+    this.triggerPart.render(this.api);
+    this.backdropPart.render(this.api);
+    this.positionerPart.render(this.api);
+    this.contentPart.render(this.api);
+    this.titlePart.render(this.api);
+    this.descriptionPart.render(this.api);
+    this.closeTriggerPart.render(this.api);
+  }
+  cacheAttributes() {
+    this.triggerPart.cacheAttributes();
+    this.backdropPart.cacheAttributes();
+    this.positionerPart.cacheAttributes();
+    this.contentPart.cacheAttributes();
+    this.titlePart.cacheAttributes();
+    this.descriptionPart.cacheAttributes();
+    this.closeTriggerPart.cacheAttributes();
+  }
+  restoreAttributes() {
+    this.triggerPart.restoreAttributes();
+    this.backdropPart.restoreAttributes();
+    this.positionerPart.restoreAttributes();
+    this.contentPart.restoreAttributes();
+    this.titlePart.restoreAttributes();
+    this.descriptionPart.restoreAttributes();
+    this.closeTriggerPart.restoreAttributes();
+  }
+  refreshParts() {
+    this.triggerPart.refreshPart(this.el);
+    this.backdropPart.refreshPart(this.el);
+    this.positionerPart.refreshPart(this.el);
+    this.contentPart.refreshPart(this.el);
+    this.titlePart.refreshPart(this.el);
+    this.descriptionPart.refreshPart(this.el);
+    this.closeTriggerPart.refreshPart(this.el);
   }
 };
 var Dialog = class extends Hook {
@@ -12450,9 +13183,20 @@ var Dialog = class extends Hook {
   mounted() {
     this.component = new DialogComponent(this.el, this.context());
     this.component.init();
+    this.handleEvent("wgx:update", () => {
+      this.component.refreshParts();
+      this.component.render();
+    });
+    window.addEventListener(`wgx:close-${this.el.id}`, () => {
+      this.component.api.setOpen(false);
+    });
+  }
+  beforeUpdate() {
+    this.component.cacheAttributes();
   }
   updated() {
     this.component.render();
+    this.component.restoreAttributes();
   }
   beforeDestroy() {
     this.component.destroy();
@@ -12461,14 +13205,20 @@ var Dialog = class extends Hook {
     let role = this.el.dataset.role;
     const validRoles = ["dialog", "alertdialog"];
     if (role !== void 0 && !validRoles.includes(role)) {
-      console.error(`Invalid 'role' specified: '${role}'. Expected 'dialog' or 'alertdialog'.`);
+      console.error(
+        `Invalid 'role' specified: '${role}'. Expected 'dialog' or 'alertdialog'.`
+      );
       role = void 0;
     }
     return {
       id: this.el.id,
       role,
       preventScroll: getBooleanOption(this.el, "preventScroll", true),
-      closeOnInteractOutside: getBooleanOption(this.el, "closeOnInteractOutside", true),
+      closeOnInteractOutside: getBooleanOption(
+        this.el,
+        "closeOnInteractOutside",
+        true
+      ),
       closeOnEscape: getBooleanOption(this.el, "closeOnEscape", true),
       onOpenChange: (details) => {
         if (this.el.dataset.onOpenChange) {
@@ -16452,49 +17202,380 @@ var optionItemProps = createProps4()([
 var splitOptionItemProps = createSplitProps4(optionItemProps);
 
 // js/widgex/menu.ts
+var TriggerPart5 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='menu:${this.root.id}:trigger']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getTriggerProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var ContextTriggerPart = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='menu:${this.root.id}:ctx-trigger']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getContextTriggerProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var PositionerPart3 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='menu:${this.root.id}:popper']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getPositionerProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var ContentPart5 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='menu:${this.root.id}:content']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getContentProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var ItemGroupParts = class extends Part {
+  itemGroupParts;
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.itemGroupParts = this.getItemGroupParts();
+  }
+  getItemGroupParts() {
+    const itemGroupParts = [];
+    for (const el of this.getParts()) {
+      itemGroupParts.push(new ItemGroupPart(this.root, el));
+    }
+    return itemGroupParts;
+  }
+  getParts() {
+    return this.parent.querySelectorAll(
+      `[id^='menu:${this.root.id}:group']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.itemGroupParts = this.getItemGroupParts();
+  }
+  render(api) {
+    for (const itemGroupPart of this.itemGroupParts) {
+      itemGroupPart.render(api);
+    }
+  }
+  cacheAttributes() {
+    for (const itemGroupPart of this.itemGroupParts) {
+      itemGroupPart.cacheAttributes();
+    }
+  }
+  restoreAttributes() {
+    for (const itemGroupPart of this.itemGroupParts) {
+      itemGroupPart.restoreAttributes();
+    }
+  }
+};
+var ItemGroupPart = class extends Part {
+  constructor(root, part) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = part;
+  }
+  getPart() {
+    return this.part;
+  }
+  refreshPart(root) {
+    this.root = root;
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(
+        this.part,
+        api.getItemGroupProps({ id: this.part.dataset.value })
+      );
+    }
+  }
+  cacheAttributes() {
+    this.attributeCache = getAttributes(this.part);
+  }
+  restoreAttributes() {
+    restoreAttributes(this.part, this.attributeCache);
+  }
+};
+var ItemParts3 = class extends Part {
+  itemParts;
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.itemParts = this.getItemParts();
+  }
+  getItemParts() {
+    const itemParts = [];
+    for (const el of this.getParts()) {
+      itemParts.push(new ItemPart3(this.root, el));
+    }
+    return itemParts;
+  }
+  getParts() {
+    return this.parent.querySelectorAll(`[data-part='item']`);
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.itemParts = this.getItemParts();
+  }
+  render(api) {
+    for (const itemPart of this.itemParts) {
+      itemPart.render(api);
+    }
+  }
+  cacheAttributes() {
+    for (const itemPart of this.itemParts) {
+      itemPart.cacheAttributes();
+    }
+  }
+  restoreAttributes() {
+    for (const itemPart of this.itemParts) {
+      itemPart.restoreAttributes();
+    }
+  }
+};
+var ItemPart3 = class extends Part {
+  constructor(root, part) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = part;
+  }
+  getPart() {
+    return this.part;
+  }
+  refreshPart(root) {
+    this.root = root;
+  }
+  render(api) {
+    if (this.part) {
+      const value = this.part.dataset.value;
+      spreadProps(this.part, api.getItemProps({ value }));
+    }
+  }
+  cacheAttributes() {
+    this.attributeCache = getAttributes(this.part);
+  }
+  restoreAttributes() {
+    restoreAttributes(this.part, this.attributeCache);
+  }
+};
+var SeparatorParts = class extends Part {
+  separatorParts;
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.separatorParts = this.getSeparatorParts();
+  }
+  getSeparatorParts() {
+    const separatorParts = [];
+    for (const el of this.getParts()) {
+      separatorParts.push(new SeparatorPart(this.root, el));
+    }
+    return separatorParts;
+  }
+  getParts() {
+    return this.parent.querySelectorAll(
+      `[data-part='separator']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.separatorParts = this.getSeparatorParts();
+  }
+  render(api) {
+    for (const separatorPart of this.separatorParts) {
+      separatorPart.render(api);
+    }
+  }
+  cacheAttributes() {
+    for (const separatorPart of this.separatorParts) {
+      separatorPart.cacheAttributes();
+    }
+  }
+  restoreAttributes() {
+    for (const separatorPart of this.separatorParts) {
+      separatorPart.restoreAttributes();
+    }
+  }
+};
+var SeparatorPart = class extends Part {
+  constructor(root, part) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = part;
+  }
+  getPart() {
+    return this.part;
+  }
+  refreshPart(root) {
+    this.root = root;
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getSeparatorProps());
+    }
+  }
+  cacheAttributes() {
+    this.attributeCache = getAttributes(this.part);
+  }
+  restoreAttributes() {
+    restoreAttributes(this.part, this.attributeCache);
+  }
+};
 var MenuComponent = class extends Component {
+  triggerPart;
+  contextTriggerPart;
+  positionerPart;
+  contentPart;
+  itemGroupParts;
+  itemParts;
+  separatorParts;
   initService(context) {
     return machine5(context);
   }
   initApi() {
     return connect5(this.service.state, this.service.send, normalizeProps);
   }
+  initParts() {
+    this.triggerPart = new TriggerPart5(this.el);
+    this.contextTriggerPart = new ContextTriggerPart(this.el);
+    this.positionerPart = new PositionerPart3(this.el);
+    this.contentPart = new ContentPart5(this.el);
+    this.itemGroupParts = new ItemGroupParts(this.el);
+    this.itemParts = new ItemParts3(this.el);
+    this.separatorParts = new SeparatorParts(this.el);
+  }
   render() {
-    const parts9 = [
-      { name: "trigger", id: `menu:${this.el.id}:trigger` },
-      { name: "context-trigger", id: `menu:${this.el.id}:ctx-trigger` },
-      { name: "positioner", id: `menu:${this.el.id}:popper` },
-      { name: "content", id: `menu:${this.el.id}:content` }
-    ];
-    for (const part of parts9)
-      renderPart(this.el, part, this.api);
-    this.renderItemGroups();
-    this.renderItems();
-    this.renderSeparators();
+    this.triggerPart.render(this.api);
+    this.contextTriggerPart.render(this.api);
+    this.positionerPart.render(this.api);
+    this.contentPart.render(this.api);
+    this.itemGroupParts.render(this.api);
+    this.itemParts.render(this.api);
+    this.separatorParts.render(this.api);
   }
-  renderItemGroups() {
-    for (const itemGroup of this.el.querySelectorAll(`[id^='menu:${this.el.id}:group']`)) {
-      const value = itemGroup.dataset.value;
-      if (!value) {
-        console.error("Missing `data-value` attribute on item group.");
-        return;
-      }
-      spreadProps(itemGroup, this.api.getItemGroupProps({ id: value }));
-    }
+  cacheAttributes() {
+    this.triggerPart.cacheAttributes();
+    this.contextTriggerPart.cacheAttributes();
+    this.positionerPart.cacheAttributes();
+    this.contentPart.cacheAttributes();
+    this.itemGroupParts.cacheAttributes();
+    this.itemParts.cacheAttributes();
+    this.separatorParts.cacheAttributes();
   }
-  renderItems() {
-    for (const item of this.el.querySelectorAll("[data-part='item']")) {
-      const value = item.dataset.value;
-      if (!value) {
-        console.error("Missing `data-value` attribute on item.");
-        return;
-      }
-      spreadProps(item, this.api.getItemProps({ value }));
-    }
+  restoreAttributes() {
+    this.triggerPart.restoreAttributes();
+    this.contextTriggerPart.restoreAttributes();
+    this.positionerPart.restoreAttributes();
+    this.contentPart.restoreAttributes();
+    this.itemGroupParts.restoreAttributes();
+    this.itemParts.restoreAttributes();
+    this.separatorParts.restoreAttributes();
   }
-  renderSeparators() {
-    for (const separator of this.el.querySelectorAll("[data-part='separator']"))
-      spreadProps(separator, this.api.getSeparatorProps());
+  refreshParts() {
+    this.triggerPart.refreshPart(this.el);
+    this.contextTriggerPart.refreshPart(this.el);
+    this.positionerPart.refreshPart(this.el);
+    this.contentPart.refreshPart(this.el);
+    this.itemGroupParts.refreshPart(this.el);
+    this.itemParts.refreshPart(this.el);
+    this.separatorParts.refreshPart(this.el);
   }
 };
 var Menu = class extends Hook {
@@ -23498,46 +24579,210 @@ var contentProps = createProps7()(["value"]);
 var splitContentProps = createSplitProps7(contentProps);
 
 // js/widgex/tabs.ts
+var RootPart4 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='tabs:${this.root.id}']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getRootProps());
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var TabList = class extends Part {
+  triggers;
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+    this.triggers = this.getTriggers();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='tabs:${this.root.id}:list']`
+    );
+  }
+  getTriggers() {
+    const triggers = [];
+    for (const el of this.getTriggerParts()) {
+      triggers.push(new Trigger(this.root, el));
+    }
+    return triggers;
+  }
+  getTriggerParts() {
+    return this.parent.querySelectorAll(
+      `[id^='tabs:${this.root.id}:trigger-']`
+    );
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+    this.triggers = this.getTriggers();
+  }
+  render(api) {
+    if (this.part) {
+      spreadProps(this.part, api.getListProps());
+    }
+    for (const trigger of this.triggers) {
+      trigger.render(api);
+    }
+  }
+  cacheAttributes() {
+    this.attributeCache = getAttributes(this.part);
+    for (const trigger of this.triggers) {
+      trigger.cacheAttributes();
+    }
+  }
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+    for (const trigger of this.triggers) {
+      trigger.restoreAttributes();
+    }
+  };
+};
+var Trigger = class extends Part {
+  constructor(root, part) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = part;
+  }
+  refreshPart(root) {
+    this.root = root;
+  }
+  render(api) {
+    if (this.part) {
+      const value = this.part.dataset.value;
+      spreadProps(this.part, api.getTriggerProps({ value }));
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var Content = class extends Part {
+  contentParts;
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.contentParts = this.getContentParts();
+  }
+  getContentParts() {
+    const contentParts = [];
+    for (const el of this.getContent()) {
+      contentParts.push(new ContentPart6(this.root, el));
+    }
+    return contentParts;
+  }
+  getPart(parent) {
+    return parent;
+  }
+  refreshPart(_root) {
+    this.contentParts = this.getContentParts();
+  }
+  getContent() {
+    return this.parent.querySelectorAll(
+      `[id^='tabs:${this.root.id}:content-']`
+    );
+  }
+  render(api) {
+    for (const contentPart of this.contentParts) {
+      contentPart.render(api);
+    }
+  }
+  cacheAttributes() {
+    for (const contentPart of this.contentParts) {
+      contentPart.cacheAttributes();
+    }
+  }
+  restoreAttributes = () => {
+    for (const contentPart of this.contentParts) {
+      contentPart.restoreAttributes();
+    }
+  };
+};
+var ContentPart6 = class extends Part {
+  constructor(root, part) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = part;
+  }
+  refreshPart(root) {
+    this.root = root;
+  }
+  render(api) {
+    if (this.part) {
+      const value = this.part.dataset.value;
+      spreadProps(this.part, api.getContentProps({ value }));
+    }
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
 var TabsComponent = class extends Component {
+  rootPart;
+  tabList;
+  content;
   initService(context) {
     return machine8(context);
   }
   initApi() {
     return connect8(this.service.state, this.service.send, normalizeProps);
   }
+  initParts() {
+    this.rootPart = new RootPart4(this.el);
+    this.tabList = new TabList(this.el);
+    this.content = new Content(this.el);
+  }
   render() {
-    const parts9 = [{ name: "root", id: `tabs:${this.el.id}` }];
-    for (const part of parts9)
-      renderPart(this.el, part, this.api);
-    this.renderTabList();
-    this.renderTabContent();
+    this.rootPart.render(this.api);
+    this.tabList.render(this.api);
+    this.content.render(this.api);
   }
-  renderTabList() {
-    const tabList = this.el.querySelector(`[id='tabs:${this.el.id}:list']`);
-    if (!tabList)
-      return;
-    spreadProps(tabList, this.api.getListProps());
-    this.renderTriggers(tabList);
+  cacheAttributes() {
+    this.rootPart.cacheAttributes();
+    this.tabList.cacheAttributes();
+    this.content.cacheAttributes();
   }
-  renderTabContent() {
-    for (const content of this.el.querySelectorAll(`[id^='tabs:${this.el.id}:content-']`)) {
-      const value = content.dataset.value;
-      if (!value) {
-        console.error("Missing `data-value` attribute on content.");
-        return;
-      }
-      spreadProps(content, this.api.getContentProps({ value }));
-    }
+  restoreAttributes() {
+    this.rootPart.restoreAttributes();
+    this.tabList.restoreAttributes();
+    this.content.restoreAttributes();
   }
-  renderTriggers(tabList) {
-    for (const trigger of tabList.querySelectorAll(`[id^="tabs:${this.el.id}:trigger-"]`)) {
-      const value = trigger.dataset.value;
-      if (!value) {
-        console.error("Missing `data-value` attribute on trigger.");
-        return;
-      }
-      spreadProps(trigger, this.api.getTriggerProps({ value }));
-    }
+  refreshParts() {
+    this.rootPart.refreshPart(this.el);
+    this.tabList.refreshPart(this.el);
+    this.content.refreshPart(this.el);
   }
 };
 var Tabs = class extends Hook {
@@ -23545,9 +24790,17 @@ var Tabs = class extends Hook {
   mounted() {
     this.component = new TabsComponent(this.el, this.context());
     this.component.init();
+    this.handleEvent("wgx:update", () => {
+      this.component.refreshParts();
+      this.component.render();
+    });
+  }
+  beforeUpdate() {
+    this.component.cacheAttributes();
   }
   updated() {
     this.component.render();
+    this.component.restoreAttributes();
   }
   beforeDestroy() {
     this.component.destroy();
@@ -23556,8 +24809,11 @@ var Tabs = class extends Hook {
     return {
       id: this.el.id,
       value: this.el.dataset.value,
-      loopFocus: getBooleanOption(this.el, "loop-focus"),
-      activationMode: getOption(this.el, "activation-mode", ["manual", "automatic"]),
+      loopFocus: getBooleanOption(this.el, "loop-focus", false),
+      activationMode: getOption(this.el, "activation-mode", [
+        "manual",
+        "automatic"
+      ]),
       onValueChange: (details) => {
         if (this.el.dataset.onValueChange) {
           this.pushEvent(this.el.dataset.onValueChange, details);
@@ -23572,7 +24828,7 @@ var tabs_default = makeHook(Tabs);
 var Hooks = {
   Accordion: accordion_default,
   Collapsible: collapsible_default,
-  WidgexCombobox: combobox_default,
+  Combobox: combobox_default,
   Dialog: dialog_default,
   Menu: menu_default,
   Popover: popover_default,
