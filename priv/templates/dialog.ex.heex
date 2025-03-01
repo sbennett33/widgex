@@ -4,6 +4,7 @@ defmodule <%= @web_module %>.Components.Dialog do
   """
   use <%= @web_module %>, :component
 
+  import <%= @web_module %>.Components.Button
   import <%= @web_module %>.Components.Icon
 
   attr :id, :string, default: "dialog"
@@ -22,7 +23,7 @@ defmodule <%= @web_module %>.Components.Dialog do
       class={@class}
       {@rest}
     >
-      {render_slot(@inner_block)}
+      {render_slot(@inner_block, @id)}
     </div>
     """
   end
@@ -81,10 +82,13 @@ defmodule <%= @web_module %>.Components.Dialog do
         hidden
       >
         {render_slot(@inner_block)}
-        <.dialog_close parent_id={@parent_id} class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+        <.close_button
+          parent_id={@parent_id}
+          class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+        >
           <.icon name="hero-x-mark" class="size-4" />
           <span class="sr-only">Close</span>
-        </.dialog_close>
+        </.close_button>
       </div>
     </div>
     """
@@ -116,7 +120,11 @@ defmodule <%= @web_module %>.Components.Dialog do
 
   def dialog_description(assigns) do
     ~H"""
-    <div id={"dialog:#{@parent_id}:description"} class={classes(["text-sm text-muted-foreground", @class])} {@rest}>
+    <div
+      id={"dialog:#{@parent_id}:description"}
+      class={classes(["text-sm text-muted-foreground", @class])}
+      {@rest}
+    >
       {render_slot(@inner_block)}
     </div>
     """
@@ -145,6 +153,26 @@ defmodule <%= @web_module %>.Components.Dialog do
   slot :inner_block, required: true
 
   def dialog_close(assigns) do
+    ~H"""
+    <.button
+      id={"dialog:#{@parent_id}:close-button"}
+      variant="secondary"
+      class={@class}
+      {@rest}
+      phx-click={JS.dispatch("wgx:close-#{@parent_id}")}
+    >
+      {render_slot(@inner_block)}
+    </.button>
+    """
+  end
+
+  attr :parent_id, :string, default: "dialog"
+  attr :class, :string, default: ""
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  defp close_button(assigns) do
     ~H"""
     <button id={"dialog:#{@parent_id}:close"} class={@class} {@rest}>
       {render_slot(@inner_block)}
