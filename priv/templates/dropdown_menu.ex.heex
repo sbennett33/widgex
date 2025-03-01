@@ -45,7 +45,7 @@ defmodule <%= @web_module %>.Components.DropdownMenu do
   def dropdown_menu(assigns) do
     ~H"""
     <div id={@id} phx-hook="Menu" class={classes(["relative group inline-block", @class])} {@rest}>
-      {render_slot(@inner_block)}
+      {render_slot(@inner_block, @id)}
     </div>
     """
   end

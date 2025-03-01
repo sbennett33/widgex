@@ -463,10 +463,20 @@ class Menu extends Hook {
   mounted() {
     this.component = new MenuComponent(this.el, { id: this.el.id });
     this.component.init();
+
+    this.handleEvent("wgx:update", () => {
+      this.component.refreshParts();
+      this.component.render();
+    });
+  }
+
+  beforeUpdate() {
+    this.component.cacheAttributes();
   }
 
   updated() {
     this.component.render();
+    this.component.restoreAttributes();
   }
 
   beforeDestroy() {
