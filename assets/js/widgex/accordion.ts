@@ -1,11 +1,180 @@
 import * as accordion from "@zag-js/accordion";
-import { normalizeProps, spreadProps, renderPart, getBooleanOption } from "./util";
-import { Component } from "./component";
+import { getAttributes, restoreAttributes, normalizeProps, spreadProps, getBooleanOption } from "./util";
+import { Component, Part } from "./component";
 import { Hook, makeHook } from "./hook";
 import type { Machine } from "@zag-js/core";
-import type { Part } from "./component";
+import type { AttributeCache } from "./util";
+
+class RootPart extends Part<accordion.Api> {
+  constructor(root: HTMLElement) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+
+  getPart(): HTMLElement {
+    return this.parent.querySelector<HTMLElement>(`[id='accordion:${this.root.id}']`)!;
+  }
+
+  render(api: accordion.Api): void {
+    spreadProps(this.part, api.getRootProps());
+  }
+
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  }
+
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache)
+  }
+}
+
+class ItemParts extends Part<accordion.Api> {
+  itemParts: ItemPart[];
+
+  constructor(root: HTMLElement) {
+    super();
+    this.root = root;
+    this.parent = root;
+
+    this.itemParts = this.getItemParts();
+  }
+
+  getItemParts(): ItemPart[] {
+    const itemParts: ItemPart[] = [];
+
+    for (const el of this.getParts()) {
+      itemParts.push(new ItemPart(this.root, el));
+    }
+
+    return itemParts;
+  }
+
+  getParts(): NodeListOf<HTMLElement> {
+    return this.parent.querySelectorAll<HTMLElement>(`[id^='accordion:${this.root.id}:item']`)!;
+  }
+
+  render(api: accordion.Api): void {
+    for (const itemPart of this.itemParts) {
+      itemPart.render(api)
+    }
+  }
+
+  cacheAttributes = () => {
+    for (const part of this.itemParts) {
+      part.cacheAttributes();
+    }
+  }
+
+  restoreAttributes = () => {
+    for (const part of this.itemParts) {
+      part.restoreAttributes();
+    }
+  }
+}
+
+class ItemPart extends Part<accordion.Api> {
+  attributeCaches: AttributeCache[];
+  triggerPart: TriggerPart;
+  contentPart: ContentPart;
+
+  constructor(root: HTMLElement, part: HTMLElement) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = part;
+
+    this.triggerPart = new TriggerPart(root, part, part.dataset.value!);
+    this.contentPart = new ContentPart(root, part, part.dataset.value!);
+  }
+
+  getPart(_parent: HTMLElement): HTMLElement {
+    return this.part;
+  }
+
+  render(api: accordion.Api): void {
+    this.triggerPart.render(api);
+    this.contentPart.render(api);
+  }
+
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+
+    this.triggerPart.cacheAttributes();
+    this.contentPart.cacheAttributes();
+  }
+
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+
+    this.triggerPart.restoreAttributes();
+    this.contentPart.restoreAttributes();
+  }
+}
+
+class TriggerPart extends Part<accordion.Api> {
+  value: string;
+
+  constructor(root: HTMLElement, parent: HTMLElement, value: string) {
+    super();
+    this.root = root;
+    this.parent = parent;
+    this.value = value;
+    this.part = this.getPart();
+  }
+
+  getPart(): HTMLElement {
+    return this.parent.querySelector<HTMLElement>(`[id='accordion:${this.root.id}:trigger:${this.value}']`)!;
+  }
+
+  render(api: accordion.Api): void {
+    const value = this.value;
+    spreadProps(this.part, api.getItemTriggerProps({ value }));
+  }
+
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  }
+
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache)
+  }
+}
+
+class ContentPart extends Part<accordion.Api> {
+  value: string;
+
+  constructor(root: HTMLElement, parent: HTMLElement, value: string) {
+    super();
+    this.root = root;
+    this.parent = parent;
+    this.value = value;
+    this.part = this.getPart();
+  }
+
+  getPart(): HTMLElement {
+    return this.parent.querySelector<HTMLElement>(`[id='accordion:${this.root.id}:content:${this.value}']`)!;
+  }
+
+  render(api: accordion.Api): void {
+    const value = this.value;
+    spreadProps(this.part, api.getItemContentProps({ value }));
+  }
+
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  }
+
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache)
+  }
+}
 
 class AccordionComponent extends Component<accordion.Context, accordion.Api> {
+  rootPart: RootPart;
+  itemParts: ItemParts;
+
   initService(context: accordion.Context): Machine<any, any, any> {
     return accordion.machine(context);
   }
@@ -14,36 +183,24 @@ class AccordionComponent extends Component<accordion.Context, accordion.Api> {
     return accordion.connect(this.service.state, this.service.send, normalizeProps);
   }
 
-  render() {
-    const parts: Part[] = [{ name: "root", id: `accordion:${this.el.id}` }];
-    for (const part of parts) renderPart(this.el, part, this.api);
-    this.renderItems(this.el.id);
+  initParts(): void {
+    this.rootPart = new RootPart(this.el);
+    this.itemParts = new ItemParts(this.el);
   }
 
-  renderItems(parent_id: string) {
-    for (const item of this.el.querySelectorAll<HTMLElement>(`[id^='accordion:${parent_id}:item']`)) {
-      const value = item.dataset.value;
-      if (!value) {
-        console.error("Missing `data-value` attribute on item.");
-        return;
-      }
-      spreadProps(item, this.api.getItemProps({ value }));
-
-      this.renderItemTrigger(item, parent_id, value);
-      this.renderItemContent(item, parent_id, value);
-    }
+  render(): void {
+    this.rootPart.render(this.api);
+    this.itemParts.render(this.api)
   }
 
-  renderItemTrigger(item: HTMLElement, parent_id: string, value: string) {
-    const itemTrigger = item.querySelector<HTMLElement>(`[id='accordion:${parent_id}:trigger:${value}']`);
-    if (!itemTrigger) return;
-    spreadProps(itemTrigger, this.api.getItemTriggerProps({ value }));
+  cacheAttributes() {
+    this.rootPart.cacheAttributes();
+    this.itemParts.cacheAttributes();
   }
 
-  renderItemContent(item: HTMLElement, parent_id: string, value: string) {
-    const itemContent = item.querySelector<HTMLElement>(`[id='accordion:${parent_id}:content:${value}']`);
-    if (!itemContent) return;
-    spreadProps(itemContent, this.api.getItemContentProps({ value }));
+  restoreAttributes() {
+    this.rootPart.restoreAttributes();
+    this.itemParts.restoreAttributes();
   }
 }
 
@@ -67,9 +224,9 @@ class Accordion extends Hook {
     return {
       id: this.el.id,
       value: [""],
-      disabled: getBooleanOption(this.el, "disabled"),
-      multiple: getBooleanOption(this.el, "multiple"),
-      collapsible: getBooleanOption(this.el, "collapsible"),
+      disabled: getBooleanOption(this.el, "disabled", false),
+      multiple: getBooleanOption(this.el, "multiple", false),
+      collapsible: getBooleanOption(this.el, "collapsible", false),
       onValueChange: (details: accordion.ValueChangeDetails) => {
         if (this.el.dataset.onValueChange) {
           this.pushEvent(this.el.dataset.onValueChange, details);

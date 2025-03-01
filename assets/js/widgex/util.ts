@@ -1,5 +1,10 @@
 import { createNormalizer } from "@zag-js/types";
-import type { Part } from "./component";
+// import type { Part } from "./component";
+
+type Part = {
+  id: string;
+  name: string;
+}
 
 type Attribute = {
   name: string;
@@ -7,7 +12,7 @@ type Attribute = {
 };
 
 export type AttributeCache = {
-  part: Part;
+  id: string;
   cssText: string;
   hasFocus: boolean;
   attrs: Attribute[];
@@ -139,9 +144,7 @@ export const getBooleanOption = (el: HTMLElement, name: string, defaultValue: bo
   return el.dataset[kebabName] === "true" || el.dataset[kebabName] === "" || defaultValue;
 };
 
-export const getAttributes = (root: HTMLElement, part: Part) => {
-  const node = root.querySelector<HTMLElement>(`[id='${part.id}']`)!;
-
+export const getAttributes = (node: HTMLElement) => {
   const attrs: Attribute[] = [];
 
   for (const attr of node.attributes) {
@@ -149,7 +152,7 @@ export const getAttributes = (root: HTMLElement, part: Part) => {
   }
 
   const cache: AttributeCache = {
-    part: part,
+    id: node.id,
     cssText: node.style.cssText,
     hasFocus: node === document.activeElement,
     attrs,
@@ -158,17 +161,12 @@ export const getAttributes = (root: HTMLElement, part: Part) => {
   return cache;
 };
 
-export const restoreAttributes = (root: HTMLElement, attributeMaps: AttributeCache[]) => {
-  for (const attributeMap of attributeMaps) {
-    if (!attributeMap) return;
-
-    const node = root.querySelector<HTMLElement>(`[id='${attributeMap.part.id}']`);
-    if (!node) return;
-
-    for (const attr of attributeMap.attrs) {
+export const restoreAttributes = (node: HTMLElement, attributeCache: AttributeCache) => {
+  if (node) {
+    for (const attr of attributeCache.attrs) {
       node.setAttribute(attr.name, attr.value);
     }
-    node.style.cssText = attributeMap.cssText;
-    if (attributeMap.hasFocus) node.focus();
+    node.style.cssText = attributeCache.cssText;
+    if (attributeCache.hasFocus) node.focus();
   }
 };
