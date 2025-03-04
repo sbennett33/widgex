@@ -35,9 +35,9 @@ defmodule <%= @web_module %>.Components.Accordion do
 
   def accordion(assigns) do
     ~H"""
-    <div id={@id} phx-hook="Accordion" class={classes(["", @class])} {@rest}>
+    <div id={@id} phx-hook="Accordion" class={classes(["", @class])} {@rest} data-widgex>
       <div id={"accordion:#{@id}"}>
-        {render_slot(@inner_block)}
+        {render_slot(@inner_block, @id)}
       </div>
     </div>
     """

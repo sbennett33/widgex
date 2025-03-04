@@ -57,5 +57,9 @@ export abstract class Part<Api> {
   abstract render(api: Api): void;
   abstract cacheAttributes(): void;
   abstract restoreAttributes(): void;
-  abstract refreshPart(root: HTMLElement): void;
+  abstract refreshPart(
+    root: HTMLElement,
+    parent?: HTMLElement,
+    value?: any,
+  ): void;
 }

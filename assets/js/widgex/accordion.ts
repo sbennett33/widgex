@@ -1,5 +1,11 @@
 import * as accordion from "@zag-js/accordion";
-import { getAttributes, restoreAttributes, normalizeProps, spreadProps, getBooleanOption } from "./util";
+import {
+  getAttributes,
+  restoreAttributes,
+  normalizeProps,
+  spreadProps,
+  getBooleanOption,
+} from "./util";
 import { Component, Part } from "./component";
 import { Hook, makeHook } from "./hook";
 import type { Machine } from "@zag-js/core";
@@ -14,20 +20,28 @@ class RootPart extends Part<accordion.Api> {
   }
 
   getPart(): HTMLElement {
-    return this.parent.querySelector<HTMLElement>(`[id='accordion:${this.root.id}']`)!;
+    return this.parent.querySelector<HTMLElement>(
+      `[id='accordion:${this.root.id}']`,
+    )!;
   }
 
   render(api: accordion.Api): void {
     spreadProps(this.part, api.getRootProps());
   }
 
-  cacheAttributes = () => {
-    this.attributeCache = getAttributes(this.part);
+  refreshPart(root: HTMLElement) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
   }
 
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+
   restoreAttributes = () => {
-    restoreAttributes(this.part, this.attributeCache)
-  }
+    restoreAttributes(this.part, this.attributeCache);
+  };
 }
 
 class ItemParts extends Part<accordion.Api> {
@@ -52,26 +66,34 @@ class ItemParts extends Part<accordion.Api> {
   }
 
   getParts(): NodeListOf<HTMLElement> {
-    return this.parent.querySelectorAll<HTMLElement>(`[id^='accordion:${this.root.id}:item']`)!;
+    return this.parent.querySelectorAll<HTMLElement>(
+      `[id^='accordion:${this.root.id}:item']`,
+    )!;
   }
 
   render(api: accordion.Api): void {
     for (const itemPart of this.itemParts) {
-      itemPart.render(api)
+      itemPart.render(api);
     }
+  }
+
+  refreshPart(root: HTMLElement) {
+    this.root = root;
+    this.parent = root;
+    this.itemParts = this.getItemParts();
   }
 
   cacheAttributes = () => {
     for (const part of this.itemParts) {
       part.cacheAttributes();
     }
-  }
+  };
 
   restoreAttributes = () => {
     for (const part of this.itemParts) {
       part.restoreAttributes();
     }
-  }
+  };
 }
 
 class ItemPart extends Part<accordion.Api> {
@@ -98,19 +120,27 @@ class ItemPart extends Part<accordion.Api> {
     this.contentPart.render(api);
   }
 
+  refreshPart(root: HTMLElement): void {
+    this.root = root;
+    this.parent = root;
+
+    this.triggerPart.refreshPart(root, this.part, this.part.dataset.value!);
+    this.triggerPart.refreshPart(root, this.part, this.part.dataset.value!);
+  }
+
   cacheAttributes = () => {
     this.attributeCache = getAttributes(this.part);
 
     this.triggerPart.cacheAttributes();
     this.contentPart.cacheAttributes();
-  }
+  };
 
   restoreAttributes = () => {
     restoreAttributes(this.part, this.attributeCache);
 
     this.triggerPart.restoreAttributes();
     this.contentPart.restoreAttributes();
-  }
+  };
 }
 
 class TriggerPart extends Part<accordion.Api> {
@@ -124,8 +154,17 @@ class TriggerPart extends Part<accordion.Api> {
     this.part = this.getPart();
   }
 
+  refreshPart(root: HTMLElement, parent: HTMLElement, value: string) {
+    this.root = root;
+    this.parent = parent;
+    this.value = value;
+    this.part = this.getPart();
+  }
+
   getPart(): HTMLElement {
-    return this.parent.querySelector<HTMLElement>(`[id='accordion:${this.root.id}:trigger:${this.value}']`)!;
+    return this.parent.querySelector<HTMLElement>(
+      `[id='accordion:${this.root.id}:trigger:${this.value}']`,
+    )!;
   }
 
   render(api: accordion.Api): void {
@@ -135,11 +174,11 @@ class TriggerPart extends Part<accordion.Api> {
 
   cacheAttributes = () => {
     this.attributeCache = getAttributes(this.part);
-  }
+  };
 
   restoreAttributes = () => {
-    restoreAttributes(this.part, this.attributeCache)
-  }
+    restoreAttributes(this.part, this.attributeCache);
+  };
 }
 
 class ContentPart extends Part<accordion.Api> {
@@ -154,7 +193,16 @@ class ContentPart extends Part<accordion.Api> {
   }
 
   getPart(): HTMLElement {
-    return this.parent.querySelector<HTMLElement>(`[id='accordion:${this.root.id}:content:${this.value}']`)!;
+    return this.parent.querySelector<HTMLElement>(
+      `[id='accordion:${this.root.id}:content:${this.value}']`,
+    )!;
+  }
+
+  refreshPart(root: HTMLElement, parent: HTMLElement, value: string) {
+    this.root = root;
+    this.parent = parent;
+    this.value = value;
+    this.part = this.getPart();
   }
 
   render(api: accordion.Api): void {
@@ -164,11 +212,11 @@ class ContentPart extends Part<accordion.Api> {
 
   cacheAttributes = () => {
     this.attributeCache = getAttributes(this.part);
-  }
+  };
 
   restoreAttributes = () => {
-    restoreAttributes(this.part, this.attributeCache)
-  }
+    restoreAttributes(this.part, this.attributeCache);
+  };
 }
 
 class AccordionComponent extends Component<accordion.Context, accordion.Api> {
@@ -180,7 +228,11 @@ class AccordionComponent extends Component<accordion.Context, accordion.Api> {
   }
 
   initApi() {
-    return accordion.connect(this.service.state, this.service.send, normalizeProps);
+    return accordion.connect(
+      this.service.state,
+      this.service.send,
+      normalizeProps,
+    );
   }
 
   initParts(): void {
@@ -190,7 +242,12 @@ class AccordionComponent extends Component<accordion.Context, accordion.Api> {
 
   render(): void {
     this.rootPart.render(this.api);
-    this.itemParts.render(this.api)
+    this.itemParts.render(this.api);
+  }
+
+  refreshParts(): void {
+    this.rootPart.refreshPart(this.el);
+    this.itemParts.refreshPart(this.el);
   }
 
   cacheAttributes() {
@@ -210,10 +267,20 @@ class Accordion extends Hook {
   mounted() {
     this.component = new AccordionComponent(this.el, this.context());
     this.component.init();
+
+    this.handleEvent("wgx:update", () => {
+      this.component.refreshParts();
+      this.component.render();
+    });
+  }
+
+  beforeUpdate() {
+    this.component.cacheAttributes();
   }
 
   updated() {
     this.component.render();
+    this.component.restoreAttributes();
   }
 
   beforeDestroy() {
@@ -234,6 +301,6 @@ class Accordion extends Hook {
       },
     };
   }
-};
+}
 
 export default makeHook(Accordion);
