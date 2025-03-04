@@ -1940,10 +1940,17 @@ var RootPart = class extends Part {
     this.part = this.getPart();
   }
   getPart() {
-    return this.parent.querySelector(`[id='accordion:${this.root.id}']`);
+    return this.parent.querySelector(
+      `[id='accordion:${this.root.id}']`
+    );
   }
   render(api) {
     spreadProps(this.part, api.getRootProps());
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
   }
   cacheAttributes = () => {
     this.attributeCache = getAttributes(this.part);
@@ -1968,12 +1975,19 @@ var ItemParts = class extends Part {
     return itemParts;
   }
   getParts() {
-    return this.parent.querySelectorAll(`[id^='accordion:${this.root.id}:item']`);
+    return this.parent.querySelectorAll(
+      `[id^='accordion:${this.root.id}:item']`
+    );
   }
   render(api) {
     for (const itemPart of this.itemParts) {
       itemPart.render(api);
     }
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.itemParts = this.getItemParts();
   }
   cacheAttributes = () => {
     for (const part of this.itemParts) {
@@ -2005,6 +2019,12 @@ var ItemPart = class extends Part {
     this.triggerPart.render(api);
     this.contentPart.render(api);
   }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.triggerPart.refreshPart(root, this.part, this.part.dataset.value);
+    this.triggerPart.refreshPart(root, this.part, this.part.dataset.value);
+  }
   cacheAttributes = () => {
     this.attributeCache = getAttributes(this.part);
     this.triggerPart.cacheAttributes();
@@ -2025,8 +2045,16 @@ var TriggerPart = class extends Part {
     this.value = value;
     this.part = this.getPart();
   }
+  refreshPart(root, parent, value) {
+    this.root = root;
+    this.parent = parent;
+    this.value = value;
+    this.part = this.getPart();
+  }
   getPart() {
-    return this.parent.querySelector(`[id='accordion:${this.root.id}:trigger:${this.value}']`);
+    return this.parent.querySelector(
+      `[id='accordion:${this.root.id}:trigger:${this.value}']`
+    );
   }
   render(api) {
     const value = this.value;
@@ -2049,7 +2077,15 @@ var ContentPart = class extends Part {
     this.part = this.getPart();
   }
   getPart() {
-    return this.parent.querySelector(`[id='accordion:${this.root.id}:content:${this.value}']`);
+    return this.parent.querySelector(
+      `[id='accordion:${this.root.id}:content:${this.value}']`
+    );
+  }
+  refreshPart(root, parent, value) {
+    this.root = root;
+    this.parent = parent;
+    this.value = value;
+    this.part = this.getPart();
   }
   render(api) {
     const value = this.value;
@@ -2069,7 +2105,11 @@ var AccordionComponent = class extends Component {
     return machine(context);
   }
   initApi() {
-    return connect(this.service.state, this.service.send, normalizeProps);
+    return connect(
+      this.service.state,
+      this.service.send,
+      normalizeProps
+    );
   }
   initParts() {
     this.rootPart = new RootPart(this.el);
@@ -2078,6 +2118,10 @@ var AccordionComponent = class extends Component {
   render() {
     this.rootPart.render(this.api);
     this.itemParts.render(this.api);
+  }
+  refreshParts() {
+    this.rootPart.refreshPart(this.el);
+    this.itemParts.refreshPart(this.el);
   }
   cacheAttributes() {
     this.rootPart.cacheAttributes();
@@ -2093,9 +2137,17 @@ var Accordion = class extends Hook {
   mounted() {
     this.component = new AccordionComponent(this.el, this.context());
     this.component.init();
+    this.handleEvent("wgx:update", () => {
+      this.component.refreshParts();
+      this.component.render();
+    });
+  }
+  beforeUpdate() {
+    this.component.cacheAttributes();
   }
   updated() {
     this.component.render();
+    this.component.restoreAttributes();
   }
   beforeDestroy() {
     this.component.destroy();
@@ -17583,9 +17635,17 @@ var Menu = class extends Hook {
   mounted() {
     this.component = new MenuComponent(this.el, { id: this.el.id });
     this.component.init();
+    this.handleEvent("wgx:update", () => {
+      this.component.refreshParts();
+      this.component.render();
+    });
+  }
+  beforeUpdate() {
+    this.component.cacheAttributes();
   }
   updated() {
     this.component.render();
+    this.component.restoreAttributes();
   }
   beforeDestroy() {
     this.component.destroy();
@@ -22527,30 +22587,123 @@ var props6 = createProps6()([
 var splitProps12 = createSplitProps6(props6);
 
 // js/widgex/progress.ts
+var RootPart4 = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='progress-${this.root.id}']`
+    );
+  }
+  render(api) {
+    spreadProps(this.part, api.getRootProps());
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
+var TrackPart = class extends Part {
+  rangePart;
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+    this.rangePart = new RangePart(this.part);
+  }
+  getPart() {
+    return this.parent.querySelector(
+      `[id='progress-${this.root.id}-track']`
+    );
+  }
+  render(api) {
+    spreadProps(this.part, api.getTrackProps());
+    this.rangePart.render(api);
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+    this.rangePart.refreshPart(this.part);
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+    this.rangePart.cacheAttributes();
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+    this.rangePart.restoreAttributes();
+  };
+};
+var RangePart = class extends Part {
+  constructor(root) {
+    super();
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  getPart() {
+    return this.parent.querySelector(`[data-part='range']`);
+  }
+  render(api) {
+    spreadProps(this.part, api.getRangeProps());
+  }
+  refreshPart(root) {
+    this.root = root;
+    this.parent = root;
+    this.part = this.getPart();
+  }
+  cacheAttributes = () => {
+    this.attributeCache = getAttributes(this.part);
+  };
+  restoreAttributes = () => {
+    restoreAttributes(this.part, this.attributeCache);
+  };
+};
 var ProgressComponent = class extends Component {
+  rootPart;
+  trackPart;
   initService(context) {
     return machine7(context);
   }
   initApi() {
-    return connect7(this.service.state, this.service.send, normalizeProps);
+    return connect7(
+      this.service.state,
+      this.service.send,
+      normalizeProps
+    );
+  }
+  initParts() {
+    this.rootPart = new RootPart4(this.el);
+    this.trackPart = new TrackPart(this.el);
   }
   render() {
-    const parts9 = [
-      { name: "root", id: `progress-${this.el.id}` },
-      { name: "track", id: `progress-${this.el.id}-track` }
-    ];
-    for (const part of parts9)
-      renderPart(this.el, part, this.api);
-    this.renderRange();
+    this.rootPart.render(this.api);
+    this.trackPart.render(this.api);
   }
-  renderRange() {
-    const track = this.el.querySelector(`[id='progress-${this.el.id}-track']`);
-    if (!track)
-      return;
-    const range = track.querySelector(`[data-part='range']`);
-    if (!range)
-      return;
-    spreadProps(range, this.api.getRangeProps());
+  refreshParts() {
+    this.rootPart.refreshPart(this.el);
+    this.trackPart.refreshPart(this.el);
+  }
+  cacheAttributes() {
+    this.rootPart.cacheAttributes();
+    this.trackPart.cacheAttributes();
+  }
+  restoreAttributes() {
+    this.rootPart.restoreAttributes();
+    this.trackPart.restoreAttributes();
   }
 };
 var Progress = class extends Hook {
@@ -22558,17 +22711,29 @@ var Progress = class extends Hook {
   mounted() {
     this.component = new ProgressComponent(this.el, this.context());
     this.component.init();
+    this.handleEvent("wgx:update", () => {
+      this.component.refreshParts();
+      this.component.render();
+    });
+  }
+  beforeUpdate() {
+    this.component.cacheAttributes();
   }
   updated() {
     this.component.api.setValue(this.el.dataset.value);
     this.component.render();
+    this.component.restoreAttributes();
   }
   beforeDestroy() {
     this.component.destroy();
   }
   disconnected() {
-    const root = this.el.querySelector(`[id='progress-${this.el.id}']`);
-    const track = this.el.querySelector(`[id='progress-${this.el.id}-track']`);
+    const root = this.el.querySelector(
+      `[id='progress-${this.el.id}']`
+    );
+    const track = this.el.querySelector(
+      `[id='progress-${this.el.id}-track']`
+    );
     const range = track.querySelector(`[data-part='range']`);
     clearProps(root);
     clearProps(track);
@@ -24579,7 +24744,7 @@ var contentProps = createProps7()(["value"]);
 var splitContentProps = createSplitProps7(contentProps);
 
 // js/widgex/tabs.ts
-var RootPart4 = class extends Part {
+var RootPart5 = class extends Part {
   constructor(root) {
     super();
     this.root = root;
@@ -24760,7 +24925,7 @@ var TabsComponent = class extends Component {
     return connect8(this.service.state, this.service.send, normalizeProps);
   }
   initParts() {
-    this.rootPart = new RootPart4(this.el);
+    this.rootPart = new RootPart5(this.el);
     this.tabList = new TabList(this.el);
     this.content = new Content(this.el);
   }
