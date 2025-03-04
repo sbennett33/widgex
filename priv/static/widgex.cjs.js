@@ -1815,7 +1815,6 @@ var Component = class {
     this.el = el;
     this.service = this.initService(context);
     this.api = this.initApi();
-    this.initParts();
   }
   init = () => {
     this.render();
@@ -22675,6 +22674,11 @@ var RangePart = class extends Part {
 var ProgressComponent = class extends Component {
   rootPart;
   trackPart;
+  constructor(el, context) {
+    super(el, context);
+    this.rootPart = new RootPart4(el);
+    this.trackPart = new TrackPart(el);
+  }
   initService(context) {
     return machine7(context);
   }
@@ -22684,10 +22688,6 @@ var ProgressComponent = class extends Component {
       this.service.send,
       normalizeProps
     );
-  }
-  initParts() {
-    this.rootPart = new RootPart4(this.el);
-    this.trackPart = new TrackPart(this.el);
   }
   render() {
     this.rootPart.render(this.api);

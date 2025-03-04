@@ -20,7 +20,6 @@ export abstract class Component<Context, Api>
 
   abstract initService(context: Context): Machine<any, any, any>;
   abstract initApi(): Api;
-  abstract initParts(): void;
   abstract render(): void;
   abstract cacheAttributes(): void;
   abstract restoreAttributes(): void;
@@ -30,7 +29,6 @@ export abstract class Component<Context, Api>
     this.el = el;
     this.service = this.initService(context);
     this.api = this.initApi();
-    this.initParts();
   }
 
   init = () => {

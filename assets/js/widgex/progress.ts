@@ -123,6 +123,12 @@ class ProgressComponent extends Component<progress.Context, progress.Api> {
   rootPart: RootPart;
   trackPart: TrackPart;
 
+  constructor(el: HTMLElement, context: progress.Context) {
+    super(el, context);
+    this.rootPart = new RootPart(el);
+    this.trackPart = new TrackPart(el);
+  }
+
   initService(context: progress.Context): Machine<any, any, any> {
     return progress.machine(context);
   }
@@ -133,11 +139,6 @@ class ProgressComponent extends Component<progress.Context, progress.Api> {
       this.service.send,
       normalizeProps,
     );
-  }
-
-  initParts(): void {
-    this.rootPart = new RootPart(this.el);
-    this.trackPart = new TrackPart(this.el);
   }
 
   render() {
