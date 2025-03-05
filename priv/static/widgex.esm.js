@@ -24739,6 +24739,9 @@ var RootPart5 = class extends Part {
   restoreAttributes = () => {
     restoreAttributes(this.part, this.attributeCache);
   };
+  clearProps = () => {
+    clearProps(this.part);
+  };
 };
 var TabList = class extends Part {
   triggers;
@@ -24792,6 +24795,12 @@ var TabList = class extends Part {
       trigger.restoreAttributes();
     }
   };
+  clearProps = () => {
+    clearProps(this.part);
+    for (const trigger of this.triggers) {
+      trigger.clearProps();
+    }
+  };
 };
 var Trigger = class extends Part {
   constructor(root, part) {
@@ -24814,6 +24823,9 @@ var Trigger = class extends Part {
   };
   restoreAttributes = () => {
     restoreAttributes(this.part, this.attributeCache);
+  };
+  clearProps = () => {
+    clearProps(this.part);
   };
 };
 var Content = class extends Part {
@@ -24857,6 +24869,11 @@ var Content = class extends Part {
       contentPart.restoreAttributes();
     }
   };
+  clearProps = () => {
+    for (const contentPart of this.contentParts) {
+      contentPart.clearProps();
+    }
+  };
 };
 var ContentPart6 = class extends Part {
   constructor(root, part) {
@@ -24880,21 +24897,25 @@ var ContentPart6 = class extends Part {
   restoreAttributes = () => {
     restoreAttributes(this.part, this.attributeCache);
   };
+  clearProps = () => {
+    clearProps(this.part);
+  };
 };
 var TabsComponent = class extends Component {
   rootPart;
   tabList;
   content;
+  constructor(el, context) {
+    super(el, context);
+    this.rootPart = new RootPart5(this.el);
+    this.tabList = new TabList(this.el);
+    this.content = new Content(this.el);
+  }
   initService(context) {
     return machine8(context);
   }
   initApi() {
     return connect8(this.service.state, this.service.send, normalizeProps);
-  }
-  initParts() {
-    this.rootPart = new RootPart5(this.el);
-    this.tabList = new TabList(this.el);
-    this.content = new Content(this.el);
   }
   render() {
     this.rootPart.render(this.api);
@@ -24916,6 +24937,11 @@ var TabsComponent = class extends Component {
     this.tabList.refreshPart(this.el);
     this.content.refreshPart(this.el);
   }
+  clearProps() {
+    this.rootPart.clearProps();
+    this.tabList.clearProps();
+    this.content.clearProps();
+  }
 };
 var Tabs = class extends Hook {
   component;
@@ -24936,6 +24962,9 @@ var Tabs = class extends Hook {
   }
   beforeDestroy() {
     this.component.destroy();
+  }
+  disconnected() {
+    this.component.clearProps();
   }
   context() {
     return {
