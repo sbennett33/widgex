@@ -6,6 +6,7 @@ import {
   spreadProps,
   getOption,
   getBooleanOption,
+  clearProps,
 } from "./util";
 import { Component, Part } from "./component";
 import { Hook, makeHook } from "./hook";
@@ -38,12 +39,17 @@ class RootPart extends Part<tabs.Api> {
       spreadProps(this.part, api.getRootProps());
     }
   }
+
   cacheAttributes = () => {
     this.attributeCache = getAttributes(this.part);
   };
 
   restoreAttributes = () => {
     restoreAttributes(this.part, this.attributeCache);
+  };
+
+  clearProps = () => {
+    clearProps(this.part);
   };
 }
 
@@ -113,6 +119,14 @@ class TabList extends Part<tabs.Api> {
       trigger.restoreAttributes();
     }
   };
+
+  clearProps = () => {
+    clearProps(this.part);
+
+    for (const trigger of this.triggers) {
+      trigger.clearProps();
+    }
+  };
 }
 
 class Trigger extends Part<tabs.Api> {
@@ -140,6 +154,10 @@ class Trigger extends Part<tabs.Api> {
 
   restoreAttributes = () => {
     restoreAttributes(this.part, this.attributeCache);
+  };
+
+  clearProps = () => {
+    clearProps(this.part);
   };
 }
 
@@ -195,6 +213,12 @@ class Content extends Part<tabs.Api> {
       contentPart.restoreAttributes();
     }
   };
+
+  clearProps = () => {
+    for (const contentPart of this.contentParts) {
+      contentPart.clearProps();
+    }
+  };
 }
 
 class ContentPart extends Part<tabs.Api> {
@@ -223,6 +247,10 @@ class ContentPart extends Part<tabs.Api> {
   restoreAttributes = () => {
     restoreAttributes(this.part, this.attributeCache);
   };
+
+  clearProps = () => {
+    clearProps(this.part);
+  };
 }
 
 class TabsComponent extends Component<tabs.Context, tabs.Api> {
@@ -230,18 +258,20 @@ class TabsComponent extends Component<tabs.Context, tabs.Api> {
   tabList: TabList;
   content: Content;
 
+  constructor(el: HTMLElement, context: tabs.Context) {
+    super(el, context);
+
+    this.rootPart = new RootPart(this.el);
+    this.tabList = new TabList(this.el);
+    this.content = new Content(this.el);
+  }
+
   initService(context: tabs.Context): Machine<any, any, any> {
     return tabs.machine(context);
   }
 
   initApi() {
     return tabs.connect(this.service.state, this.service.send, normalizeProps);
-  }
-
-  initParts(): void {
-    this.rootPart = new RootPart(this.el);
-    this.tabList = new TabList(this.el);
-    this.content = new Content(this.el);
   }
 
   render() {
@@ -266,6 +296,12 @@ class TabsComponent extends Component<tabs.Context, tabs.Api> {
     this.rootPart.refreshPart(this.el);
     this.tabList.refreshPart(this.el);
     this.content.refreshPart(this.el);
+  }
+
+  clearProps(): void {
+    this.rootPart.clearProps();
+    this.tabList.clearProps();
+    this.content.clearProps();
   }
 }
 
@@ -293,6 +329,10 @@ class Tabs extends Hook {
 
   beforeDestroy() {
     this.component.destroy();
+  }
+
+  disconnected(): void {
+    this.component.clearProps();
   }
 
   context(): tabs.Context {
