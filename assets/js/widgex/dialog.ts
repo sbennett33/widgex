@@ -266,6 +266,17 @@ class DialogComponent extends Component<dialog.Context, dialog.Api> {
   descriptionPart: DescriptionPart;
   closeTriggerPart: CloseTriggerPart;
 
+  constructor(el: HTMLElement, context: dialog.Context) {
+    super(el, context);
+    this.triggerPart = new TriggerPart(el);
+    this.backdropPart = new BackdropPart(el);
+    this.positionerPart = new PositionerPart(el);
+    this.contentPart = new ContentPart(el);
+    this.titlePart = new TitlePart(el);
+    this.descriptionPart = new DescriptionPart(el);
+    this.closeTriggerPart = new CloseTriggerPart(el);
+  }
+
   initService(context: dialog.Context): Machine<any, any, any> {
     return dialog.machine(context);
   }
@@ -276,16 +287,6 @@ class DialogComponent extends Component<dialog.Context, dialog.Api> {
       this.service.send,
       normalizeProps,
     );
-  }
-
-  initParts() {
-    this.triggerPart = new TriggerPart(this.el);
-    this.backdropPart = new BackdropPart(this.el);
-    this.positionerPart = new PositionerPart(this.el);
-    this.contentPart = new ContentPart(this.el);
-    this.titlePart = new TitlePart(this.el);
-    this.descriptionPart = new DescriptionPart(this.el);
-    this.closeTriggerPart = new CloseTriggerPart(this.el);
   }
 
   render() {

@@ -13140,6 +13140,16 @@ var DialogComponent = class extends Component {
   titlePart;
   descriptionPart;
   closeTriggerPart;
+  constructor(el, context) {
+    super(el, context);
+    this.triggerPart = new TriggerPart4(el);
+    this.backdropPart = new BackdropPart(el);
+    this.positionerPart = new PositionerPart2(el);
+    this.contentPart = new ContentPart4(el);
+    this.titlePart = new TitlePart(el);
+    this.descriptionPart = new DescriptionPart(el);
+    this.closeTriggerPart = new CloseTriggerPart(el);
+  }
   initService(context) {
     return machine4(context);
   }
@@ -13149,15 +13159,6 @@ var DialogComponent = class extends Component {
       this.service.send,
       normalizeProps
     );
-  }
-  initParts() {
-    this.triggerPart = new TriggerPart4(this.el);
-    this.backdropPart = new BackdropPart(this.el);
-    this.positionerPart = new PositionerPart2(this.el);
-    this.contentPart = new ContentPart4(this.el);
-    this.titlePart = new TitlePart(this.el);
-    this.descriptionPart = new DescriptionPart(this.el);
-    this.closeTriggerPart = new CloseTriggerPart(this.el);
   }
   render() {
     this.triggerPart.render(this.api);
